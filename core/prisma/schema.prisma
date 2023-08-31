@@ -1,0 +1,37 @@
+datasource db {
+    provider = "sqlite"
+    url      = "file:./dev.db"
+}
+
+generator client {
+    provider = "cargo prisma"
+    output   = "../src/prisma.rs"
+}
+
+
+model Person {
+    id Int @id @default(autoincrement())
+    name String
+    parentId Int?
+    familyId Int
+    family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+    //relationships where this person is the source
+    outRelations Relationship[] @relation("source")
+    //relationships where this person is the target 
+    inRelations Relationship[] @relation("target")
+}
+
+model Family {
+    id Int @id @default(autoincrement())
+    name String
+    members Person[]
+}
+
+model Relationship {
+    sourceId Int 
+    targetId Int
+    relationshipType String
+    source Person @relation("source", fields: [sourceId], references: [id], onDelete: Cascade)
+    target Person @relation("target", fields: [targetId], references: [id], onDelete: Cascade)
+    @@id([sourceId, targetId])
+}
