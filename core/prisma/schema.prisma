@@ -15,9 +15,9 @@ model Person {
     parentId Int?
     familyId Int
     family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
-    //relationships where this person is the source
+    parents   Person[]   @relation("parentchildren")
+    children Person[]  @relation("parentchildren")
     outRelations Relationship[] @relation("source")
-    //relationships where this person is the target 
     inRelations Relationship[] @relation("target")
 }
 
