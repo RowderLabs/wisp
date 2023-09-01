@@ -1,5 +1,5 @@
 use prisma_client_rust::NewClientError;
-use wispcore::prisma::{self, person};
+use wispcore::prisma::{self, family, person};
 
 #[tokio::main]
 async fn main() {
@@ -7,14 +7,39 @@ async fn main() {
         prisma::PrismaClient::_builder().build().await;
     let prisma = client.unwrap();
 
-    let lord = prisma
-        .person()
-        .find_first(vec![person::id::equals(2)])
-        .with(person::children::fetch(vec![]))
+}
+
+async fn seed(prisma: &prisma::PrismaClient) {
+    let family = prisma
+        .family()
+        .create("Blackwoods".into(), vec![])
         .exec()
         .await
-        .unwrap()
         .unwrap();
 
-    println!("{:#?}", lord.children);
+    let lord = prisma
+        .person()
+        .create("Lord".into(), family::id::equals(family.id), vec![])
+        .exec()
+        .await
+        .unwrap();
+    let lady = prisma
+        .person()
+        .create("Lady".into(), family::id::equals(family.id), vec![])
+        .exec()
+        .await
+        .unwrap();
+    let _sage = prisma
+        .person()
+        .create(
+            "Sage".into(),
+            family::id::equals(1),
+            vec![person::parents::connect(vec![
+                person::id::equals(lord.id),
+                person::id::equals(lady.id),
+            ])],
+        )
+        .exec()
+        .await
+        .unwrap();
 }

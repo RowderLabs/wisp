@@ -1,4 +1,6 @@
 #![allow(unused)]
+use itertools::Itertools;
+use prisma::person;
 
 pub mod prisma;
 
@@ -20,14 +22,39 @@ pub struct TreeLink {
 
 impl Into<TreeNode> for prisma::person::Data {
     fn into(self) -> TreeNode {
-        TreeNode { id: self.id, parent_id: self.parent_id, hidden: false}
+        TreeNode {
+            id: self.id,
+            parent_id: self.parent_id,
+            hidden: false,
+        }
     }
 }
 
 impl Into<TreeLink> for prisma::relationship::Data {
     fn into(self) -> TreeLink {
-        TreeLink { source: TreeLinkData { id: self.source_id }, target: TreeLinkData {id: self.target_id} }
+        TreeLink {
+            source: TreeLinkData { id: self.source_id },
+            target: TreeLinkData { id: self.target_id },
+        }
     }
+}
+pub fn merge_children(a: person::Data, b: person::Data) -> Vec<person::Data> {
+    let a_children = a
+        .children
+        .unwrap_or_default()
+        .into_iter()
+        .sorted_by(|a, b| Ord::cmp(&a.id, &b.id))
+        .collect_vec();
+    let b_children = b
+        .children
+        .unwrap_or_default()
+        .into_iter()
+        .sorted_by(|a, b| Ord::cmp(&a.id, &b.id))
+        .collect_vec();
+
+    std::iter::zip(a_children, b_children)
+        .map_while(|(a, b)| Some(a.clone()))
+        .collect_vec()
 }
 
 #[derive(Debug, Clone)]
@@ -46,7 +73,6 @@ pub struct TreeData {
 #[cfg(test)]
 mod tests {
     use super::*;
-
 
     #[test]
     fn it_works() {
