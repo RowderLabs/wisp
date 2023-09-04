@@ -1,7 +1,8 @@
 #![allow(unused)]
-use itertools::Itertools;
-use prisma::person;
+use std::collections::HashSet;
 
+use itertools::Itertools;
+use prisma::{person, relationship};
 pub mod prisma;
 pub mod seed;
 
@@ -21,28 +22,6 @@ pub struct TreeLink {
     target: TreeLinkData,
 }
 
-
-
-
-pub fn merge_children(a: person::Data, b: person::Data) -> Vec<person::Data> {
-    let a_children = a
-        .children
-        .unwrap_or_default()
-        .into_iter()
-        .sorted_by(|a, b| Ord::cmp(&a.id, &b.id))
-        .collect_vec();
-    let b_children = b
-        .children
-        .unwrap_or_default()
-        .into_iter()
-        .sorted_by(|a, b| Ord::cmp(&a.id, &b.id))
-        .collect_vec();
-
-    std::iter::zip(a_children, b_children)
-        .map_while(|(a, b)| Some(a.clone()))
-        .collect_vec()
-}
-
 #[derive(Debug, Clone)]
 pub struct TreeNode {
     id: i32,
@@ -54,6 +33,45 @@ pub struct TreeNode {
 pub struct TreeData {
     nodes: Vec<TreeNode>,
     links: Vec<TreeLink>,
+}
+
+impl TreeData {
+    pub fn build_generation(data: &mut Vec<person::Data>) -> (Vec<TreeNode>, Vec<i32>) {
+        let mut nodes = vec![];
+        let mut relations_with_children = vec![];
+        data.into_iter().for_each(|p| {
+            //push person
+            nodes.push(TreeNode {
+                id: p.id,
+                parent_id: Some(0),
+                hidden: false,
+            });
+            let relations = p.relationships.clone().unwrap_or_default();
+            //if relationships push members
+            if relations.len() > 0 {
+                relations.into_iter().for_each(|r| {
+                    let members = r.members.unwrap_or_default();
+                    let shared_children = r.children.unwrap_or_default();
+                    if members.len() > 0 {
+                        members.into_iter().for_each(|m| {
+                            if m.id != p.id {
+                                nodes.push(TreeNode {
+                                    id: m.id,
+                                    parent_id: Some(0),
+                                    hidden: false,
+                                })
+                            }
+                        })
+                    }
+
+                    if shared_children.len() > 0 {
+                        relations_with_children.push(r.id)
+                    }
+                })
+            }
+        });
+        (nodes, relations_with_children)
+    }
 }
 
 #[cfg(test)]

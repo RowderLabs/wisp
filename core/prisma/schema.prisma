@@ -13,8 +13,8 @@ model Person {
     id Int @id @default(autoincrement())
     name String
     parentRelationId Int?
-    familyId Int
-    family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+    familyId Int?
+    family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
     parents   Person[]   @relation("parentchildren")
     //all children belonging to person
     children Person[]  @relation("parentchildren")
