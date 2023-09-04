@@ -3,6 +3,7 @@ use itertools::Itertools;
 use prisma::person;
 
 pub mod prisma;
+pub mod seed;
 
 enum RelationshipType {
     Marriage(bool),
@@ -20,15 +21,7 @@ pub struct TreeLink {
     target: TreeLinkData,
 }
 
-impl Into<TreeNode> for prisma::person::Data {
-    fn into(self) -> TreeNode {
-        TreeNode {
-            id: self.id,
-            parent_id: self.parent_id,
-            hidden: false,
-        }
-    }
-}
+
 
 
 pub fn merge_children(a: person::Data, b: person::Data) -> Vec<person::Data> {

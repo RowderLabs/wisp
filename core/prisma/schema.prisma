@@ -12,12 +12,16 @@ generator client {
 model Person {
     id Int @id @default(autoincrement())
     name String
-    parentId Int?
+    parentRelationId Int?
     familyId Int
     family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
     parents   Person[]   @relation("parentchildren")
+    //all children belonging to person
     children Person[]  @relation("parentchildren")
-    relationships Relationship[]
+    //relationship in which person is a product of
+    childOf Relationship? @relation("children", fields: [parentRelationId], references: [id])
+    //relationships where person is a member
+    relationships Relationship[] @relation("members")
 }
 
 model Family {
@@ -29,5 +33,8 @@ model Family {
 model Relationship {
     id Int @id @default(autoincrement())
     relationshipType String
-    members Person[]
+    //members of a specific relationship
+    members Person[] @relation("members")
+    //children that are a product of a specific relationship
+    children Person[] @relation("children")
 }
