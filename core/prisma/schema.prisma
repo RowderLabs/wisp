@@ -17,8 +17,7 @@ model Person {
     family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
     parents   Person[]   @relation("parentchildren")
     children Person[]  @relation("parentchildren")
-    outRelations Relationship[] @relation("source")
-    inRelations Relationship[] @relation("target")
+    relationships Relationship[]
 }
 
 model Family {
@@ -28,10 +27,7 @@ model Family {
 }
 
 model Relationship {
-    sourceId Int 
-    targetId Int
+    id Int @id @default(autoincrement())
     relationshipType String
-    source Person @relation("source", fields: [sourceId], references: [id], onDelete: Cascade)
-    target Person @relation("target", fields: [targetId], references: [id], onDelete: Cascade)
-    @@id([sourceId, targetId])
+    members Person[]
 }

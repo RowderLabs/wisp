@@ -30,14 +30,7 @@ impl Into<TreeNode> for prisma::person::Data {
     }
 }
 
-impl Into<TreeLink> for prisma::relationship::Data {
-    fn into(self) -> TreeLink {
-        TreeLink {
-            source: TreeLinkData { id: self.source_id },
-            target: TreeLinkData { id: self.target_id },
-        }
-    }
-}
+
 pub fn merge_children(a: person::Data, b: person::Data) -> Vec<person::Data> {
     let a_children = a
         .children
