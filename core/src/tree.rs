@@ -10,12 +10,7 @@ pub struct TreeLinkData(i32);
 pub struct TreeLink {
     source: TreeLinkData,
     target: TreeLinkData,
-}
-
-impl TreeLink {
-    pub fn new(source: TreeLinkData, target: TreeLinkData) -> TreeLink {
-        TreeLink { source, target }
-    }
+    link: TreeLinkData,
 }
 
 #[derive(Debug, Clone)]
@@ -84,27 +79,26 @@ impl FamilyTreeBuilder {
 
         loop {
             self._build_generation(&current);
-            let next_generation: Vec<i32> = current
+
+            let children_ids = current
                 .iter()
-                .flat_map(|p| {
-                    p.relationships
-                        .iter()
-                        .flat_map(|r| r.children.iter().map(|c| c.id))
-                        .collect_vec()
-                })
+                .flat_map(|p| p.relationships.iter().filter(|r| r.children.len() > 0))
+                .map(|r| r.id)
                 .collect_vec();
 
-            let next_gen_queries = next_generation.iter().map(|id| {
+
+            if children_ids.len() == 0 {
+                break;
+            }
+
+            let next_gen_queries = children_ids.iter().map(|id| {
                 prisma
                     .person()
                     .find_many(vec![person::parent_relation_id::equals(Some(*id))])
                     .select(tree_person::select())
             });
 
-            if next_generation.len() == 0 {
-                break;
-            }
-
+            
             current = prisma
                 ._batch(next_gen_queries)
                 .await
@@ -112,6 +106,7 @@ impl FamilyTreeBuilder {
                 .into_iter()
                 .flatten()
                 .collect_vec();
+
         }
 
         TreeData {
@@ -133,7 +128,7 @@ impl FamilyTreeBuilder {
             //push person
             self.nodes.push(TreeNode {
                 id: p.id,
-                parent_id: Some(0),
+                parent_id: p.parent_relation_id,
                 hidden: false,
             });
 
@@ -158,8 +153,11 @@ impl FamilyTreeBuilder {
                         });
 
                         //link relations
-                        self.links
-                            .push(TreeLink::new(TreeLinkData(p.id), TreeLinkData(m.id)))
+                        self.links.push(TreeLink {
+                            source: TreeLinkData(p.id),
+                            target: TreeLinkData(m.id),
+                            link: TreeLinkData(r.id),
+                        })
                     }
                 })
             })
