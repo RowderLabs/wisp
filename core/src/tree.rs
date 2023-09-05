@@ -147,25 +147,22 @@ impl FamilyTreeBuilder {
     }
 
     async fn _build_root(&mut self, prisma: &prisma::PrismaClient) {
-        self.nodes.insert(
-            TreeKey(0, TreeEntity::Relation),
-            TreeNode {
-                id: nanoid!(5),
-                parent_id: None,
-                hidden: true,
-            },
-        );
+        self._insert_node(TreeKey(0, TreeEntity::Relation), None, true);
     }
 
     fn get_node_id(&self, key: &TreeKey) -> Option<String> {
         Some(self.nodes.get(key).unwrap().id.clone())
     }
 
-    fn _insert_node(&mut self, key: TreeKey, value: TreeNode) {
+    fn _insert_node(&mut self, key: TreeKey, parent_id: Option<String>, hidden: bool) {
         match self.nodes.entry(key) {
             Entry::Vacant(entry) => {
-                println!("inserting node with id {}", value.id.clone());
-                entry.insert(value);
+                let result = entry.insert(TreeNode {
+                    id: nanoid!(8),
+                    parent_id,
+                    hidden,
+                });
+                println!("inserted node into tree with id {}", result.id);
             }
             _ => (),
         };
@@ -179,14 +176,7 @@ impl FamilyTreeBuilder {
                 TreeEntity::Relation,
             ));
 
-            self._insert_node(
-                TreeKey(p.id, TreeEntity::Person),
-                TreeNode {
-                    id: nanoid!(),
-                    parent_id: relation_id,
-                    hidden: false,
-                },
-            );
+            self._insert_node(TreeKey(p.id, TreeEntity::Person), relation_id, false);
 
             //if relationships push members
             p.relationships.iter().for_each(|r| {
@@ -194,14 +184,11 @@ impl FamilyTreeBuilder {
                     //hidden relationship node
                     self._insert_node(
                         TreeKey(r.id, TreeEntity::Relation),
-                        TreeNode {
-                            id: nanoid!(5),
-                            parent_id: self.get_node_id(&TreeKey(
-                                p.parent_relation_id.unwrap_or(0),
-                                TreeEntity::Relation,
-                            )),
-                            hidden: true,
-                        },
+                        self.get_node_id(&TreeKey(
+                            p.parent_relation_id.unwrap_or(0),
+                            TreeEntity::Relation,
+                        )),
+                        true,
                     );
                 }
 
@@ -211,34 +198,8 @@ impl FamilyTreeBuilder {
                         p.parent_relation_id.unwrap_or(0),
                         TreeEntity::Relation,
                     ));
-                    self._insert_node(
-                        TreeKey(m.id, TreeEntity::Person),
-                        TreeNode {
-                            id: nanoid!(),
-                            parent_id,
-                            hidden: false,
-                        },
-                    );
 
-                    if m.id != p.id {
-                        self.links.insert(
-                            TreeKey(r.id, TreeEntity::Relation),
-                            TreeLink {
-                                source: TreeLinkData(
-                                    self.get_node_id(&TreeKey(p.id, TreeEntity::Person))
-                                        .unwrap(),
-                                ),
-                                target: TreeLinkData(
-                                    self.get_node_id(&TreeKey(m.id, TreeEntity::Person))
-                                        .unwrap(),
-                                ),
-                                link: TreeLinkData(
-                                    self.get_node_id(&TreeKey(r.id, TreeEntity::Relation))
-                                        .unwrap(),
-                                ),
-                            },
-                        );
-                    }
+                    self._insert_node(TreeKey(m.id, TreeEntity::Person), parent_id, false);
                 });
             })
         });
