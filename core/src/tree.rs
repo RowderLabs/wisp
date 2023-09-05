@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 use crate::{
     prisma::{self, person, relationship},
-    TreeData, TreeLink, TreeNode,
+    TreeData, TreeLink, TreeLinkData, TreeNode,
 };
 use std::collections::HashSet;
 
@@ -11,6 +11,22 @@ pub struct TreeBuilder {
     nodes: Vec<TreeNode>,
     links: Vec<TreeLink>,
 }
+
+person::select!(tree_person {
+    id
+    name
+    parent_relation_id
+    relationships: select {
+        id
+        members: select {
+            id
+            name
+        }
+        children: select {
+            id
+        }
+    }
+});
 
 impl TreeBuilder {
     pub fn init() -> TreeBuilder {
@@ -25,18 +41,13 @@ impl TreeBuilder {
         let mut current = self._build_root(prisma).await;
 
         loop {
-            let (nodes, next) = Self::_build_generation(&mut current);
-            self.nodes.extend(nodes);
+            let next = self._build_generation(&mut current);
 
             let next_generation = next.iter().map(|id| {
                 prisma
                     .person()
                     .find_many(vec![person::parent_relation_id::equals(Some(*id))])
-                    .with(
-                        person::relationships::fetch(vec![])
-                            .with(relationship::members::fetch(vec![]))
-                            .with(relationship::children::fetch(vec![])),
-                    )
+                    .select(tree_person::select())
             });
 
             if next_generation.len() == 0 {
@@ -58,7 +69,7 @@ impl TreeBuilder {
         }
     }
 
-    async fn _build_root(&mut self, prisma: &prisma::PrismaClient) -> Vec<person::Data> {
+    async fn _build_root(&mut self, prisma: &prisma::PrismaClient) -> Vec<tree_person::Data> {
         self.nodes.push(TreeNode {
             id: 0,
             parent_id: None,
@@ -67,40 +78,50 @@ impl TreeBuilder {
         let first_gen = prisma
             .person()
             .find_many(vec![person::family_id::equals(Some(1))])
-            .with(
-                person::relationships::fetch(vec![])
-                    .with(relationship::members::fetch(vec![]))
-                    .with(relationship::children::fetch(vec![])),
-            )
+            .select(tree_person::select())
             .exec()
             .await
             .unwrap();
         first_gen
     }
 
-    pub fn _build_generation(data: &mut Vec<person::Data>) -> (Vec<TreeNode>, Vec<i32>) {
-        let mut nodes = vec![];
+    pub fn _build_generation(&mut self, data: &mut Vec<tree_person::Data>) -> Vec<i32> {
         let mut relations_with_children = vec![];
         data.into_iter().for_each(|p| {
             //push person
-            nodes.push(TreeNode {
+            self.nodes.push(TreeNode {
                 id: p.id,
                 parent_id: Some(0),
                 hidden: false,
             });
-            let relations = p.relationships.clone().unwrap_or_default();
+            let relations = p.relationships.clone();
             //if relationships push members
             if relations.len() > 0 {
                 relations.into_iter().for_each(|r| {
-                    let members = r.members.unwrap_or_default();
-                    let shared_children = r.children.unwrap_or_default();
+                    let members = r.members;
+                    let shared_children = r.children;
+
                     if members.len() > 0 {
+                        //hidden relationship node
+                        self.nodes.push(TreeNode {
+                            id: r.id,
+                            parent_id: p.parent_relation_id,
+                            hidden: true,
+                        });
+
+                        //members of relationship that are not current person
                         members.into_iter().for_each(|m| {
                             if m.id != p.id {
-                                nodes.push(TreeNode {
+                                self.nodes.push(TreeNode {
                                     id: m.id,
                                     parent_id: Some(0),
                                     hidden: false,
+                                });
+
+                                //link relations
+                                self.links.push(TreeLink {
+                                    source: TreeLinkData { id: p.id },
+                                    target: TreeLinkData { id: m.id },
                                 })
                             }
                         })
@@ -112,6 +133,6 @@ impl TreeBuilder {
                 })
             }
         });
-        (nodes, relations_with_children)
+      relations_with_children
     }
 }
