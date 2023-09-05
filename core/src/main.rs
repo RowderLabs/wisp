@@ -16,4 +16,6 @@ async fn main() {
         .build(&prisma)
         .await;
 
+    println!("{:#?}", tree);
+
 }
