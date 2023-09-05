@@ -29,6 +29,7 @@ pub struct TreeData {
 pub struct FamilyTreeBuilder {
     seen: HashSet<i32>,
     family_id: Option<i32>,
+    parent_relation_id: Option<i32>,
     nodes: Vec<TreeNode>,
     links: Vec<TreeLink>,
 }
@@ -53,6 +54,7 @@ impl FamilyTreeBuilder {
     pub fn init() -> FamilyTreeBuilder {
         FamilyTreeBuilder {
             family_id: None,
+            parent_relation_id: None,
             seen: HashSet::new(),
             nodes: Vec::new(),
             links: Vec::new(),
@@ -66,12 +68,21 @@ impl FamilyTreeBuilder {
         }
     }
 
+    pub fn starting_generation(self, parent_relation_id: i32) -> Self {
+        FamilyTreeBuilder {
+            parent_relation_id: Some(parent_relation_id),
+            ..self
+        }
+    }
+
     pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData {
         self._build_root(prisma).await;
 
         let mut current = prisma
             .person()
-            .find_many(vec![person::family_id::equals(self.family_id)])
+            .find_many(vec![
+                person::parent_relation_id::equals(self.parent_relation_id),
+            ])
             .select(tree_person::select())
             .exec()
             .await
@@ -86,7 +97,6 @@ impl FamilyTreeBuilder {
                 .map(|r| r.id)
                 .collect_vec();
 
-
             if children_ids.len() == 0 {
                 break;
             }
@@ -98,7 +108,6 @@ impl FamilyTreeBuilder {
                     .select(tree_person::select())
             });
 
-            
             current = prisma
                 ._batch(next_gen_queries)
                 .await
@@ -106,7 +115,6 @@ impl FamilyTreeBuilder {
                 .into_iter()
                 .flatten()
                 .collect_vec();
-
         }
 
         TreeData {
