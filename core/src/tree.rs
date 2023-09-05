@@ -6,8 +6,9 @@ use crate::{
 };
 use std::collections::HashSet;
 
-pub struct TreeBuilder {
+pub struct FamilyTreeBuilder {
     seen: HashSet<i32>,
+    family_id: Option<i32>,
     nodes: Vec<TreeNode>,
     links: Vec<TreeLink>,
 }
@@ -28,22 +29,44 @@ person::select!(tree_person {
     }
 });
 
-impl TreeBuilder {
-    pub fn init() -> TreeBuilder {
-        TreeBuilder {
+impl FamilyTreeBuilder {
+    pub fn init() -> FamilyTreeBuilder {
+        FamilyTreeBuilder {
+            family_id: None,
             seen: HashSet::new(),
             nodes: Vec::new(),
             links: Vec::new(),
         }
     }
 
+    pub fn family(self, family_id: i32) -> Self {
+        FamilyTreeBuilder { family_id: Some(family_id), ..self}
+    }
+
     pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData {
-        let mut current = self._build_root(prisma).await;
+        self._build_root(prisma).await;
+
+        let mut current = prisma
+            .person()
+            .find_many(vec![person::family_id::equals(self.family_id)])
+            .select(tree_person::select())
+            .exec()
+            .await
+            .unwrap();
 
         loop {
-            let next = self._build_generation(&mut current);
+            self._build_generation(&mut current);
+            let next_generation: Vec<i32> = current
+                .iter()
+                .flat_map(|p| {
+                    p.relationships
+                        .iter()
+                        .flat_map(|r| r.children.iter().map(|c| c.id))
+                        .collect_vec()
+                })
+                .collect_vec();
 
-            let next_generation = next.iter().map(|id| {
+            let next_gen_queries = next_generation.iter().map(|id| {
                 prisma
                     .person()
                     .find_many(vec![person::parent_relation_id::equals(Some(*id))])
@@ -55,7 +78,7 @@ impl TreeBuilder {
             }
 
             current = prisma
-                ._batch(next_generation)
+                ._batch(next_gen_queries)
                 .await
                 .unwrap()
                 .into_iter()
@@ -69,24 +92,15 @@ impl TreeBuilder {
         }
     }
 
-    async fn _build_root(&mut self, prisma: &prisma::PrismaClient) -> Vec<tree_person::Data> {
+    async fn _build_root(&mut self, prisma: &prisma::PrismaClient) {
         self.nodes.push(TreeNode {
             id: 0,
             parent_id: None,
             hidden: true,
         });
-        let first_gen = prisma
-            .person()
-            .find_many(vec![person::family_id::equals(Some(1))])
-            .select(tree_person::select())
-            .exec()
-            .await
-            .unwrap();
-        first_gen
     }
 
-    pub fn _build_generation(&mut self, data: &mut Vec<tree_person::Data>) -> Vec<i32> {
-        let mut relations_with_children = vec![];
+    pub fn _build_generation(&mut self, data: &mut Vec<tree_person::Data>) {
         data.into_iter().for_each(|p| {
             //push person
             self.nodes.push(TreeNode {
@@ -126,12 +140,7 @@ impl TreeBuilder {
                         }
                     })
                 }
-
-                if shared_children.len() > 0 {
-                    relations_with_children.push(r.id)
-                }
             })
         });
-        relations_with_children
     }
 }
