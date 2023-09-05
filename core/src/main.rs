@@ -1,6 +1,6 @@
 use prisma_client_rust::NewClientError;
 use wispcore::{
-    prisma::{self, person},
+    prisma::{self},
     tree::TreeBuilder,
 };
 

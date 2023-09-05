@@ -96,43 +96,42 @@ impl TreeBuilder {
             });
             let relations = p.relationships.clone();
             //if relationships push members
-            if relations.len() > 0 {
-                relations.into_iter().for_each(|r| {
-                    let members = r.members;
-                    let shared_children = r.children;
 
-                    if members.len() > 0 {
-                        //hidden relationship node
-                        self.nodes.push(TreeNode {
-                            id: r.id,
-                            parent_id: p.parent_relation_id,
-                            hidden: true,
-                        });
+            relations.into_iter().for_each(|r| {
+                let members = r.members;
+                let shared_children = r.children;
 
-                        //members of relationship that are not current person
-                        members.into_iter().for_each(|m| {
-                            if m.id != p.id {
-                                self.nodes.push(TreeNode {
-                                    id: m.id,
-                                    parent_id: Some(0),
-                                    hidden: false,
-                                });
+                if members.len() > 0 {
+                    //hidden relationship node
+                    self.nodes.push(TreeNode {
+                        id: r.id,
+                        parent_id: p.parent_relation_id,
+                        hidden: true,
+                    });
 
-                                //link relations
-                                self.links.push(TreeLink {
-                                    source: TreeLinkData { id: p.id },
-                                    target: TreeLinkData { id: m.id },
-                                })
-                            }
-                        })
-                    }
+                    //members of relationship that are not current person
+                    members.into_iter().for_each(|m| {
+                        if m.id != p.id {
+                            self.nodes.push(TreeNode {
+                                id: m.id,
+                                parent_id: Some(0),
+                                hidden: false,
+                            });
 
-                    if shared_children.len() > 0 {
-                        relations_with_children.push(r.id)
-                    }
-                })
-            }
+                            //link relations
+                            self.links.push(TreeLink {
+                                source: TreeLinkData { id: p.id },
+                                target: TreeLinkData { id: m.id },
+                            })
+                        }
+                    })
+                }
+
+                if shared_children.len() > 0 {
+                    relations_with_children.push(r.id)
+                }
+            })
         });
-      relations_with_children
+        relations_with_children
     }
 }
