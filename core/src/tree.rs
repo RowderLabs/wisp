@@ -1,10 +1,35 @@
 use itertools::Itertools;
 
-use crate::{
-    prisma::{self, person, relationship},
-    TreeData, TreeLink, TreeLinkData, TreeNode,
-};
+use crate::prisma::{self, person, relationship};
 use std::collections::HashSet;
+
+#[derive(Debug, Clone)]
+pub struct TreeLinkData(i32);
+
+#[derive(Debug, Clone)]
+pub struct TreeLink {
+    source: TreeLinkData,
+    target: TreeLinkData,
+}
+
+impl TreeLink {
+    pub fn new(source: TreeLinkData, target: TreeLinkData) -> TreeLink {
+        TreeLink { source, target }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TreeNode {
+    id: i32,
+    parent_id: Option<i32>,
+    hidden: bool,
+}
+
+#[derive(Debug)]
+pub struct TreeData {
+    nodes: Vec<TreeNode>,
+    links: Vec<TreeLink>,
+}
 
 pub struct FamilyTreeBuilder {
     seen: HashSet<i32>,
@@ -40,7 +65,10 @@ impl FamilyTreeBuilder {
     }
 
     pub fn family(self, family_id: i32) -> Self {
-        FamilyTreeBuilder { family_id: Some(family_id), ..self}
+        FamilyTreeBuilder {
+            family_id: Some(family_id),
+            ..self
+        }
     }
 
     pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData {
@@ -55,7 +83,7 @@ impl FamilyTreeBuilder {
             .unwrap();
 
         loop {
-            self._build_generation(&mut current);
+            self._build_generation(&current);
             let next_generation: Vec<i32> = current
                 .iter()
                 .flat_map(|p| {
@@ -100,46 +128,40 @@ impl FamilyTreeBuilder {
         });
     }
 
-    pub fn _build_generation(&mut self, data: &mut Vec<tree_person::Data>) {
-        data.into_iter().for_each(|p| {
+    pub fn _build_generation(&mut self, data: &Vec<tree_person::Data>) {
+        data.iter().for_each(|p| {
             //push person
             self.nodes.push(TreeNode {
                 id: p.id,
                 parent_id: Some(0),
                 hidden: false,
             });
-            let relations = p.relationships.clone();
+
             //if relationships push members
-
-            relations.into_iter().for_each(|r| {
-                let members = r.members;
-                let shared_children = r.children;
-
-                if members.len() > 0 {
+            p.relationships.iter().for_each(|r| {
+                if r.members.len() > 0 {
                     //hidden relationship node
                     self.nodes.push(TreeNode {
                         id: r.id,
                         parent_id: p.parent_relation_id,
                         hidden: true,
                     });
-
-                    //members of relationship that are not current person
-                    members.into_iter().for_each(|m| {
-                        if m.id != p.id {
-                            self.nodes.push(TreeNode {
-                                id: m.id,
-                                parent_id: Some(0),
-                                hidden: false,
-                            });
-
-                            //link relations
-                            self.links.push(TreeLink {
-                                source: TreeLinkData { id: p.id },
-                                target: TreeLinkData { id: m.id },
-                            })
-                        }
-                    })
                 }
+
+                //members of relationship that are not current person
+                r.members.iter().for_each(|m| {
+                    if m.id != p.id {
+                        self.nodes.push(TreeNode {
+                            id: m.id,
+                            parent_id: Some(0),
+                            hidden: false,
+                        });
+
+                        //link relations
+                        self.links
+                            .push(TreeLink::new(TreeLinkData(p.id), TreeLinkData(m.id)))
+                    }
+                })
             })
         });
     }
