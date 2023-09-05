@@ -2,6 +2,7 @@ use itertools::Itertools;
 
 use crate::prisma::{self, person, relationship};
 use nanoid::nanoid;
+use std::collections::btree_map::Entry;
 use std::collections::{BTreeMap, HashSet};
 
 person::select!(tree_person {
@@ -83,18 +84,45 @@ impl FamilyTreeBuilder {
         }
     }
 
-    pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData {
-        self._build_root(prisma).await;
+    async fn _batch_fetch_descendants(
+        &self,
+        prisma: &prisma::PrismaClient,
+        relation_ids: Vec<i32>,
+    ) -> Vec<tree_person::Data> {
+        let queries = relation_ids.iter().map(|id| {
+            prisma
+                .person()
+                .find_many(vec![person::parent_relation_id::equals(Some(*id))])
+                .select(tree_person::select())
+        });
+        prisma
+            ._batch(queries)
+            .await
+            .unwrap()
+            .into_iter()
+            .flatten()
+            .collect_vec()
+    }
 
-        let mut current = prisma
+    async fn _fetch_descendants(
+        &self,
+        prisma: &prisma::PrismaClient,
+        relation_id: Option<i32>,
+    ) -> Vec<tree_person::Data> {
+        prisma
             .person()
-            .find_many(vec![person::parent_relation_id::equals(
-                self.parent_relation_id,
-            )])
+            .find_many(vec![person::parent_relation_id::equals(relation_id)])
             .select(tree_person::select())
             .exec()
             .await
-            .unwrap();
+            .unwrap()
+    }
+
+    pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData {
+        self._build_root(prisma).await;
+        let mut current = self
+            ._fetch_descendants(prisma, self.parent_relation_id)
+            .await;
 
         loop {
             self._build_generation(&current);
@@ -109,23 +137,8 @@ impl FamilyTreeBuilder {
                 break;
             }
 
-            let next_gen_queries = children_ids.iter().map(|id| {
-                prisma
-                    .person()
-                    .find_many(vec![person::parent_relation_id::equals(Some(*id))])
-                    .select(tree_person::select())
-            });
-
-            current = prisma
-                ._batch(next_gen_queries)
-                .await
-                .unwrap()
-                .into_iter()
-                .flatten()
-                .collect_vec();
+            current = self._batch_fetch_descendants(prisma, children_ids).await;
         }
-
-        println!("{:#?}", self.nodes.len());
 
         TreeData {
             nodes: self.nodes.values().into_iter().cloned().collect_vec(),
@@ -148,17 +161,29 @@ impl FamilyTreeBuilder {
         Some(self.nodes.get(key).unwrap().id.clone())
     }
 
+    fn _insert_node(&mut self, key: TreeKey, value: TreeNode) {
+        match self.nodes.entry(key) {
+            Entry::Vacant(entry) => {
+                println!("inserting node with id {}", value.id.clone());
+                entry.insert(value);
+            }
+            _ => (),
+        };
+    }
+
     pub fn _build_generation(&mut self, data: &Vec<tree_person::Data>) {
         data.iter().for_each(|p| {
             //push person
-            self.nodes.insert(
+            let relation_id = self.get_parent_id(&TreeKey(
+                p.parent_relation_id.unwrap_or(0),
+                NodeType::Relation,
+            ));
+
+            self._insert_node(
                 TreeKey(p.id, NodeType::Person),
                 TreeNode {
-                    id: nanoid!(5),
-                    parent_id: self.get_parent_id(&TreeKey(
-                        p.parent_relation_id.unwrap_or(0),
-                        NodeType::Relation,
-                    )),
+                    id: nanoid!(),
+                    parent_id: relation_id,
                     hidden: false,
                 },
             );
@@ -167,7 +192,7 @@ impl FamilyTreeBuilder {
             p.relationships.iter().for_each(|r| {
                 if r.members.len() > 0 {
                     //hidden relationship node
-                    self.nodes.insert(
+                    self._insert_node(
                         TreeKey(r.id, NodeType::Relation),
                         TreeNode {
                             id: nanoid!(5),
@@ -182,14 +207,15 @@ impl FamilyTreeBuilder {
 
                 //members of relationship that are not current person
                 r.members.iter().for_each(|m| {
-                    self.nodes.insert(
+                    let parent_id = self.get_parent_id(&TreeKey(
+                        p.parent_relation_id.unwrap_or(0),
+                        NodeType::Relation,
+                    ));
+                    self._insert_node(
                         TreeKey(m.id, NodeType::Person),
                         TreeNode {
-                            id: nanoid!(5),
-                            parent_id: self.get_parent_id(&TreeKey(
-                                p.parent_relation_id.unwrap_or(0),
-                                NodeType::Relation,
-                            )),
+                            id: nanoid!(),
+                            parent_id,
                             hidden: false,
                         },
                     );
