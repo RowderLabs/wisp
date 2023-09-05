@@ -1,38 +1,8 @@
 use itertools::Itertools;
 
 use crate::prisma::{self, person, relationship};
-use std::collections::HashSet;
-
-#[derive(Debug, Clone)]
-pub struct TreeLinkData(i32);
-
-#[derive(Debug, Clone)]
-pub struct TreeLink {
-    source: TreeLinkData,
-    target: TreeLinkData,
-    link: TreeLinkData,
-}
-
-#[derive(Debug, Clone)]
-pub struct TreeNode {
-    id: i32,
-    parent_id: Option<i32>,
-    hidden: bool,
-}
-
-#[derive(Debug)]
-pub struct TreeData {
-    nodes: Vec<TreeNode>,
-    links: Vec<TreeLink>,
-}
-
-pub struct FamilyTreeBuilder {
-    seen: HashSet<i32>,
-    family_id: Option<i32>,
-    parent_relation_id: Option<i32>,
-    nodes: Vec<TreeNode>,
-    links: Vec<TreeLink>,
-}
+use nanoid::nanoid;
+use std::collections::{BTreeMap, HashSet};
 
 person::select!(tree_person {
     id
@@ -50,13 +20,51 @@ person::select!(tree_person {
     }
 });
 
+#[derive(Debug, Clone)]
+pub struct TreeLinkData(i32);
+
+#[derive(Debug, Clone)]
+pub struct TreeLink {
+    source: TreeLinkData,
+    target: TreeLinkData,
+    link: TreeLinkData,
+}
+
+#[derive(Debug, Clone)]
+pub struct TreeNode {
+    id: String,
+    parent_id: Option<String>,
+    hidden: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+enum NodeType {
+    Relation,
+    Person,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct TreeKey(i32, NodeType);
+
+#[derive(Debug)]
+pub struct TreeData {
+    nodes: Vec<TreeNode>,
+    links: Vec<TreeLink>,
+}
+
+pub struct FamilyTreeBuilder {
+    family_id: Option<i32>,
+    parent_relation_id: Option<i32>,
+    nodes: BTreeMap<TreeKey, TreeNode>,
+    links: Vec<TreeLink>,
+}
+
 impl FamilyTreeBuilder {
     pub fn init() -> FamilyTreeBuilder {
         FamilyTreeBuilder {
             family_id: None,
             parent_relation_id: None,
-            seen: HashSet::new(),
-            nodes: Vec::new(),
+            nodes: BTreeMap::new(),
             links: Vec::new(),
         }
     }
@@ -80,9 +88,9 @@ impl FamilyTreeBuilder {
 
         let mut current = prisma
             .person()
-            .find_many(vec![
-                person::parent_relation_id::equals(self.parent_relation_id),
-            ])
+            .find_many(vec![person::parent_relation_id::equals(
+                self.parent_relation_id,
+            )])
             .select(tree_person::select())
             .exec()
             .await
@@ -117,56 +125,74 @@ impl FamilyTreeBuilder {
                 .collect_vec();
         }
 
+        println!("{:#?}", self.nodes.len());
+
         TreeData {
-            nodes: self.nodes,
+            nodes: self.nodes.values().into_iter().cloned().collect_vec(),
             links: self.links,
         }
     }
 
     async fn _build_root(&mut self, prisma: &prisma::PrismaClient) {
-        self.nodes.push(TreeNode {
-            id: 0,
-            parent_id: None,
-            hidden: true,
-        });
+        self.nodes.insert(
+            TreeKey(0, NodeType::Relation),
+            TreeNode {
+                id: nanoid!(5),
+                parent_id: None,
+                hidden: true,
+            },
+        );
+    }
+
+    fn get_parent_id(&self, key: &TreeKey) -> Option<String> {
+        Some(self.nodes.get(key).unwrap().id.clone())
     }
 
     pub fn _build_generation(&mut self, data: &Vec<tree_person::Data>) {
         data.iter().for_each(|p| {
             //push person
-            self.nodes.push(TreeNode {
-                id: p.id,
-                parent_id: p.parent_relation_id,
-                hidden: false,
-            });
+            self.nodes.insert(
+                TreeKey(p.id, NodeType::Person),
+                TreeNode {
+                    id: nanoid!(5),
+                    parent_id: self.get_parent_id(&TreeKey(
+                        p.parent_relation_id.unwrap_or(0),
+                        NodeType::Relation,
+                    )),
+                    hidden: false,
+                },
+            );
 
             //if relationships push members
             p.relationships.iter().for_each(|r| {
                 if r.members.len() > 0 {
                     //hidden relationship node
-                    self.nodes.push(TreeNode {
-                        id: r.id,
-                        parent_id: p.parent_relation_id,
-                        hidden: true,
-                    });
+                    self.nodes.insert(
+                        TreeKey(r.id, NodeType::Relation),
+                        TreeNode {
+                            id: nanoid!(5),
+                            parent_id: self.get_parent_id(&TreeKey(
+                                p.parent_relation_id.unwrap_or(0),
+                                NodeType::Relation,
+                            )),
+                            hidden: true,
+                        },
+                    );
                 }
 
                 //members of relationship that are not current person
                 r.members.iter().for_each(|m| {
-                    if m.id != p.id {
-                        self.nodes.push(TreeNode {
-                            id: m.id,
-                            parent_id: Some(0),
+                    self.nodes.insert(
+                        TreeKey(m.id, NodeType::Person),
+                        TreeNode {
+                            id: nanoid!(5),
+                            parent_id: self.get_parent_id(&TreeKey(
+                                p.parent_relation_id.unwrap_or(0),
+                                NodeType::Relation,
+                            )),
                             hidden: false,
-                        });
-
-                        //link relations
-                        self.links.push(TreeLink {
-                            source: TreeLinkData(p.id),
-                            target: TreeLinkData(m.id),
-                            link: TreeLinkData(r.id),
-                        })
-                    }
+                        },
+                    );
                 })
             })
         });

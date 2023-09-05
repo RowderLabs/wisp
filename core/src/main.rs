@@ -10,8 +10,8 @@ async fn main() {
         prisma::PrismaClient::_builder().build().await;
     let prisma = client.unwrap();
 
+
     let tree = FamilyTreeBuilder::init()
-        .starting_generation(1)
         .family(1)
         .build(&prisma)
         .await;
