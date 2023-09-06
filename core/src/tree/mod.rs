@@ -1,3 +1,5 @@
+use prisma_client_rust::psl::datamodel_connector::Connector;
+
 pub mod family_tree;
 
 pub trait Tree<T: Sized, E: Clone + Sized> {
@@ -18,11 +20,35 @@ pub struct TreeLink {
 }
 
 #[derive(Debug, Clone)]
-pub struct TreeNode<T: Clone + Sized> {
+pub struct TreeNode {
     id: String,
     parent_id: Option<String>,
     hidden: bool,
-    data: Option<T>
+}
+
+#[derive(Debug, Clone)]
+pub struct TreeNodeWithData<T: Clone + Sized> {
+    id: String,
+    parent_id: Option<String>,
+    hidden: bool,
+    data: T
+}
+
+
+#[derive(Debug, Clone)]
+pub enum TreeNodeType<T: Clone + Sized> {
+    Node(TreeNode),
+    WithData(TreeNodeWithData<T>)
+}
+
+impl <T: Clone + Sized> TreeNodeType<T> {
+    fn get_id(&self) -> String {
+        match self {
+            TreeNodeType::Node(inner) => inner.id.clone(),
+            TreeNodeType::WithData(inner) => inner.id.clone(),
+            _ => panic!("Unknown node type")
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -36,6 +62,6 @@ pub struct TreeKey(i32, TreeEntity);
 
 #[derive(Debug)]
 pub struct TreeData<T: Clone + Sized> {
-    nodes: Vec<TreeNode<T>>,
+    nodes: Vec<TreeNodeType<T>>,
     links: Vec<TreeLink>,
 }

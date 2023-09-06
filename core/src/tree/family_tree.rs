@@ -1,5 +1,6 @@
-use super::{Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode};
+use super::{Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, TreeNodeType};
 use crate::prisma::{self, person, relationship};
+use crate::tree::TreeNodeWithData;
 use itertools::Itertools;
 use nanoid::nanoid;
 use std::collections::btree_map::Entry;
@@ -33,7 +34,7 @@ pub struct FamilyTreeNodeData {
 }
 
 pub struct FamilyTree {
-    nodes: BTreeMap<TreeKey, TreeNode<FamilyTreeNodeData>>,
+    nodes: BTreeMap<TreeKey, TreeNodeType<FamilyTreeNodeData>>,
     links: BTreeMap<TreeKey, TreeLink>,
 }
 
@@ -86,7 +87,9 @@ impl Tree<tree_person::Data, FamilyTreeNodeData> for FamilyTree {
 
                     self.insert_node_once(
                         TreeKey(m.id, TreeEntity::Person),
-                        Some(FamilyTreeNodeData {name: m.name.clone()}),
+                        Some(FamilyTreeNodeData {
+                            name: m.name.clone(),
+                        }),
                         parent_id.clone(),
                         false,
                     );
@@ -117,7 +120,7 @@ impl Tree<tree_person::Data, FamilyTreeNodeData> for FamilyTree {
 
 impl FamilyTree {
     fn get_node_id(&self, key: &TreeKey) -> Option<String> {
-        Some(self.nodes.get(key).unwrap().id.clone())
+        Some(self.nodes.get(key).unwrap().get_id())
     }
 
     pub fn insert_node_once(
@@ -129,13 +132,21 @@ impl FamilyTree {
     ) {
         match self.nodes.entry(key) {
             Entry::Vacant(entry) => {
-                let result = entry.insert(TreeNode {
-                    id: nanoid!(8),
-                    parent_id,
-                    hidden,
-                    data,
-                });
-                println!("inserted node into tree with id {}", result.id);
+                let node = match data {
+                    Some(data) => TreeNodeType::WithData(TreeNodeWithData {
+                        id: nanoid!(8),
+                        parent_id,
+                        data,
+                        hidden,
+                    }),
+                    None => TreeNodeType::Node(TreeNode {
+                        id: nanoid!(8),
+                        parent_id,
+                        hidden,
+                    }),
+                };
+
+                entry.insert(node);
             }
             _ => (),
         };
