@@ -1,8 +1,8 @@
 pub mod family_tree;
 
-pub trait Tree<T: Sized> {
+pub trait Tree<T: Sized, E: Clone + Sized> {
     fn new() -> Self;
-    fn into_tree_data(self) -> TreeData;
+    fn into_tree_data(self) -> TreeData<E>;
     fn create_level(&mut self, data: &Vec<T>);
 }
 
@@ -18,10 +18,11 @@ pub struct TreeLink {
 }
 
 #[derive(Debug, Clone)]
-pub struct TreeNode {
+pub struct TreeNode<T: Clone + Sized> {
     id: String,
     parent_id: Option<String>,
     hidden: bool,
+    data: Option<T>
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -34,7 +35,7 @@ enum TreeEntity {
 pub struct TreeKey(i32, TreeEntity);
 
 #[derive(Debug)]
-pub struct TreeData {
-    nodes: Vec<TreeNode>,
+pub struct TreeData<T: Clone + Sized> {
+    nodes: Vec<TreeNode<T>>,
     links: Vec<TreeLink>,
 }

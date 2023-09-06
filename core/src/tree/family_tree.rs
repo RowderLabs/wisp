@@ -27,13 +27,18 @@ pub struct FamilyTreeBuilder {
     tree: FamilyTree,
 }
 
+#[derive(Clone, Debug)]
+pub struct FamilyTreeNodeData {
+    name: String,
+}
+
 pub struct FamilyTree {
-    nodes: BTreeMap<TreeKey, TreeNode>,
+    nodes: BTreeMap<TreeKey, TreeNode<FamilyTreeNodeData>>,
     links: BTreeMap<TreeKey, TreeLink>,
 }
 
-impl Tree<tree_person::Data> for FamilyTree {
-    fn into_tree_data(self) -> TreeData {
+impl Tree<tree_person::Data, FamilyTreeNodeData> for FamilyTree {
+    fn into_tree_data(self) -> TreeData<FamilyTreeNodeData> {
         TreeData {
             nodes: self.nodes.values().into_iter().cloned().collect_vec(),
             links: self.links.values().into_iter().cloned().collect_vec(),
@@ -48,7 +53,14 @@ impl Tree<tree_person::Data> for FamilyTree {
                 TreeEntity::Relation,
             ));
 
-            self.insert_node_once(TreeKey(p.id, TreeEntity::Person), relation_id, false);
+            self.insert_node_once(
+                TreeKey(p.id, TreeEntity::Person),
+                Some(FamilyTreeNodeData {
+                    name: p.name.clone(),
+                }),
+                relation_id,
+                false,
+            );
 
             //if relationships push members
             p.relationships.iter().for_each(|r| {
@@ -56,6 +68,7 @@ impl Tree<tree_person::Data> for FamilyTree {
                     //hidden relationship node
                     self.insert_node_once(
                         TreeKey(r.id, TreeEntity::Relation),
+                        None,
                         self.get_node_id(&TreeKey(
                             p.parent_relation_id.unwrap_or(0),
                             TreeEntity::Relation,
@@ -71,7 +84,12 @@ impl Tree<tree_person::Data> for FamilyTree {
                         TreeEntity::Relation,
                     ));
 
-                    self.insert_node_once(TreeKey(m.id, TreeEntity::Person), parent_id.clone(), false);
+                    self.insert_node_once(
+                        TreeKey(m.id, TreeEntity::Person),
+                        Some(FamilyTreeNodeData {name: m.name.clone()}),
+                        parent_id.clone(),
+                        false,
+                    );
 
                     if m.id != p.id {
                         self.insert_link_once(
@@ -102,13 +120,20 @@ impl FamilyTree {
         Some(self.nodes.get(key).unwrap().id.clone())
     }
 
-    pub fn insert_node_once(&mut self, key: TreeKey, parent_id: Option<String>, hidden: bool) {
+    pub fn insert_node_once(
+        &mut self,
+        key: TreeKey,
+        data: Option<FamilyTreeNodeData>,
+        parent_id: Option<String>,
+        hidden: bool,
+    ) {
         match self.nodes.entry(key) {
             Entry::Vacant(entry) => {
                 let result = entry.insert(TreeNode {
                     id: nanoid!(8),
                     parent_id,
                     hidden,
+                    data,
                 });
                 println!("inserted node into tree with id {}", result.id);
             }
@@ -132,13 +157,12 @@ impl FamilyTree {
                 };
                 entry.insert(result);
             }
-            Entry::Occupied(_) => {
-            }
+            Entry::Occupied(_) => {}
         }
     }
 
     fn create_root(&mut self) {
-        self.insert_node_once(TreeKey(0, TreeEntity::Relation), None, true);
+        self.insert_node_once(TreeKey(0, TreeEntity::Relation), None, None, true);
     }
 }
 
@@ -199,7 +223,7 @@ impl FamilyTreeBuilder {
             .unwrap()
     }
 
-    pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData {
+    pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData<FamilyTreeNodeData> {
         let mut current = self
             ._fetch_descendants(prisma, self.parent_relation_id)
             .await;
