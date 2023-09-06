@@ -11,3 +11,10 @@ target/
 *.pdb
 dev.db
 prisma.rs
+
+
+# .gitignore
+node_modules
+dist
+build
+.turbo
