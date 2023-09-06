@@ -1,7 +1,7 @@
 use super::{tree_person, FamilyTreeNodeData};
 use crate::{
     prisma::{self, person},
-    tree::{Tree, TreeData, GenTree, TreeContructor},
+    tree::{Tree, TreeData, BuildableTree},
 };
 use itertools::Itertools;
 use snafu::{OptionExt, ResultExt, Whatever, whatever, ensure};
@@ -9,7 +9,7 @@ use snafu::{OptionExt, ResultExt, Whatever, whatever, ensure};
 pub struct FamilyTreeBuilder {
     root_id: Option<i32>,
     family_id: Option<i32>,
-    tree: GenTree<FamilyTreeNodeData>,
+    tree: Tree<FamilyTreeNodeData>,
 }
 
 impl FamilyTreeBuilder {
@@ -17,7 +17,7 @@ impl FamilyTreeBuilder {
         FamilyTreeBuilder {
             family_id: None,
             root_id: None,
-            tree: GenTree::new(),
+            tree: Tree::new(),
         }
     }
 

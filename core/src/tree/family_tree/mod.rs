@@ -1,7 +1,7 @@
 use super::error::{TreeError, NodeNotFoundSnafu};
 use super::{
     Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, TreeNodeType,
-    TreeNodeWithData, TreeContructor, GenTree,
+    TreeNodeWithData, BuildableTree,
 };
 use crate::prisma::person;
 use indexmap::{map::Entry, IndexMap};
@@ -32,9 +32,9 @@ pub struct FamilyTreeNodeData {
     name: String,
 }
 
-impl TreeContructor<tree_person::Data, FamilyTreeNodeData> for GenTree<FamilyTreeNodeData> {
-    fn new() -> GenTree<FamilyTreeNodeData> {
-        let mut tree: GenTree<FamilyTreeNodeData> = GenTree {nodes: IndexMap::new(), links:  IndexMap::new()};
+impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNodeData> {
+    fn new() -> Tree<FamilyTreeNodeData> {
+        let mut tree: Tree<FamilyTreeNodeData> = Tree {nodes: IndexMap::new(), links:  IndexMap::new()};
         tree.insert_node_once(TreeKey(0, TreeEntity::Relation), None, None, true);
         tree
     }

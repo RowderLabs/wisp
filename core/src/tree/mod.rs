@@ -6,11 +6,6 @@ use self::{family_tree::tree_person, error::TreeError};
 pub mod error;
 pub mod family_tree;
 
-pub trait Tree<T: Sized, E: Clone + Sized> {
-    fn new() -> Self;
-    fn into_tree_data(self) -> TreeData<E>;
-    fn create_level(&mut self, data: &Vec<T>) -> Result<(), error::TreeError>;
-}
 
 #[derive(Debug, Clone)]
 pub struct TreeLinkData(String);
@@ -68,18 +63,18 @@ pub struct TreeData<T: Clone + Sized> {
     links: Vec<TreeLink>,
 }
 
-trait TreeContructor<T: Clone + Sized, E: Clone + Sized> {
+trait BuildableTree<T: Clone + Sized, E: Clone + Sized> {
     fn create_level(&mut self, data: &Vec<T>) -> Result<(), TreeError>;
-    fn new() -> GenTree<E>;
+    fn new() -> Tree<E>;
 }
 
-struct GenTree<T: Clone + Sized> {
+struct Tree<T: Clone + Sized> {
     nodes: IndexMap<TreeKey, TreeNodeType<T>>,
     links: IndexMap<TreeKey, TreeLink>,
 }
 
 
-impl<T: Sized + Clone + > GenTree<T> {
+impl<T: Sized + Clone + > Tree<T> {
     fn get_node_id(&self, key: &TreeKey) -> Option<String> {
         self.nodes.get(key).map(|n| n.get_id())
     }
