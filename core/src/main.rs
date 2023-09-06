@@ -1,8 +1,6 @@
-use std::error::Error;
-
 use prisma_client_rust::NewClientError;
 use wispcore::{
-    prisma::{self, person}, tree::family_tree::builder::FamilyTreeBuilder,
+    prisma::{self}, tree::family_tree::builder::FamilyTreeBuilder,
 };
 
 #[tokio::main]

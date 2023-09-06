@@ -1,4 +1,4 @@
-use super::error::{Error as TreeError, NodeNotFoundSnafu};
+use super::error::{TreeError, NodeNotFoundSnafu};
 use super::{
     Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, TreeNodeType,
     TreeNodeWithData,

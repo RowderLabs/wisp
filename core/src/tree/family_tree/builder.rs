@@ -4,11 +4,11 @@ use crate::{
     tree::{Tree, TreeData},
 };
 use itertools::Itertools;
-use snafu::{ResultExt, Whatever};
+use snafu::{OptionExt, ResultExt, Whatever, whatever, ensure};
 
 pub struct FamilyTreeBuilder {
+    root_id: Option<i32>,
     family_id: Option<i32>,
-    parent_relation_id: Option<i32>,
     tree: FamilyTree,
 }
 
@@ -16,21 +16,21 @@ impl FamilyTreeBuilder {
     pub fn init() -> FamilyTreeBuilder {
         FamilyTreeBuilder {
             family_id: None,
-            parent_relation_id: None,
+            root_id: None,
             tree: FamilyTree::new(),
+        }
+    }
+
+    pub fn root(self, root_id: i32) -> Self {
+        FamilyTreeBuilder {
+            root_id: Some(root_id),
+            ..self
         }
     }
 
     pub fn family(self, family_id: i32) -> Self {
         FamilyTreeBuilder {
             family_id: Some(family_id),
-            ..self
-        }
-    }
-
-    pub fn starting_generation(self, parent_relation_id: i32) -> Self {
-        FamilyTreeBuilder {
-            parent_relation_id: Some(parent_relation_id),
             ..self
         }
     }
@@ -59,24 +59,35 @@ impl FamilyTreeBuilder {
     async fn _fetch_descendants(
         &self,
         prisma: &prisma::PrismaClient,
-        relation_id: Option<i32>,
     ) -> Result<Vec<tree_person::Data>, Whatever> {
-        Ok(prisma
+
+        if (self.root_id.is_none() && self.family_id.is_none()) {
+            whatever!("No root id or family id");
+        }
+
+        let result = prisma
             .person()
-            .find_many(vec![person::parent_relation_id::equals(relation_id)])
+            .find_many(vec![
+                person::parent_relation_id::equals(self.root_id),
+                person::family_id::equals(self.family_id),
+            ])
             .select(tree_person::select())
             .exec()
             .await
-            .whatever_context("Failed to fetch root tree descendants")?)
+            .whatever_context("Failed to fetch root tree descendants")?;
+
+            if result.len() == 0 {
+                whatever!("No data to contruct tree from");
+            }
+            Ok(result)
+
     }
 
     pub async fn build(
         mut self,
         prisma: &prisma::PrismaClient,
     ) -> Result<TreeData<FamilyTreeNodeData>, snafu::Whatever> {
-        let mut current = self
-            ._fetch_descendants(prisma, self.parent_relation_id)
-            .await?;
+        let mut current = self._fetch_descendants(prisma).await?;
 
         loop {
             self.tree
