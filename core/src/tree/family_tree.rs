@@ -1,6 +1,6 @@
-use itertools::Itertools;
-use super::{Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeNode};
+use super::{Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode};
 use crate::prisma::{self, person, relationship};
+use itertools::Itertools;
 use nanoid::nanoid;
 use std::collections::btree_map::Entry;
 use std::collections::{BTreeMap, HashSet};
@@ -25,8 +25,6 @@ pub struct FamilyTreeBuilder {
     family_id: Option<i32>,
     parent_relation_id: Option<i32>,
     tree: FamilyTree,
-    nodes: BTreeMap<TreeKey, TreeNode>,
-    links: BTreeMap<TreeKey, TreeLink>,
 }
 
 pub struct FamilyTree {
@@ -73,7 +71,16 @@ impl Tree<tree_person::Data> for FamilyTree {
                         TreeEntity::Relation,
                     ));
 
-                    self.insert_node_once(TreeKey(m.id, TreeEntity::Person), parent_id, false);
+                    self.insert_node_once(TreeKey(m.id, TreeEntity::Person), parent_id.clone(), false);
+
+                    if m.id != p.id {
+                        self.insert_link_once(
+                            TreeKey(r.id, TreeEntity::Relation),
+                            self.get_node_id(&TreeKey(p.id, TreeEntity::Person)),
+                            self.get_node_id(&TreeKey(m.id, TreeEntity::Person)),
+                            self.get_node_id(&TreeKey(r.id, TreeEntity::Relation)),
+                        );
+                    }
                 });
             })
         });
@@ -91,7 +98,6 @@ impl Tree<tree_person::Data> for FamilyTree {
 }
 
 impl FamilyTree {
-
     fn get_node_id(&self, key: &TreeKey) -> Option<String> {
         Some(self.nodes.get(key).unwrap().id.clone())
     }
@@ -110,6 +116,27 @@ impl FamilyTree {
         };
     }
 
+    pub fn insert_link_once(
+        &mut self,
+        key: TreeKey,
+        source_id: Option<String>,
+        target_id: Option<String>,
+        link_id: Option<String>,
+    ) {
+        match self.links.entry(key) {
+            Entry::Vacant(entry) => {
+                let result = TreeLink {
+                    source: TreeLinkData(source_id.unwrap()),
+                    target: TreeLinkData(target_id.unwrap()),
+                    link: TreeLinkData(link_id.unwrap()),
+                };
+                entry.insert(result);
+            }
+            Entry::Occupied(_) => {
+            }
+        }
+    }
+
     fn create_root(&mut self) {
         self.insert_node_once(TreeKey(0, TreeEntity::Relation), None, true);
     }
@@ -120,8 +147,6 @@ impl FamilyTreeBuilder {
         FamilyTreeBuilder {
             family_id: None,
             parent_relation_id: None,
-            nodes: BTreeMap::new(),
-            links: BTreeMap::new(),
             tree: FamilyTree::new(),
         }
     }
