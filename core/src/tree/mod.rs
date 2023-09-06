@@ -1,9 +1,10 @@
 pub mod family_tree;
+pub mod error;
 
 pub trait Tree<T: Sized, E: Clone + Sized> {
     fn new() -> Self;
     fn into_tree_data(self) -> TreeData<E>;
-    fn create_level(&mut self, data: &Vec<T>);
+    fn create_level(&mut self, data: &Vec<T>) -> Result<(), error::Error>;
 }
 
 

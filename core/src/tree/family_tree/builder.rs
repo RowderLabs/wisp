@@ -1,15 +1,16 @@
+use super::{tree_person, FamilyTree, FamilyTreeNodeData};
+use crate::{
+    prisma::{self, person},
+    tree::{Tree, TreeData},
+};
 use itertools::Itertools;
-use crate::{tree::{Tree, TreeData}, prisma::{self, person}};
-use super::{FamilyTree, tree_person, FamilyTreeNodeData};
-
+use snafu::{ResultExt, Whatever};
 
 pub struct FamilyTreeBuilder {
     family_id: Option<i32>,
     parent_relation_id: Option<i32>,
     tree: FamilyTree,
 }
-
-
 
 impl FamilyTreeBuilder {
     pub fn init() -> FamilyTreeBuilder {
@@ -38,43 +39,49 @@ impl FamilyTreeBuilder {
         &self,
         prisma: &prisma::PrismaClient,
         relation_ids: Vec<i32>,
-    ) -> Vec<tree_person::Data> {
+    ) -> Result<Vec<tree_person::Data>, Whatever> {
         let queries = relation_ids.iter().map(|id| {
             prisma
                 .person()
                 .find_many(vec![person::parent_relation_id::equals(Some(*id))])
                 .select(tree_person::select())
         });
-        prisma
+
+        Ok(prisma
             ._batch(queries)
             .await
-            .unwrap()
+            .whatever_context("Failed to fetch nested tree descendants")?
             .into_iter()
             .flatten()
-            .collect_vec()
+            .collect_vec())
     }
 
     async fn _fetch_descendants(
         &self,
         prisma: &prisma::PrismaClient,
         relation_id: Option<i32>,
-    ) -> Vec<tree_person::Data> {
-        prisma
+    ) -> Result<Vec<tree_person::Data>, Whatever> {
+        Ok(prisma
             .person()
             .find_many(vec![person::parent_relation_id::equals(relation_id)])
             .select(tree_person::select())
             .exec()
             .await
-            .unwrap()
+            .whatever_context("Failed to fetch root tree descendants")?)
     }
 
-    pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData<FamilyTreeNodeData> {
+    pub async fn build(
+        mut self,
+        prisma: &prisma::PrismaClient,
+    ) -> Result<TreeData<FamilyTreeNodeData>, snafu::Whatever> {
         let mut current = self
             ._fetch_descendants(prisma, self.parent_relation_id)
-            .await;
+            .await?;
 
         loop {
-            self.tree.create_level(&current);
+            self.tree
+                .create_level(&current)
+                .whatever_context("cant buildy tree")?;
 
             let children_ids = current
                 .iter()
@@ -86,9 +93,9 @@ impl FamilyTreeBuilder {
                 break;
             }
 
-            current = self._batch_fetch_descendants(prisma, children_ids).await;
+            current = self._batch_fetch_descendants(prisma, children_ids).await?;
         }
 
-        self.tree.into_tree_data()
+        Ok(self.tree.into_tree_data())
     }
 }

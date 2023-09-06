@@ -1,12 +1,14 @@
+use super::error::{Error as TreeError, NodeNotFoundSnafu};
 use super::{
     Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, TreeNodeType,
     TreeNodeWithData,
 };
 use crate::prisma::person;
+use indexmap::{map::Entry, IndexMap};
 use itertools::Itertools;
 use nanoid::nanoid;
-use indexmap::{IndexMap, map::Entry};
 use prisma_client_rust::prisma_models::Index;
+use snafu::OptionExt;
 pub mod builder;
 
 person::select!(tree_person {
@@ -37,27 +39,28 @@ pub struct FamilyTree {
 
 impl Tree<tree_person::Data, FamilyTreeNodeData> for FamilyTree {
     fn into_tree_data(self) -> TreeData<FamilyTreeNodeData> {
-        println!("{:#?}", self.nodes);
         TreeData {
             nodes: self.nodes.values().into_iter().cloned().collect_vec(),
             links: self.links.values().into_iter().cloned().collect_vec(),
         }
     }
 
-    fn create_level(&mut self, data: &Vec<tree_person::Data>) {
-        data.iter().for_each(|p| {
+    fn create_level(&mut self, data: &Vec<tree_person::Data>) -> Result<(), TreeError> {
+        for p in data.iter() {
             //push person
-            let relation_id = self.get_node_id(&TreeKey(
-                p.parent_relation_id.unwrap_or(0),
-                TreeEntity::Relation,
-            ));
+            let relation_id = self
+                .get_node_id(&TreeKey(
+                    p.parent_relation_id.unwrap_or(0),
+                    TreeEntity::Relation,
+                ))
+                .context(NodeNotFoundSnafu)?;
 
             self.insert_node_once(
                 TreeKey(p.id, TreeEntity::Person),
                 Some(FamilyTreeNodeData {
                     name: p.name.clone(),
                 }),
-                relation_id,
+                Some(relation_id),
                 false,
             );
 
@@ -102,7 +105,9 @@ impl Tree<tree_person::Data, FamilyTreeNodeData> for FamilyTree {
                     }
                 });
             })
-        });
+        }
+
+        Ok(())
     }
 
     fn new() -> FamilyTree {
@@ -118,7 +123,7 @@ impl Tree<tree_person::Data, FamilyTreeNodeData> for FamilyTree {
 
 impl FamilyTree {
     fn get_node_id(&self, key: &TreeKey) -> Option<String> {
-        Some(self.nodes.get(key).unwrap().get_id())
+        self.nodes.get(key).map(|n| n.get_id())
     }
 
     pub fn insert_node_once(
@@ -171,6 +176,13 @@ impl FamilyTree {
     }
 
     fn create_root(&mut self) {
-        self.insert_node_once(TreeKey(0, TreeEntity::Relation), Some(FamilyTreeNodeData {name: "ROOT".into()}), None, true);
+        self.insert_node_once(
+            TreeKey(0, TreeEntity::Relation),
+            Some(FamilyTreeNodeData {
+                name: "ROOT".into(),
+            }),
+            None,
+            true,
+        );
     }
 }

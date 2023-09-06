@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use prisma_client_rust::NewClientError;
 use wispcore::{
     prisma::{self, person}, tree::family_tree::builder::FamilyTreeBuilder,
@@ -9,5 +11,8 @@ async fn main() {
         prisma::PrismaClient::_builder().build().await;
     let prisma = client.unwrap();
 
-    let tree = FamilyTreeBuilder::init().family(1).build(&prisma).await;
+    let tree = FamilyTreeBuilder::init().family(1).build(&prisma).await.unwrap();
+
+    println!("{:#?}", tree);
+
 }
