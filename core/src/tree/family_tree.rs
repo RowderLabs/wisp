@@ -1,5 +1,5 @@
 use itertools::Itertools;
-
+use super::{Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeNode};
 use crate::prisma::{self, person, relationship};
 use nanoid::nanoid;
 use std::collections::btree_map::Entry;
@@ -21,82 +21,28 @@ person::select!(tree_person {
     }
 });
 
-#[derive(Debug, Clone)]
-pub struct TreeLinkData(String);
-
-#[derive(Debug, Clone)]
-pub struct TreeLink {
-    source: TreeLinkData,
-    target: TreeLinkData,
-    link: TreeLinkData,
-}
-
-#[derive(Debug, Clone)]
-pub struct TreeNode {
-    id: String,
-    parent_id: Option<String>,
-    hidden: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-enum TreeEntity {
-    Relation,
-    Person,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TreeKey(i32, TreeEntity);
-
-#[derive(Debug)]
-pub struct TreeData {
-    nodes: Vec<TreeNode>,
-    links: Vec<TreeLink>,
-}
-
 pub struct FamilyTreeBuilder {
     family_id: Option<i32>,
     parent_relation_id: Option<i32>,
-    tree: Tree,
+    tree: FamilyTree,
     nodes: BTreeMap<TreeKey, TreeNode>,
     links: BTreeMap<TreeKey, TreeLink>,
 }
 
-pub struct Tree {
+pub struct FamilyTree {
     nodes: BTreeMap<TreeKey, TreeNode>,
     links: BTreeMap<TreeKey, TreeLink>,
 }
 
-impl Tree {
-    pub fn new() -> Tree {
-        Tree {
-            nodes: BTreeMap::new(),
-            links: BTreeMap::new(),
+impl Tree<tree_person::Data> for FamilyTree {
+    fn into_tree_data(self) -> TreeData {
+        TreeData {
+            nodes: self.nodes.values().into_iter().cloned().collect_vec(),
+            links: self.links.values().into_iter().cloned().collect_vec(),
         }
     }
 
-    fn get_node_id(&self, key: &TreeKey) -> Option<String> {
-        Some(self.nodes.get(key).unwrap().id.clone())
-    }
-
-    pub fn insert_node_once(&mut self, key: TreeKey, parent_id: Option<String>, hidden: bool) {
-        match self.nodes.entry(key) {
-            Entry::Vacant(entry) => {
-                let result = entry.insert(TreeNode {
-                    id: nanoid!(8),
-                    parent_id,
-                    hidden,
-                });
-                println!("inserted node into tree with id {}", result.id);
-            }
-            _ => (),
-        };
-    }
-
-    fn create_root(&mut self) {
-        self.insert_node_once(TreeKey(0, TreeEntity::Relation), None, true);
-    }
-
-    pub fn create_level_from(&mut self, data: &Vec<tree_person::Data>) {
+    fn create_level(&mut self, data: &Vec<tree_person::Data>) {
         data.iter().for_each(|p| {
             //push person
             let relation_id = self.get_node_id(&TreeKey(
@@ -133,11 +79,39 @@ impl Tree {
         });
     }
 
-    pub fn into_tree_data(self) -> TreeData {
-        TreeData {
-            nodes: self.nodes.values().into_iter().cloned().collect_vec(),
-            links: self.links.values().into_iter().cloned().collect_vec(),
-        }
+    fn new() -> FamilyTree {
+        let mut tree = FamilyTree {
+            nodes: BTreeMap::new(),
+            links: BTreeMap::new(),
+        };
+
+        tree.create_root();
+        tree
+    }
+}
+
+impl FamilyTree {
+
+    fn get_node_id(&self, key: &TreeKey) -> Option<String> {
+        Some(self.nodes.get(key).unwrap().id.clone())
+    }
+
+    pub fn insert_node_once(&mut self, key: TreeKey, parent_id: Option<String>, hidden: bool) {
+        match self.nodes.entry(key) {
+            Entry::Vacant(entry) => {
+                let result = entry.insert(TreeNode {
+                    id: nanoid!(8),
+                    parent_id,
+                    hidden,
+                });
+                println!("inserted node into tree with id {}", result.id);
+            }
+            _ => (),
+        };
+    }
+
+    fn create_root(&mut self) {
+        self.insert_node_once(TreeKey(0, TreeEntity::Relation), None, true);
     }
 }
 
@@ -148,7 +122,7 @@ impl FamilyTreeBuilder {
             parent_relation_id: None,
             nodes: BTreeMap::new(),
             links: BTreeMap::new(),
-            tree: Tree::new(),
+            tree: FamilyTree::new(),
         }
     }
 
@@ -201,13 +175,12 @@ impl FamilyTreeBuilder {
     }
 
     pub async fn build(mut self, prisma: &prisma::PrismaClient) -> TreeData {
-        self.tree.create_root();
         let mut current = self
             ._fetch_descendants(prisma, self.parent_relation_id)
             .await;
 
         loop {
-            self.tree.create_level_from(&current);
+            self.tree.create_level(&current);
 
             let children_ids = current
                 .iter()
@@ -224,6 +197,4 @@ impl FamilyTreeBuilder {
 
         self.tree.into_tree_data()
     }
-
-    
 }

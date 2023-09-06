@@ -1,7 +1,7 @@
 use prisma_client_rust::NewClientError;
 use wispcore::{
     prisma::{self, person},
-    tree::FamilyTreeBuilder,
+    tree::family_tree::FamilyTreeBuilder,
 };
 
 #[tokio::main]
