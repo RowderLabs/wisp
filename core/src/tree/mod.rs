@@ -1,5 +1,3 @@
-use prisma_client_rust::psl::datamodel_connector::Connector;
-
 pub mod family_tree;
 
 pub trait Tree<T: Sized, E: Clone + Sized> {
@@ -51,13 +49,13 @@ impl <T: Clone + Sized> TreeNodeType<T> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum TreeEntity {
     Relation,
     Person,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TreeKey(i32, TreeEntity);
 
 #[derive(Debug)]

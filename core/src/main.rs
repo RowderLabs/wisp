@@ -1,7 +1,6 @@
 use prisma_client_rust::NewClientError;
 use wispcore::{
-    prisma::{self, person},
-    tree::family_tree::FamilyTreeBuilder,
+    prisma::{self, person}, tree::family_tree::builder::FamilyTreeBuilder,
 };
 
 #[tokio::main]
@@ -11,5 +10,4 @@ async fn main() {
     let prisma = client.unwrap();
 
     let tree = FamilyTreeBuilder::init().family(1).build(&prisma).await;
-    println!("{:#?}", tree);
 }
