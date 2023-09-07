@@ -1,7 +1,7 @@
-use super::error::{NodeNotFoundSnafu, TreeError};
+use super::error::{TreeError, NodeNotFoundSnafu};
 use super::{
-    BuildableTree, Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode,
-    TreeNodeType, TreeNodeWithData,
+    Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, TreeNodeType,
+    TreeNodeWithData, BuildableTree,
 };
 use crate::prisma::person;
 use indexmap::{map::Entry, IndexMap};
@@ -34,10 +34,7 @@ pub struct FamilyTreeNodeData {
 
 impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNodeData> {
     fn new() -> Tree<FamilyTreeNodeData> {
-        let mut tree: Tree<FamilyTreeNodeData> = Tree {
-            nodes: IndexMap::new(),
-            links: IndexMap::new(),
-        };
+        let mut tree: Tree<FamilyTreeNodeData> = Tree {nodes: IndexMap::new(), links:  IndexMap::new()};
         tree.insert_node_once(TreeKey(0, TreeEntity::RelationNode), None, None, true);
         tree
     }
@@ -45,7 +42,10 @@ impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNod
         for p in data.iter() {
             //push person
             let relation_id = self
-                .get_node_id(p.parent_relation_id.unwrap_or(0), TreeEntity::RelationNode)
+                .get_node_id(
+                    p.parent_relation_id.unwrap_or(0),
+                    TreeEntity::RelationNode,
+                )
                 .context(NodeNotFoundSnafu)?;
 
             self.insert_node_once(
@@ -74,8 +74,10 @@ impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNod
 
                 //members of relationship that are not current person
                 r.members.iter().for_each(|m| {
-                    let parent_id = self
-                        .get_node_id(p.parent_relation_id.unwrap_or(0), TreeEntity::RelationNode);
+                    let parent_id = self.get_node_id(
+                        p.parent_relation_id.unwrap_or(0),
+                        TreeEntity::RelationNode,
+                    );
 
                     self.insert_node_once(
                         TreeKey(m.id, TreeEntity::Node),
