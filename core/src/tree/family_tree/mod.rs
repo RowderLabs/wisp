@@ -1,7 +1,7 @@
-use super::error::{TreeError, NodeNotFoundSnafu};
+use super::error::{NodeNotFoundSnafu, TreeError};
 use super::{
-    Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, TreeNodeType,
-    TreeNodeWithData, BuildableTree,
+    BuildableTree, Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode,
+    TreeNodeType, TreeNodeWithData,
 };
 use crate::prisma::person;
 use indexmap::{map::Entry, IndexMap};
@@ -34,22 +34,22 @@ pub struct FamilyTreeNodeData {
 
 impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNodeData> {
     fn new() -> Tree<FamilyTreeNodeData> {
-        let mut tree: Tree<FamilyTreeNodeData> = Tree {nodes: IndexMap::new(), links:  IndexMap::new()};
-        tree.insert_node_once(TreeKey(0, TreeEntity::Relation), None, None, true);
+        let mut tree: Tree<FamilyTreeNodeData> = Tree {
+            nodes: IndexMap::new(),
+            links: IndexMap::new(),
+        };
+        tree.insert_node_once(TreeKey(0, TreeEntity::RelationNode), None, None, true);
         tree
     }
     fn create_level(&mut self, data: &Vec<tree_person::Data>) -> Result<(), TreeError> {
         for p in data.iter() {
             //push person
             let relation_id = self
-                .get_node_id(&TreeKey(
-                    p.parent_relation_id.unwrap_or(0),
-                    TreeEntity::Relation,
-                ))
+                .get_node_id(p.parent_relation_id.unwrap_or(0), TreeEntity::RelationNode)
                 .context(NodeNotFoundSnafu)?;
 
             self.insert_node_once(
-                TreeKey(p.id, TreeEntity::Person),
+                TreeKey(p.id, TreeEntity::Node),
                 Some(FamilyTreeNodeData {
                     name: p.name.clone(),
                 }),
@@ -62,25 +62,23 @@ impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNod
                 if r.members.len() > 0 {
                     //hidden relationship node
                     self.insert_node_once(
-                        TreeKey(r.id, TreeEntity::Relation),
+                        TreeKey(r.id, TreeEntity::RelationNode),
                         None,
-                        self.get_node_id(&TreeKey(
+                        self.get_node_id(
                             p.parent_relation_id.unwrap_or(0),
-                            TreeEntity::Relation,
-                        )),
+                            TreeEntity::RelationNode,
+                        ),
                         true,
                     );
                 }
 
                 //members of relationship that are not current person
                 r.members.iter().for_each(|m| {
-                    let parent_id = self.get_node_id(&TreeKey(
-                        p.parent_relation_id.unwrap_or(0),
-                        TreeEntity::Relation,
-                    ));
+                    let parent_id = self
+                        .get_node_id(p.parent_relation_id.unwrap_or(0), TreeEntity::RelationNode);
 
                     self.insert_node_once(
-                        TreeKey(m.id, TreeEntity::Person),
+                        TreeKey(m.id, TreeEntity::Node),
                         Some(FamilyTreeNodeData {
                             name: m.name.clone(),
                         }),
@@ -90,10 +88,10 @@ impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNod
 
                     if m.id != p.id {
                         self.insert_link_once(
-                            TreeKey(r.id, TreeEntity::Relation),
-                            self.get_node_id(&TreeKey(p.id, TreeEntity::Person)),
-                            self.get_node_id(&TreeKey(m.id, TreeEntity::Person)),
-                            self.get_node_id(&TreeKey(r.id, TreeEntity::Relation)),
+                            TreeKey(r.id, TreeEntity::RelationNode),
+                            self.get_node_id(p.id, TreeEntity::Node),
+                            self.get_node_id(m.id, TreeEntity::Node),
+                            self.get_node_id(r.id, TreeEntity::Node),
                         );
                     }
                 });

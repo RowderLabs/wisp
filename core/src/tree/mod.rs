@@ -50,8 +50,9 @@ impl<T: Clone + Sized> TreeNodeType<T> {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum TreeEntity {
-    Relation,
-    Person,
+    Node,
+    RelationNode,
+    Link
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -75,8 +76,9 @@ struct Tree<T: Clone + Sized> {
 
 
 impl<T: Sized + Clone + > Tree<T> {
-    fn get_node_id(&self, key: &TreeKey) -> Option<String> {
-        self.nodes.get(key).map(|n| n.get_id())
+    fn get_node_id(&self, entity_id: i32, entity_type: TreeEntity) -> Option<String> {
+        let key = TreeKey(entity_id, entity_type);
+        self.nodes.get(&key).map(|n| n.get_id())
     }
     pub fn insert_node_once(
         &mut self,
