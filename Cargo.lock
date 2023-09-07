@@ -92,6 +92,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 name = "app"
 version = "0.0.0"
 dependencies = [
+ "prisma-client-rust",
  "rspc",
  "serde",
  "serde_json",
@@ -3120,10 +3121,12 @@ dependencies = [
  "psl",
  "query-connector",
  "query-core",
+ "rspc",
  "schema",
  "serde",
  "serde-value",
  "serde_json",
+ "specta",
  "tempdir",
  "thiserror",
  "tokio",
@@ -3160,6 +3163,7 @@ dependencies = [
  "convert_case 0.6.0",
  "proc-macro2",
  "quote",
+ "specta",
  "syn 1.0.109",
 ]
 
@@ -4221,7 +4225,9 @@ version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2240c3aa020aa61d2c569087d213baafbb212f4ceb9de9dd162376ea6aa0fe3"
 dependencies = [
+ "chrono",
  "document-features",
+ "indexmap 1.9.3",
  "indoc 1.0.9",
  "once_cell",
  "paste",
@@ -4230,6 +4236,7 @@ dependencies = [
  "specta-macros",
  "tauri",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
@@ -5735,6 +5742,7 @@ dependencies = [
  "prisma-client-rust",
  "serde",
  "snafu",
+ "specta",
  "tokio",
 ]
 
