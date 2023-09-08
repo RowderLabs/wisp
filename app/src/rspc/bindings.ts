@@ -10,13 +10,13 @@ export type Procedures = {
 
 export type FamilyTreeNodeData = { name: string }
 
-export type TreeNodeType<T> = TreeNode | TreeNodeWithData<T>
-
-export type TreeNodeWithData<T> = ({ name: string }) & { id: string; parentId: string | null; hidden: boolean }
+export type TreeNodeWithData<T> = { id: string; parentId: string | null; hidden: boolean; nodeData: T }
 
 export type TreeLinkData = string
 
 export type TreeLink = { source: TreeLinkData; target: TreeLinkData; link: TreeLinkData }
+
+export type TreeNodeType<T> = TreeNode | TreeNodeWithData<T>
 
 export type TreeData<T> = { nodes: TreeNodeType<T>[]; links: TreeLink[] }
 

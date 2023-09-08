@@ -36,8 +36,7 @@ pub struct TreeNodeWithData<T> where T: Clone + Serialize + specta::Type + spect
     pub id: String,
     pub parent_id: Option<String>,
     pub hidden: bool,
-    #[serde(flatten)]
-    pub data: T,
+    pub node_data: T,
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
@@ -115,7 +114,7 @@ impl<T: Clone + Serialize + specta::Type + specta::Flatten> Tree<T> {
                     Some(data) => TreeNodeType::WithData(TreeNodeWithData {
                         id: nanoid!(8),
                         parent_id,
-                        data,
+                        node_data: data,
                         hidden,
                     }),
                     None => TreeNodeType::Node(TreeNode {
