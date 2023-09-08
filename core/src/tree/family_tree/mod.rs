@@ -10,7 +10,6 @@ use nanoid::nanoid;
 use prisma_client_rust::prisma_models::Index;
 use serde::Serialize;
 use snafu::OptionExt;
-pub mod builder;
 
 person::select!(tree_person {
     id

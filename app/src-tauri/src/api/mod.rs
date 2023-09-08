@@ -1,12 +1,14 @@
+use itertools::Itertools;
+use prisma_client_rust::{or, raw, PrismaValue};
 use rspc::{Config, RouterBuilder};
+use serde::Deserialize;
 use std::{path::PathBuf, sync::Arc};
 use wispcore::{
-    prisma::{self, person},
-    tree::{
-        family_tree::tree_person,
-        Tree,
-        BuildableTree
+    prisma::{
+        self,
+        person::{self, WhereParam},
     },
+    tree::{family_tree::tree_person, BuildableTree, Tree},
 };
 
 pub struct Ctx {
@@ -14,6 +16,10 @@ pub struct Ctx {
 }
 
 pub type Router = rspc::Router<Ctx>;
+#[derive(Deserialize, serde::Serialize, specta::Type)]
+struct QueryReturnType {
+    name: String,
+}
 
 pub fn new() -> RouterBuilder<Ctx> {
     Router::new()
@@ -37,6 +43,36 @@ pub fn new() -> RouterBuilder<Ctx> {
                     .unwrap();
 
                 tree.create_level(&people).unwrap();
+
+                let mut children_ids: Vec<WhereParam> = people
+                    .iter()
+                    .flat_map(|p| p.relationships.iter().filter(|r| r.children.len() > 0))
+                    .map(|r| or!(person::parent_relation_id::equals(Some(r.id))))
+                    .collect_vec();
+
+                loop {
+                    if children_ids.len() == 0 {
+                        break;
+                    }
+
+                    let next_gen = ctx
+                        .client
+                        .person()
+                        .find_many(children_ids)
+                        .select(tree_person::select())
+                        .exec()
+                        .await
+                        .unwrap();
+
+                    tree.create_level(&next_gen).unwrap();
+
+                    children_ids = next_gen
+                        .iter()
+                        .flat_map(|p| p.relationships.iter().filter(|r| r.children.len() > 0))
+                        .map(|r| or!(person::parent_relation_id::equals(Some(r.id))))
+                        .collect_vec();
+                }
+
                 tree.into_tree_data()
             })
         })
