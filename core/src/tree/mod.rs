@@ -22,40 +22,16 @@ pub struct TreeLink {
     pub link: TreeLinkData,
 }
 
+
 #[derive(Debug, Clone, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
-pub struct TreeNode {
+pub struct TreeNode<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
     pub id: String,
     pub parent_id: Option<String>,
     pub hidden: bool,
+    pub node_data: Option<T>,
 }
 
-#[derive(Debug, Clone, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-pub struct TreeNodeWithData<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
-    pub id: String,
-    pub parent_id: Option<String>,
-    pub hidden: bool,
-    pub node_data: T,
-}
-
-#[derive(Debug, Clone, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-#[serde(untagged)]
-pub enum TreeNodeType<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
-    Node(TreeNode),
-    WithData(TreeNodeWithData<T>),
-}
-
-impl<T: Clone + Serialize + specta::Type + specta::Flatten> TreeNodeType<T> {
-    fn get_id(&self) -> String {
-        match self {
-            TreeNodeType::Node(inner) => inner.id.clone(),
-            TreeNodeType::WithData(inner) => inner.id.clone(),
-            _ => panic!("Unknown node type"),
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum TreeEntity {
@@ -69,7 +45,7 @@ pub struct TreeKey(i32, TreeEntity);
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
 pub struct TreeData<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
-    pub nodes: Vec<TreeNodeType<T>>,
+    pub nodes: Vec<TreeNode<T>>,
     pub links: Vec<TreeLink>,
 }
 
@@ -92,14 +68,14 @@ pub trait BuildableTree<T: Clone, E: Clone + Serialize + specta::Type + specta::
 }
 
 pub struct Tree<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
-    nodes: IndexMap<TreeKey, TreeNodeType<T>>,
+    nodes: IndexMap<TreeKey, TreeNode<T>>,
     links: IndexMap<TreeKey, TreeLink>,
 }
 
 impl<T: Clone + Serialize + specta::Type + specta::Flatten> Tree<T> {
     fn get_node_id(&self, entity_id: i32, entity_type: TreeEntity) -> Option<String> {
         let key = TreeKey(entity_id, entity_type);
-        self.nodes.get(&key).map(|n| n.get_id())
+        self.nodes.get(&key).map(|n| n.id.clone())
     }
     pub fn insert_node_once(
         &mut self,
@@ -110,20 +86,7 @@ impl<T: Clone + Serialize + specta::Type + specta::Flatten> Tree<T> {
     ) {
         match self.nodes.entry(key) {
             Entry::Vacant(entry) => {
-                let node = match data {
-                    Some(data) => TreeNodeType::WithData(TreeNodeWithData {
-                        id: nanoid!(8),
-                        parent_id,
-                        node_data: data,
-                        hidden,
-                    }),
-                    None => TreeNodeType::Node(TreeNode {
-                        id: nanoid!(8),
-                        parent_id,
-                        hidden,
-                    }),
-                };
-
+                let node = TreeNode {id: nanoid!(8), parent_id, node_data: data, hidden};
                 entry.insert(node);
             }
             _ => (),

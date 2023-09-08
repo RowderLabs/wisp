@@ -1,7 +1,6 @@
 use super::error::{TreeError, NodeNotFoundSnafu};
 use super::{
-    Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, TreeNodeType,
-    TreeNodeWithData, BuildableTree,
+    Tree, TreeData, TreeEntity, TreeKey, TreeLink, TreeLinkData, TreeNode, BuildableTree,
 };
 use crate::prisma::person;
 use indexmap::{map::Entry, IndexMap};
