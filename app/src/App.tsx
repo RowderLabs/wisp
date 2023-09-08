@@ -27,6 +27,40 @@ function App() {
     }
   }, [treeContainerRef, treeRef]);
 
+  const drawChildren = (d: d3.HierarchyPointLink<any>) => {
+  let ny = Math.round(d.target.y + (d.source.y - d.target.y) * 0.5);
+  let linedata = [
+    {
+      x: d.target.x,
+      y: d.target.y,
+    },
+    {
+      x: d.target.x,
+      y: ny,
+    },
+    {
+      x: d.source.x,
+      y: d.source.y,
+    },
+  ];
+
+  const drawFunc = d3
+    .line<{ x: number; y: number }>()
+    .curve(d3.curveStepAfter)
+    .x((d) => d.x)
+    .y((d) => d.y);
+
+  return drawFunc(linedata);
+};
+
+  const childrenPaths = treeData.data?.links().map((link) => {
+    if (!link.source.parent) return null;
+
+    const path = drawChildren(link);
+    if (!path) return null;
+    return <path key={Math.random() * 4} d={path} fill={"transparent"} stroke="blue" />;
+  });
+
   const nodes = treeData.data
     ? treeData.data
         .descendants()
@@ -47,6 +81,7 @@ function App() {
     <div style={{ width: "1200px", height: "600px" }}>
       <svg ref={treeContainerRef} style={{ border: "1px solid black" }} viewBox="0 0 1200 600">
         <g ref={treeRef} x={400} width={1200} height={600}>
+          {childrenPaths}
           {nodes}
         </g>
       </svg>
