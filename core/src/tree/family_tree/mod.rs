@@ -8,6 +8,7 @@ use indexmap::{map::Entry, IndexMap};
 use itertools::Itertools;
 use nanoid::nanoid;
 use prisma_client_rust::prisma_models::Index;
+use serde::Serialize;
 use snafu::OptionExt;
 pub mod builder;
 
@@ -27,9 +28,9 @@ person::select!(tree_person {
     }
 });
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, specta::Type)]
 pub struct FamilyTreeNodeData {
-    name: String,
+    pub name: String,
 }
 
 impl BuildableTree<tree_person::Data, FamilyTreeNodeData> for Tree<FamilyTreeNodeData> {

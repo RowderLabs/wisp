@@ -2,9 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use snafu::ResultExt;
-use wispcore::prisma::PrismaClient;
 use std::sync::Arc;
 use wispapp::api;
+use wispcore::prisma::PrismaClient;
 
 #[tokio::main]
 async fn main() -> Result<(), snafu::Whatever> {

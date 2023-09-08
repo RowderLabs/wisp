@@ -2,6 +2,7 @@ use self::{error::TreeError, family_tree::tree_person};
 use indexmap::{map::Entry, IndexMap};
 use itertools::Itertools;
 use nanoid::nanoid;
+use serde::Serialize;
 use snafu::ResultExt;
 use std::convert::TryFrom;
 use std::convert::TryInto;
@@ -9,38 +10,38 @@ use std::convert::TryInto;
 pub mod error;
 pub mod family_tree;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, specta::Type)]
 pub struct TreeLinkData(String);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, specta::Type)]
 pub struct TreeLink {
-    source: TreeLinkData,
-    target: TreeLinkData,
-    link: TreeLinkData,
+    pub source: TreeLinkData,
+    pub target: TreeLinkData,
+    pub link: TreeLinkData,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, specta::Type)]
 pub struct TreeNode {
-    id: String,
-    parent_id: Option<String>,
-    hidden: bool,
+    pub id: String,
+    pub parent_id: Option<String>,
+    pub hidden: bool,
 }
 
-#[derive(Debug, Clone)]
-pub struct TreeNodeWithData<T: Clone + Sized> {
-    id: String,
-    parent_id: Option<String>,
-    hidden: bool,
-    data: T,
+#[derive(Debug, Clone, Serialize, specta::Type)]
+pub struct TreeNodeWithData<T> where T: Clone + Serialize + specta::Type {
+    pub id: String,
+    pub parent_id: Option<String>,
+    pub hidden: bool,
+    pub data: T,
 }
 
-#[derive(Debug, Clone)]
-pub enum TreeNodeType<T: Clone + Sized> {
+#[derive(Debug, Clone, Serialize, specta::Type)]
+pub enum TreeNodeType<T> where T: Clone + Serialize + specta::Type {
     Node(TreeNode),
     WithData(TreeNodeWithData<T>),
 }
 
-impl<T: Clone + Sized> TreeNodeType<T> {
+impl<T: Clone + Serialize + specta::Type> TreeNodeType<T> {
     fn get_id(&self) -> String {
         match self {
             TreeNodeType::Node(inner) => inner.id.clone(),
@@ -60,10 +61,10 @@ enum TreeEntity {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TreeKey(i32, TreeEntity);
 
-#[derive(Debug)]
-pub struct TreeData<T: Clone + Sized> {
-    nodes: Vec<TreeNodeType<T>>,
-    links: Vec<TreeLink>,
+#[derive(Debug, Clone, Serialize, specta::Type)]
+pub struct TreeData<T> where T: Clone + Serialize + specta::Type {
+    pub nodes: Vec<TreeNodeType<T>>,
+    pub links: Vec<TreeLink>,
 }
 
 impl TryInto<TreeLinkData> for Option<String> {
@@ -79,17 +80,17 @@ impl TryInto<TreeLinkData> for Option<String> {
     }
 }
 
-trait BuildableTree<T: Clone + Sized, E: Clone + Sized> {
+pub trait BuildableTree<T: Clone, E: Clone + Serialize + specta::Type> {
     fn create_level(&mut self, data: &Vec<T>) -> Result<(), TreeError>;
     fn new() -> Tree<E>;
 }
 
-struct Tree<T: Clone + Sized> {
+pub struct Tree<T> where T: Clone + Serialize + specta::Type {
     nodes: IndexMap<TreeKey, TreeNodeType<T>>,
     links: IndexMap<TreeKey, TreeLink>,
 }
 
-impl<T: Sized + Clone> Tree<T> {
+impl<T: Clone + Serialize + specta::Type> Tree<T> {
     fn get_node_id(&self, entity_id: i32, entity_type: TreeEntity) -> Option<String> {
         let key = TreeKey(entity_id, entity_type);
         self.nodes.get(&key).map(|n| n.get_id())
@@ -151,7 +152,7 @@ impl<T: Sized + Clone> Tree<T> {
         Ok(())
     }
 
-    fn into_tree_data(self) -> TreeData<T> {
+    pub fn into_tree_data(self) -> TreeData<T> {
         TreeData {
             nodes: self.nodes.values().into_iter().cloned().collect_vec(),
             links: self.links.values().into_iter().cloned().collect_vec(),
