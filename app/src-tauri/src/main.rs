@@ -10,6 +10,7 @@ use wispcore::prisma::PrismaClient;
 async fn main() -> Result<(), snafu::Whatever> {
     let router = api::new().build().arced();
     let prisma: Arc<PrismaClient> = wispcore::prisma::PrismaClient::_builder()
+        .with_url("file:../dev.db".into())
         .build()
         .await
         .whatever_context("Failed to initialize prisma client")?
