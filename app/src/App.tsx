@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { FamilyTreeNodeData, TreeNode } from "./rspc/bindings";
 import { rspc } from "./rspc/router";
 import * as d3 from "d3";
+import pfp from "./assets/pfp.png";
+
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
   const treeRef = useRef<SVGGElement>(null);
@@ -28,53 +30,53 @@ function App() {
   }, [treeContainerRef, treeRef]);
 
   const drawChildren = (d: d3.HierarchyPointLink<any>) => {
-  let ny = Math.round(d.target.y + (d.source.y - d.target.y) * 0.5);
-  let linedata = [
-    {
-      x: d.target.x,
-      y: d.target.y,
-    },
-    {
-      x: d.target.x,
-      y: ny,
-    },
-    {
-      x: d.source.x,
-      y: d.source.y,
-    },
-  ];
+    let ny = Math.round(d.target.y + (d.source.y - d.target.y) * 0.5);
+    let linedata = [
+      {
+        x: d.target.x,
+        y: d.target.y,
+      },
+      {
+        x: d.target.x,
+        y: ny,
+      },
+      {
+        x: d.source.x,
+        y: d.source.y,
+      },
+    ];
 
-  const drawFunc = d3
-    .line<{ x: number; y: number }>()
-    .curve(d3.curveStepAfter)
-    .x((d) => d.x)
-    .y((d) => d.y);
+    const drawFunc = d3
+      .line<{ x: number; y: number }>()
+      .curve(d3.curveStepAfter)
+      .x((d) => d.x)
+      .y((d) => d.y);
 
-  return drawFunc(linedata);
-};
+    return drawFunc(linedata);
+  };
 
   const childrenPaths = treeData.data?.links().map((link) => {
     if (!link.source.parent) return null;
 
     const path = drawChildren(link);
     if (!path) return null;
-    return <path key={Math.random() * 4} d={path} fill={"transparent"} stroke="blue" />;
+    return <path key={Math.random() * 4} d={path} fill={"transparent"} stroke="black" strokeWidth={"2"} strokeLinecap={"round"} strokeLinejoin="round" />;
   });
 
   const nodes = treeData.data
     ? treeData.data
-        .descendants()
-        .filter(n => !n.data.hidden)
-        .map((node) => {
-          return (
-            <g key={`n-${Math.random() * 4}`}>
-              <rect width={75} height={125} x={node.x + -75 / 2} y={node.y + -125 / 2} />
-              <text x={node.x} y={node.y} dominantBaseline={"middle"} textAnchor="middle" fill="white">
-                {node.data.nodeData?.name}
-              </text>
-            </g>
-          );
-        })
+      .descendants()
+      .filter(n => !n.data.hidden)
+      .map((node) => {
+        return (
+          <g key={`n-${Math.random() * 4}`}>
+            <rect stroke="black" strokeWidth="3" width="75px" height="125px" x={node.x - 75 / 2} y={node.y - 125 / 2} fill="black"/>
+            <svg width="75px" height="125px" x={node.x - 75 / 2} y={node.y - 125 / 2} viewBox="0 0 75 125">
+              <image preserveAspectRatio="xMidYMid slice" href={pfp} x="0" y="0" width="100%" height="100%"  />
+            </svg>
+          </g>
+        );
+      })
     : [];
 
   return (
