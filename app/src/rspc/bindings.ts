@@ -8,7 +8,9 @@ export type Procedures = {
     subscriptions: never
 };
 
-export type TreeData<T> = { nodes: TreeNodeType<T>[]; links: TreeLink[] }
+export type TreeNodeType<T> = TreeNode | TreeNodeWithData<T>
+
+export type TreeNodeWithData<T> = ({ name: string }) & { id: string; parentId: string | null; hidden: boolean }
 
 export type TreeLinkData = string
 
@@ -16,8 +18,6 @@ export type TreeLink = { source: TreeLinkData; target: TreeLinkData; link: TreeL
 
 export type FamilyTreeNodeData = { name: string }
 
-export type TreeNode = { id: string; parent_id: string | null; hidden: boolean }
+export type TreeData<T> = { nodes: TreeNodeType<T>[]; links: TreeLink[] }
 
-export type TreeNodeType<T> = { Node: TreeNode } | { WithData: TreeNodeWithData<T> }
-
-export type TreeNodeWithData<T> = { id: string; parent_id: string | null; hidden: boolean; data: T }
+export type TreeNode = { id: string; parentId: string | null; hidden: boolean }

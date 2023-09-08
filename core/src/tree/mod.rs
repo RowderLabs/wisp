@@ -11,9 +11,11 @@ pub mod error;
 pub mod family_tree;
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct TreeLinkData(String);
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct TreeLink {
     pub source: TreeLinkData,
     pub target: TreeLinkData,
@@ -21,6 +23,7 @@ pub struct TreeLink {
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct TreeNode {
     pub id: String,
     pub parent_id: Option<String>,
@@ -28,20 +31,24 @@ pub struct TreeNode {
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
-pub struct TreeNodeWithData<T> where T: Clone + Serialize + specta::Type {
+#[serde(rename_all = "camelCase")]
+pub struct TreeNodeWithData<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
     pub id: String,
     pub parent_id: Option<String>,
     pub hidden: bool,
+    #[serde(flatten)]
     pub data: T,
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
-pub enum TreeNodeType<T> where T: Clone + Serialize + specta::Type {
+#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
+pub enum TreeNodeType<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
     Node(TreeNode),
     WithData(TreeNodeWithData<T>),
 }
 
-impl<T: Clone + Serialize + specta::Type> TreeNodeType<T> {
+impl<T: Clone + Serialize + specta::Type + specta::Flatten> TreeNodeType<T> {
     fn get_id(&self) -> String {
         match self {
             TreeNodeType::Node(inner) => inner.id.clone(),
@@ -62,7 +69,7 @@ enum TreeEntity {
 pub struct TreeKey(i32, TreeEntity);
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
-pub struct TreeData<T> where T: Clone + Serialize + specta::Type {
+pub struct TreeData<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
     pub nodes: Vec<TreeNodeType<T>>,
     pub links: Vec<TreeLink>,
 }
@@ -80,17 +87,17 @@ impl TryInto<TreeLinkData> for Option<String> {
     }
 }
 
-pub trait BuildableTree<T: Clone, E: Clone + Serialize + specta::Type> {
+pub trait BuildableTree<T: Clone, E: Clone + Serialize + specta::Type + specta::Flatten> {
     fn create_level(&mut self, data: &Vec<T>) -> Result<(), TreeError>;
     fn new() -> Tree<E>;
 }
 
-pub struct Tree<T> where T: Clone + Serialize + specta::Type {
+pub struct Tree<T> where T: Clone + Serialize + specta::Type + specta::Flatten {
     nodes: IndexMap<TreeKey, TreeNodeType<T>>,
     links: IndexMap<TreeKey, TreeLink>,
 }
 
-impl<T: Clone + Serialize + specta::Type> Tree<T> {
+impl<T: Clone + Serialize + specta::Type + specta::Flatten> Tree<T> {
     fn get_node_id(&self, entity_id: i32, entity_type: TreeEntity) -> Option<String> {
         let key = TreeKey(entity_id, entity_type);
         self.nodes.get(&key).map(|n| n.get_id())
