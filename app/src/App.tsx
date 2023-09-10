@@ -67,13 +67,16 @@ function App() {
     : [];
 
   return (
-    <div style={{ width: "1200px", height: "600px" }}>
-      <svg ref={treeContainerRef} style={{ border: "1px solid black" }} viewBox="0 0 1200 600">
-        <g ref={treeRef}>
-          {childrenPaths}
-          {nodes}
-        </g>
-      </svg>
+    <div className="flex gap-4 h-screen">
+      <div className="bg-blue-400 w-[300px]"></div>
+      <div style={{ width: "1200px", height: "600px" }}>
+        <svg ref={treeContainerRef} style={{ border: "1px solid black" }} viewBox="0 0 1200 600">
+          <g ref={treeRef}>
+            {childrenPaths}
+            {nodes}
+          </g>
+        </svg>
+      </div>
     </div>
   );
 }
