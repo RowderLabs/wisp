@@ -4,6 +4,7 @@ import { rspc } from "./rspc/router";
 import * as d3 from "d3";
 import pfp from "./assets/pfp.png";
 import { createChildPath } from "./paths";
+import ContextMenu from "./ui/ContextMenu";
 
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
@@ -68,7 +69,25 @@ function App() {
 
   return (
     <div className="flex gap-4 h-screen">
-      <div className="bg-blue-400 w-[300px]"></div>
+      <div className="bg-blue-400 w-[300px]">
+        <ContextMenu ctx={{
+          groups: [
+            {label: 'Node Creation', items: [
+              {label: 'Add parent'},
+              {label: 'Add child'},
+              {label: 'Add sibiling'}
+            ]},
+            {
+              showLabel: true,
+              label: 'Character', items: [
+                {label: 'Goto character sheet'}
+              ]
+            }
+          ]
+        }}>
+          <div className="h-full w-full"></div>
+        </ContextMenu>
+      </div>
       <div style={{ width: "1200px", height: "600px" }}>
         <svg ref={treeContainerRef} style={{ border: "1px solid black" }} viewBox="0 0 1200 600">
           <g ref={treeRef}>
