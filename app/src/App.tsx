@@ -5,6 +5,8 @@ import * as d3 from "d3";
 import pfp from "./assets/pfp.png";
 import { createChildPath } from "./paths";
 import ContextMenu from "./ui/ContextMenu";
+import FileTree from "./FileTree";
+import Node from "./Node";
 
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
@@ -54,7 +56,12 @@ function App() {
         .filter((n) => !n.data.hidden)
         .map((node) => {
           return (
-            <g key={`n-${Math.random() * 4}`} height={125} width={75} transform={`translate(${node.x - 75 / 2}, ${node.y - 125 / 2})`}>
+            <g
+              key={`n-${Math.random() * 4}`}
+              height={125}
+              width={75}
+              transform={`translate(${node.x - 75 / 2}, ${node.y - 125 / 2})`}
+            >
               <rect stroke="black" strokeWidth="3" width="75px" height="125px" fill="black" />
               <svg width="75px" height="125px" viewBox="0 0 75 125">
                 <image preserveAspectRatio="xMidYMid slice" href={pfp} x="0" y="0" width="100%" height="100%" />
@@ -69,24 +76,15 @@ function App() {
 
   return (
     <div className="flex gap-4 h-screen">
-      <div className="bg-blue-400 w-[300px]">
-        <ContextMenu ctx={{
-          groups: [
-            {label: 'Node Creation', items: [
-              {label: 'Add parent'},
-              {label: 'Add child'},
-              {label: 'Add sibiling'}
-            ]},
-            {
-              showLabel: true,
-              label: 'Character', items: [
-                {label: 'Goto character sheet'}
-              ]
-            }
-          ]
-        }}>
-          <div className="h-full w-full"></div>
-        </ContextMenu>
+      <div className="w-[300px] h-full">
+        <FileTree
+          data={[
+            { id: "1", name: "Characters", children: [{ id: "2", name: "Sage" }] },
+            { id: "3", name: "maps" },
+          ]}
+        >
+          {Node}
+        </FileTree>
       </div>
       <div style={{ width: "1200px", height: "600px" }}>
         <svg ref={treeContainerRef} style={{ border: "1px solid black" }} viewBox="0 0 1200 600">
