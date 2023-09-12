@@ -2,7 +2,7 @@ import { FC, ReactNode } from "react";
 import {Tree, NodeRendererProps, SimpleTreeData} from 'react-arborist'
 
 type FileTreeProps<T extends SimpleTreeData> = {
-    data: readonly T[]
+    data: T[]
     children: FC<NodeRendererProps<T>>
 }
 
