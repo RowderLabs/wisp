@@ -6,6 +6,7 @@ use prisma::{person, relationship};
 pub mod prisma;
 pub mod tree;
 pub mod seed;
+pub mod api;
 
 enum RelationshipType {
     Marriage(bool),
