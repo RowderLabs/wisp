@@ -3,13 +3,13 @@ import { clsx } from "clsx";
 import { NodeRendererProps, SimpleTreeData } from "react-arborist";
 import { HiChevronRight } from "react-icons/hi";
 
-interface FileTreeNode extends SimpleTreeData {
-  context?: any;
-  icon?: JSX.Element;
-  children?: FileTreeNode[]
+export interface BinderNode extends SimpleTreeData {
+    context?: any;
+    icon?: JSX.Element;
+    children?: BinderNode[]
 }
 
-const Node: FC<NodeRendererProps<FileTreeNode>> = ({ node, dragHandle, style }) => {
+const Node: FC<NodeRendererProps<BinderNode>> = ({ node, dragHandle, style }) => {
   return (
     <div
       ref={dragHandle}
@@ -22,7 +22,7 @@ const Node: FC<NodeRendererProps<FileTreeNode>> = ({ node, dragHandle, style }) 
   );
 };
 
-const NodeItem = ({ node }: { node: NodeRendererProps<FileTreeNode>["node"] }) => {
+const NodeItem = ({ node }: { node: NodeRendererProps<BinderNode>["node"] }) => {
   return (
     <>
       {

@@ -5,8 +5,8 @@ import * as d3 from "d3";
 import pfp from "./assets/pfp.png";
 import { createChildPath } from "./paths";
 import { HiOutlineMap, HiUser, HiUsers } from "react-icons/hi";
-import FileTree from "./FileTree";
-import Node from "./Node";
+import FileTree from "./components/Binder";
+import Node from "./components/Node";
 
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
@@ -79,8 +79,8 @@ function App() {
       <div className="w-[300px] h-full shadow-md border">
         <FileTree
           data={[
-            { id: "1", name: "Characters", icon: <HiUsers />, children: [{ id: "2", icon: <HiUser/>, name: "Sage"}] },
-            { id: "3", name: "Maps", icon: <HiOutlineMap /> },
+            { id: "1", name: "Characters", icon: <HiUsers />, children: [{ id: "2", icon: <HiUser />, name: "Sage" }] },
+            { id: "3", name: "Maps", icon: <HiOutlineMap />,  },
           ]}
         >
           {Node}

@@ -8,12 +8,12 @@ export type Procedures = {
     subscriptions: never
 };
 
-export type TreeNode<T> = { id: string; parentId: string | null; hidden: boolean; nodeData: T | null }
-
-export type TreeLinkData = string
+export type FamilyTreeNodeData = { name: string }
 
 export type TreeLink = { source: TreeLinkData; target: TreeLinkData; link: TreeLinkData }
 
+export type TreeNode<T> = { id: string; parentId: string | null; hidden: boolean; nodeData: T | null }
+
 export type TreeData<T> = { nodes: TreeNode<T>[]; links: TreeLink[] }
 
-export type FamilyTreeNodeData = { name: string }
+export type TreeLinkData = string
