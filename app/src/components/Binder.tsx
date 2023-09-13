@@ -1,16 +1,15 @@
-import { FC, ReactNode } from "react";
+import { FC } from "react";
 import { Tree, NodeRendererProps, SimpleTreeData } from "react-arborist";
-import { rspc } from "../rspc/router";
 
 type BinderProps<T extends SimpleTreeData> = {
   data: T[];
   children: FC<NodeRendererProps<T>>;
 };
 
-export default function FileTree<T extends SimpleTreeData>({ data, children }: BinderProps<T>) {
+export default function Binder<T extends SimpleTreeData>({ data, children }: BinderProps<T>) {
   return (
     <div className="flex justify-center">
-      <Tree width={290} initialData={data} rowHeight={28} padding={20}>
+      <Tree width={290} data={data} rowHeight={28} padding={20}>
         {children}
       </Tree>
     </div>

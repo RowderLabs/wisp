@@ -80,7 +80,9 @@ function App() {
   return (
     <div className="flex gap-4 h-screen">
       <div className="w-[300px] h-full shadow-md border">
-        <Binder data={[{ id: "ROOT1", name: "Characters", children: characters }]}>{Node}</Binder>
+        <Binder data={[{ id: "CHARACTERS", name: "Characters", children: characters, icon: <HiUsers /> }]}>
+          {Node}
+        </Binder>
       </div>
       <div style={{ width: "1200px", height: "600px" }}>
         <svg ref={treeContainerRef} viewBox="0 0 1200 600">
