@@ -2,7 +2,7 @@
 
 export type Procedures = {
     queries: 
-        { key: "bindercharacters", input: never, result: { name: string }[] } | 
+        { key: "binder.characters", input: never, result: { id: number; name: string }[] } | 
         { key: "display_tree", input: number, result: TreeData<FamilyTreeNodeData> } | 
         { key: "version", input: never, result: string },
     mutations: never,

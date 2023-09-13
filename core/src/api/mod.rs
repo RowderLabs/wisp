@@ -30,7 +30,7 @@ pub fn new() -> RouterBuilder<Ctx> {
         .config(Config::new().export_ts_bindings(
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../app/src/rspc/bindings.ts"),
         ))
-        .merge("binder", binder_router())
+        .merge("binder.", binder_router())
         .query("version", |t| t(|_, _: ()| env!("CARGO_PKG_VERSION")))
         .query("display_tree", |t| {
             t(|ctx: Ctx, family_id: i32| async move {

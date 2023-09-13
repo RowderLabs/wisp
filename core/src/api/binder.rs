@@ -9,7 +9,7 @@ pub fn binder_router() -> RouterBuilder<Ctx> {
             ctx.client
                 .person()
                 .find_many(vec![])
-                .select(person::select!({name}))
+                .select(person::select!({id name}))
                 .exec()
                 .await
                 .unwrap()

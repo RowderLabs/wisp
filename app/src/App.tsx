@@ -5,8 +5,9 @@ import * as d3 from "d3";
 import pfp from "./assets/pfp.png";
 import { createChildPath } from "./paths";
 import { HiOutlineMap, HiUser, HiUsers } from "react-icons/hi";
-import FileTree from "./components/Binder";
+import Binder from "./components/Binder";
 import Node from "./components/Node";
+import useBinderData from "./hooks/useBinder";
 
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
@@ -74,17 +75,12 @@ function App() {
         })
     : [];
 
+  const { characters } = useBinderData();
+
   return (
     <div className="flex gap-4 h-screen">
       <div className="w-[300px] h-full shadow-md border">
-        <FileTree
-          data={[
-            { id: "1", name: "Characters", icon: <HiUsers />, children: [{ id: "2", icon: <HiUser />, name: "Sage" }] },
-            { id: "3", name: "Maps", icon: <HiOutlineMap />,  },
-          ]}
-        >
-          {Node}
-        </FileTree>
+        <Binder data={[{ id: "ROOT1", name: "Characters", children: characters }]}>{Node}</Binder>
       </div>
       <div style={{ width: "1200px", height: "600px" }}>
         <svg ref={treeContainerRef} viewBox="0 0 1200 600">
