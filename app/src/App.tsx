@@ -4,6 +4,8 @@ import { rspc } from "./rspc/router";
 import * as d3 from "d3";
 import pfp from "./assets/pfp.png";
 import { createChildPath } from "./paths";
+import { BinderContextProvider } from "./ui/useBinder";
+import Binder from "./ui/Binder";
 
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
@@ -73,7 +75,11 @@ function App() {
 
   return (
     <div className="flex gap-4 h-screen">
-      <div className="w-[300px] h-full shadow-md border"></div>
+      <div className="w-[300px] h-full shadow-md border">
+        <BinderContextProvider>
+          <Binder/>
+        </BinderContextProvider>
+      </div>
       <div style={{ width: "1200px", height: "600px" }}>
         <svg ref={treeContainerRef} viewBox="0 0 1200 600">
           <g ref={treeRef}>
