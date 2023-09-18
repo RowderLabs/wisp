@@ -3,7 +3,7 @@
 use snafu::ResultExt;
 use std::sync::Arc;
 use wispcore::api;
-use wispcore::prisma::PrismaClient;
+use wispcore::prisma::{character_collection, PrismaClient};
 
 #[tokio::main]
 async fn main() -> Result<(), snafu::Whatever> {
@@ -14,7 +14,6 @@ async fn main() -> Result<(), snafu::Whatever> {
         .await
         .whatever_context("Failed to initialize prisma client")?
         .into();
-
 
     tauri::Builder::default()
         .plugin(rspc::integrations::tauri::plugin(router, move || {

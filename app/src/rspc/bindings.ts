@@ -2,7 +2,7 @@
 
 export type Procedures = {
     queries: 
-        { key: "binder.characters", input: never, result: { id: number; name: string }[] } | 
+        { key: "binder.characters", input: string | null, result: { [key: string]: CharacterCollection[] } } | 
         { key: "display_tree", input: number, result: TreeData<FamilyTreeNodeData> } | 
         { key: "version", input: never, result: string },
     mutations: never,
@@ -18,3 +18,5 @@ export type TreeNode<T> = { id: string; parentId: string | null; hidden: boolean
 export type TreeData<T> = { nodes: TreeNode<T>[]; links: TreeLink[] }
 
 export type TreeLinkData = string
+
+export type CharacterCollection = { id: number; name: string; path: string | null }

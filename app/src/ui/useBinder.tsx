@@ -1,22 +1,14 @@
-import * as React from "react";
+import { CharacterCollection } from "../rspc/bindings";
 import { rspc } from "../rspc/router";
-import { UseQueryResult } from "@tanstack/react-query";
-import { Procedures } from "../rspc/bindings";
-import { RSPCError } from "@rspc/client";
 
-type BinderContext = {
-  characters: UseQueryResult<Extract<Procedures["queries"], { key: "binder.characters" }>["result"], RSPCError>;
-};
-const BinderContext = React.createContext<BinderContext | null>(null);
+export const useBinder = () => {
+  //const {data: characters} = rspc.useQuery(['binder.characters', null])
+  const characters: { [key: string]: CharacterCollection[] } = {
+    "/": [{ id: 1, name: "Root", path: null }, {id: 4, name: 'Other at Root', path: null}],
+    "/1": [{ id: 2, name: "Nested", path: "/1" }],
+    "/1/2": [{ id: 3, name: "Nested Deep", path: "/1/2" }],
+    "/4": [{id: 5, name: 'Nested second', path: '/4'}]
+  };
 
-export const useBinderContext = () => {
-  const binderContext = React.useContext(BinderContext);
-  if (!binderContext) throw new Error("NO binder context provided");
-  return binderContext;
-};
-
-export const BinderContextProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const characters = rspc.useQuery(["binder.characters"]);
-
-  return <BinderContext.Provider value={{ characters }}>{children}</BinderContext.Provider>;
+  return { characters };
 };
