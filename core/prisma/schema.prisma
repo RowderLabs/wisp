@@ -8,12 +8,20 @@ generator client {
     output   = "../src/prisma.rs"
 }
 
+model CharacterCollection {
+    id Int @id @default(autoincrement())
+    name String
+    path String?
+    characters Person[]
+}
+
 
 model Person {
     id Int @id @default(autoincrement())
     name String
     parentRelationId Int?
     familyId Int?
+    collectionId Int?
     family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
     parents   Person[]   @relation("parentchildren")
     //all children belonging to person
@@ -22,6 +30,7 @@ model Person {
     childOf Relationship? @relation("children", fields: [parentRelationId], references: [id])
     //relationships where person is a member
     relationships Relationship[] @relation("members")
+    collection CharacterCollection? @relation(fields: [collectionId], references: [id])
 }
 
 model Family {
