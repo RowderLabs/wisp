@@ -9,6 +9,7 @@ import Binder from "./ui/Binder";
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
   const treeRef = useRef<SVGGElement>(null);
+  const binder = rspc.useQuery(['binder.characters', null])
   const treeData = rspc.useQuery(["display_tree", 1], {
     select: (data) => {
       const hierarchy = d3.stratify<TreeNode<FamilyTreeNodeData>>()(data.nodes);
@@ -85,6 +86,7 @@ function App() {
           </g>
         </svg>
       </div>
+      {binder.data && <span>{JSON.stringify(binder.data)}</span>}
     </div>
   );
 }

@@ -1,7 +1,5 @@
-import { FC, PropsWithChildren, useEffect } from "react";
-import { HiUser } from "react-icons/hi";
+import { FC, PropsWithChildren  } from "react";
 import { useBinder } from "./useBinder";
-import { CharacterCollection } from "../rspc/bindings";
 
 type BinderNodeProps = {
   id: number;
