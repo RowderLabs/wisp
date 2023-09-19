@@ -16,13 +16,12 @@ pub struct BinderCollection<
     T: Clone + Serialize + specta::Type,
     E: Clone + Serialize + specta::Type,
 > {
-    #[serde(flatten)]
     items: HashMap<String, Vec<BinderItemType<T, E>>>,
 }
 
 //union type for binder items
 #[derive(specta::Type, Serialize, Clone, Debug)]
-#[serde(tag = "item_type")]
+#[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
 pub enum BinderItemType<T: Clone + Serialize + specta::Type, E: Clone + Serialize + specta::Type> {
     Collection(BinderItem<T>),
@@ -52,13 +51,14 @@ impl Into<BinderCollection<CharacterCollection, Character>> for Vec<binder_chara
             HashMap::new();
 
         for collection in self.iter() {
-            let path = collection.path.clone().unwrap_or("/".to_owned());
+            let path = collection.path.clone();
+            let child_path = format!("{}/{}", path.clone(), collection.id);
             items
-                .entry(path.clone())
+                .entry(child_path.clone())
                 .or_default()
                 .extend(collection.characters.iter().map(|c| {
                     BinderItemType::Item(BinderItem {
-                        path: path.clone(),
+                        path: child_path.clone(),
                         data: c.clone(),
                     })
                 }));
@@ -83,7 +83,7 @@ pub fn binder_router() -> RouterBuilder<Ctx> {
             let collections = ctx
                 .client
                 .character_collection()
-                .find_many(vec![character_collection::path::equals(path)])
+                .find_many(vec![])
                 .select(binder_characters::select())
                 .exec()
                 .await?;

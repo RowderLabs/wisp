@@ -9,20 +9,20 @@ export type Procedures = {
     subscriptions: never
 };
 
-export type CharacterCollection = { id: number; name: string }
-
 export type FamilyTreeNodeData = { name: string }
 
 export type TreeLink = { source: TreeLinkData; target: TreeLinkData; link: TreeLinkData }
 
-export type BinderItemType<T, E> = ({ item_type: "collection" } & BinderItem<T>) | ({ item_type: "item" } & BinderItem<E>)
-
-export type BinderItem<T> = { path: string; data: T }
-
 export type TreeNode<T> = { id: string; parentId: string | null; hidden: boolean; nodeData: T | null }
+
+export type CharacterCollection = { id: number; name: string }
 
 export type TreeData<T> = { nodes: TreeNode<T>[]; links: TreeLink[] }
 
-export type BinderCollection<T, E> = ({ [key: T]: E })
+export type BinderItemType<T, E> = ({ type: "collection" } & BinderItem<T>) | ({ type: "item" } & BinderItem<E>)
+
+export type BinderCollection<T, E> = { items: { [key: string]: (BinderItemType<T, E>)[] } }
+
+export type BinderItem<T> = { path: string; data: T }
 
 export type TreeLinkData = string

@@ -11,7 +11,7 @@ generator client {
 model CharacterCollection {
     id Int @id @default(autoincrement())
     name String
-    path String?
+    path String @default("/ROOT")
     characters Person[]
 }
 

@@ -1,12 +1,15 @@
-import { FC, PropsWithChildren  } from "react";
+import { FC, PropsWithChildren, useEffect, useState } from "react";
 import { useBinder } from "./useBinder";
 
 type BinderNodeProps = {
   id: number;
   name: string;
-  path: string | null;
+  type: "item" | "collection";
+  path: string;
   icon?: JSX.Element;
 };
+
+const ROOT_PATH = "/ROOT"
 
 export default function Binder() {
   const { characters } = useBinder();
@@ -15,9 +18,15 @@ export default function Binder() {
     <div>
       {characters && (
         <ul>
-          {characters["/"] &&
-            characters["/"].map((c) => (
-              <BinderNode path={`${c.path ?? ""}/${c.id}`} key={c.id} name={c.name} id={c.id} />
+          {characters.items[ROOT_PATH] &&
+            characters.items[ROOT_PATH].map((c) => (
+              <BinderNode
+                type={c.type}
+                path={c.path}
+                key={Math.random() * 4}
+                name={c.data.name}
+                id={c.data.id}
+              />
             ))}
         </ul>
       )}
@@ -26,16 +35,17 @@ export default function Binder() {
 }
 
 const ExpandableBinderItem: FC<PropsWithChildren<BinderNodeProps>> = ({ children, name, path }) => {
+  const [expanded, setExpanded] = useState(false)
   return (
     <>
-      <li className="p-1 ml-2 pl-2 text-sm font-semibold text-slate-600 cursor-pointer rounded-lg hover:bg-slate-300 hover:text-white">
+      <li onClick={() => setExpanded(!expanded)} className="p-1 ml-2 pl-2 text-sm font-semibold text-slate-600 cursor-pointer rounded-lg hover:bg-slate-300 hover:text-white">
         <div className="w-full flex items-center gap-2">
           <div className="basis-full">
             {name} {path}
           </div>
         </div>
       </li>
-      <ul className="ml-5 pl-2 border-l">{children}</ul>
+      {expanded && <ul className="ml-5 pl-2 border-l">{children}</ul>}
     </>
   );
 };
@@ -53,15 +63,26 @@ const BinderItem = ({ path, name, icon }: Omit<BinderNodeProps, "items">) => {
 
 const BinderNode = (props: BinderNodeProps) => {
   const { characters } = useBinder();
-  if (characters && characters[props.path ?? ""]) {
-    return (
-      <ExpandableBinderItem icon={props.icon} {...props}>
-        {characters[props.path as string].map((child) => (
-          <BinderNode key={child.id} {...child} id={child.id} path={`${child.path}/${child.id}`} />
-        ))}
-      </ExpandableBinderItem>
-    );
+
+  if (props.type === "item") {
+    <BinderItem {...props} />;
   }
 
-  return <BinderItem {...props} />;
+  const items = characters?.items[`${props.path}/${props.id}`]
+    ? characters?.items[`${props.path}/${props.id}`]
+    : [];
+
+  return (
+    <ExpandableBinderItem {...props}>
+      {items.map((item) => (
+        <BinderNode
+          type={item.type}
+          path={item.path}
+          key={Math.random() * 4}
+          name={item.data.name}
+          id={item.data.id}
+        />
+      ))}
+    </ExpandableBinderItem>
+  );
 };

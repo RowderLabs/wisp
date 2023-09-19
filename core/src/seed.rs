@@ -1,4 +1,4 @@
-use crate::prisma::{self, family, person, relationship};
+use crate::prisma::{self, character_collection, family, person, relationship};
 
 pub async fn seed(prisma: &prisma::PrismaClient) {
     let family = prisma
@@ -53,17 +53,15 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         .await
         .unwrap();
 
-    let ares = prisma
-        .person()
+    let characters = prisma
+        .character_collection()
         .create(
-            "Ares".into(),
-            vec![
-                person::child_of::connect(relationship::id::equals(marriage.id)),
-                person::parents::connect(vec![
-                    person::id::equals(lord.id),
-                    person::id::equals(lady.id),
-                ]),
-            ],
+            "characters".into(),
+            vec![character_collection::characters::connect(vec![
+                person::id::equals(lord.id),
+                person::id::equals(lady.id),
+                person::id::equals(sage.id)
+            ])],
         )
         .exec()
         .await
