@@ -9,6 +9,7 @@ import Binder from "./ui/Binder";
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
   const treeRef = useRef<SVGGElement>(null);
+  const binder = rspc.useQuery(['binder.characters', null])
   const treeData = rspc.useQuery(["display_tree", 1], {
     select: (data) => {
       const hierarchy = d3.stratify<TreeNode<FamilyTreeNodeData>>()(data.nodes);
@@ -74,8 +75,8 @@ function App() {
 
   return (
     <div className="flex gap-4 h-screen">
-      <div className="w-[300px] h-full shadow-md border">
-          <Binder/>
+      <div className="h-full shadow-md border">
+        {JSON.stringify(binder.data)}
       </div>
       <div style={{ width: "1200px", height: "600px" }}>
         <svg ref={treeContainerRef} viewBox="0 0 1200 600">

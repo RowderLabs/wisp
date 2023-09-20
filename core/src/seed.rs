@@ -1,4 +1,8 @@
-use crate::prisma::{self, character_collection, family, person, relationship};
+use crate::prisma::{
+    self,
+    binder_item::{self},
+    binder_path, family, person, relationship,
+};
 
 pub async fn seed(prisma: &prisma::PrismaClient) {
     let family = prisma
@@ -53,14 +57,41 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         .await
         .unwrap();
 
-    let characters = prisma
-        .character_collection()
+    let characters_path = prisma
+        .binder_path()
+        .create("/characters".into(), vec![])
+        .exec()
+        .await
+        .unwrap();
+
+    let lord_path = prisma
+        .binder_path()
         .create(
-            "characters".into(),
-            vec![character_collection::characters::connect(vec![
-                person::id::equals(lord.id),
-                person::id::equals(lady.id),
-                person::id::equals(sage.id)
+            format!("{}/{}", characters_path.path, characters_path.id),
+            vec![],
+        )
+        .exec()
+        .await
+        .unwrap();
+
+    let lord_obj = prisma
+        .binder_item()
+        .create(
+            lord_path.path,
+            "Lord".into(),
+            vec![binder_item::character::connect(person::id::equals(lord.id)), binder_item::item_type::set(Some("character".into()))],
+        )
+        .exec()
+        .await
+        .unwrap();
+
+    let characters = prisma
+        .binder_item()
+        .create(
+            characters_path.path.clone(),
+            "Characters".into(),
+            vec![binder_item::item_paths::connect(vec![
+                binder_path::id::equals(lord_path.id),
             ])],
         )
         .exec()

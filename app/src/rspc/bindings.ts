@@ -2,7 +2,7 @@
 
 export type Procedures = {
     queries: 
-        { key: "binder.characters", input: string | null, result: BinderCollection<CharacterCollection, { id: number; name: string }> } | 
+        { key: "binder.characters", input: string | null, result: { id: number; isCollection: boolean; path: string; name: string; itemType: string | null; character: { id: number; name: string } | null; itemPaths: BinderPath[] }[] } | 
         { key: "display_tree", input: number, result: TreeData<FamilyTreeNodeData> } | 
         { key: "version", input: never, result: string },
     mutations: never,
@@ -15,14 +15,8 @@ export type TreeLink = { source: TreeLinkData; target: TreeLinkData; link: TreeL
 
 export type TreeNode<T> = { id: string; parentId: string | null; hidden: boolean; nodeData: T | null }
 
-export type CharacterCollection = { id: number; name: string }
-
 export type TreeData<T> = { nodes: TreeNode<T>[]; links: TreeLink[] }
 
-export type BinderItemType<T, E> = ({ type: "collection" } & BinderItem<T>) | ({ type: "item" } & BinderItem<E>)
-
-export type BinderCollection<T, E> = { items: { [key: string]: (BinderItemType<T, E>)[] } }
-
-export type BinderItem<T> = { path: string; data: T }
+export type BinderPath = { id: number; path: string; itemId: number | null }
 
 export type TreeLinkData = string

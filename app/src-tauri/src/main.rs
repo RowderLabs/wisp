@@ -3,7 +3,7 @@
 use snafu::ResultExt;
 use std::sync::Arc;
 use wispcore::api;
-use wispcore::prisma::{character_collection, PrismaClient};
+use wispcore::prisma::PrismaClient;
 
 #[tokio::main]
 async fn main() -> Result<(), snafu::Whatever> {

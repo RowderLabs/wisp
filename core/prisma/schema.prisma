@@ -8,11 +8,24 @@ generator client {
     output   = "../src/prisma.rs"
 }
 
-model CharacterCollection {
+model BinderItem {
     id Int @id @default(autoincrement())
+    isCollection Boolean @default(false)
+    path String
     name String
-    path String @default("/ROOT")
-    characters Person[]
+    //paths to children
+    itemPaths BinderPath[]
+    itemType String?
+    character Person? 
+}
+
+// 1 true /characters Characters [{2 /characters/1}]
+
+model BinderPath {
+    id Int @id @default(autoincrement())
+    path String
+    itemId Int? @unique
+    item BinderItem? @relation(fields: [itemId], references: [id])
 }
 
 
@@ -21,7 +34,7 @@ model Person {
     name String
     parentRelationId Int?
     familyId Int?
-    collectionId Int?
+    binderItemId Int? @unique
     family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
     parents   Person[]   @relation("parentchildren")
     //all children belonging to person
@@ -30,7 +43,7 @@ model Person {
     childOf Relationship? @relation("children", fields: [parentRelationId], references: [id])
     //relationships where person is a member
     relationships Relationship[] @relation("members")
-    collection CharacterCollection? @relation(fields: [collectionId], references: [id])
+    binderItem BinderItem? @relation(fields: [binderItemId], references: [id])
 }
 
 model Family {
