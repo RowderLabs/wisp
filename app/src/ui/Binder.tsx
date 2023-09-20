@@ -4,12 +4,12 @@ import { useBinder } from "./useBinder";
 type BinderNodeProps = {
   id: number;
   name: string;
-  type: "item" | "collection";
+  isCollection: boolean;
   path: string;
   icon?: JSX.Element;
 };
 
-const ROOT_PATH = "/ROOT"
+const ROOT_PATH = "/characters"
 
 export default function Binder() {
   const { characters } = useBinder();
@@ -18,14 +18,14 @@ export default function Binder() {
     <div>
       {characters && (
         <ul>
-          {characters.items[ROOT_PATH] &&
-            characters.items[ROOT_PATH].map((c) => (
+          {characters[ROOT_PATH] &&
+            characters[ROOT_PATH].map((c) => (
               <BinderNode
-                type={c.type}
+                isCollection={c.isCollection}
                 path={c.path}
                 key={Math.random() * 4}
-                name={c.data.name}
-                id={c.data.id}
+                name={c.name}
+                id={c.id}
               />
             ))}
         </ul>
@@ -64,25 +64,25 @@ const BinderItem = ({ path, name, icon }: Omit<BinderNodeProps, "items">) => {
 const BinderNode = (props: BinderNodeProps) => {
   const { characters } = useBinder();
 
-  if (props.type === "item") {
+  useEffect(() => {
+    console.log(props.id)
+    console.log(props.path)
+  })
+
+  if (props.isCollection) {
     <BinderItem {...props} />;
   }
 
-  const items = characters?.items[`${props.path}/${props.id}`]
-    ? characters?.items[`${props.path}/${props.id}`]
-    : [];
+  if (!characters) {
+    return null
+  }
+
+  const items = characters[`${props.path}/${props.id}`] || []
+  
 
   return (
     <ExpandableBinderItem {...props}>
-      {items.map((item) => (
-        <BinderNode
-          type={item.type}
-          path={item.path}
-          key={Math.random() * 4}
-          name={item.data.name}
-          id={item.data.id}
-        />
-      ))}
+      {items.map(item => <BinderNode {...item}/>)}
     </ExpandableBinderItem>
   );
 };

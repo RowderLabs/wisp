@@ -2,7 +2,7 @@
 
 export type Procedures = {
     queries: 
-        { key: "binder.characters", input: string | null, result: { id: number; isCollection: boolean; path: string; name: string; itemType: string | null; character: { id: number; name: string } | null; itemPaths: BinderPath[] }[] } | 
+        { key: "binder.characters", input: string | null, result: { [key: string]: BinderCharacterPath[] } } | 
         { key: "display_tree", input: number, result: TreeData<FamilyTreeNodeData> } | 
         { key: "version", input: never, result: string },
     mutations: never,
@@ -15,8 +15,10 @@ export type TreeLink = { source: TreeLinkData; target: TreeLinkData; link: TreeL
 
 export type TreeNode<T> = { id: string; parentId: string | null; hidden: boolean; nodeData: T | null }
 
-export type TreeData<T> = { nodes: TreeNode<T>[]; links: TreeLink[] }
+export type BinderCharacterPath = { id: number; isCollection: boolean; path: string; name: string; parentId: number | null; item: { character: Person | null } | null }
 
-export type BinderPath = { id: number; path: string; itemId: number | null }
+export type Person = { id: number; name: string; parentRelationId: number | null; familyId: number | null; binderItemId: number | null }
+
+export type TreeData<T> = { nodes: TreeNode<T>[]; links: TreeLink[] }
 
 export type TreeLinkData = string

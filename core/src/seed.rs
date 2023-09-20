@@ -59,7 +59,11 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
 
     let characters_path = prisma
         .binder_path()
-        .create("/characters".into(), vec![])
+        .create(
+            "/characters".into(),
+            "Characters".into(),
+            vec![binder_path::is_collection::set(true)],
+        )
         .exec()
         .await
         .unwrap();
@@ -68,32 +72,23 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         .binder_path()
         .create(
             format!("{}/{}", characters_path.path, characters_path.id),
-            vec![],
-        )
-        .exec()
-        .await
-        .unwrap();
-
-    let lord_obj = prisma
-        .binder_item()
-        .create(
-            lord_path.path,
             "Lord".into(),
-            vec![binder_item::character::connect(person::id::equals(lord.id)), binder_item::item_type::set(Some("character".into()))],
+            vec![binder_path::parent::connect(binder_path::id::equals(
+                characters_path.id,
+            ))],
         )
         .exec()
         .await
         .unwrap();
 
-    let characters = prisma
+    let lord_obj_ref = prisma
         .binder_item()
-        .create(
-            characters_path.path.clone(),
-            "Characters".into(),
-            vec![binder_item::item_paths::connect(vec![
-                binder_path::id::equals(lord_path.id),
-            ])],
-        )
+        .create(vec![
+            //connect path
+            binder_item::binder_path::connect(binder_path::id::equals(lord_path.id)),
+            //connect character obj
+            binder_item::character::connect(person::id::equals(lord.id)),
+        ])
         .exec()
         .await
         .unwrap();
