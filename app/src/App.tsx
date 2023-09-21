@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import pfp from "./assets/pfp.png";
 import { createChildPath } from "./paths";
 import Binder from "./ui/Binder";
+import FamilyTree from "./ui/FamilyTree";
 
 function App() {
   const treeContainerRef = useRef<SVGSVGElement>(null);
@@ -77,14 +78,7 @@ function App() {
       <div className="h-full w-[300px] shadow-md border">
         <Binder/>
       </div>
-      <div style={{ width: "1200px", height: "600px" }}>
-        <svg ref={treeContainerRef} viewBox="0 0 1200 600">
-          <g ref={treeRef}>
-            {childrenPaths}
-            {nodes}
-          </g>
-        </svg>
-      </div>
+      <FamilyTree />
     </div>
   );
 }
