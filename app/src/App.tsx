@@ -26,7 +26,6 @@ function App() {
         <div className="flex justify-end">
           <div>
             <AttributePanel />
-            <AttributePanel />
           </div>
         </div>
       </div>
