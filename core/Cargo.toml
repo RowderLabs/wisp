@@ -15,4 +15,5 @@ prisma-client-rust = {workspace = true}
 tokio = {workspace = true}
 snafu = {workspace = true}
 serde = { workspace = true}
+rspc = { workspace = true }
 specta = "1.0.0"

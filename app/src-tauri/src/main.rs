@@ -1,9 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 use snafu::ResultExt;
 use std::sync::Arc;
-use wispapp::api;
+use wispcore::api;
 use wispcore::prisma::PrismaClient;
 
 #[tokio::main]
@@ -15,6 +14,7 @@ async fn main() -> Result<(), snafu::Whatever> {
         .await
         .whatever_context("Failed to initialize prisma client")?
         .into();
+
 
     tauri::Builder::default()
         .plugin(rspc::integrations::tauri::plugin(router, move || {

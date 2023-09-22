@@ -3,13 +3,17 @@ use prisma_client_rust::{or, raw, PrismaValue};
 use rspc::{Config, RouterBuilder};
 use serde::Deserialize;
 use std::{path::PathBuf, sync::Arc};
-use wispcore::{
+use crate::{
     prisma::{
         self,
         person::{self, WhereParam},
     },
     tree::{family_tree::tree_person, BuildableTree, Tree},
 };
+
+use self::binder::binder_router;
+
+mod binder;
 
 pub struct Ctx {
     pub client: Arc<prisma::PrismaClient>,
@@ -24,8 +28,9 @@ struct QueryReturnType {
 pub fn new() -> RouterBuilder<Ctx> {
     Router::new()
         .config(Config::new().export_ts_bindings(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../src/rspc/bindings.ts"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../app/src/rspc/bindings.ts"),
         ))
+        .merge("binder.", binder_router())
         .query("version", |t| t(|_, _: ()| env!("CARGO_PKG_VERSION")))
         .query("display_tree", |t| {
             t(|ctx: Ctx, family_id: i32| async move {

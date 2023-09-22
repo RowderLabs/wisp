@@ -9,8 +9,11 @@ target/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# dev stuff
 dev.db
 prisma.rs
+bindings.ts
 
 
 # .gitignore
