@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { FamilyTreeNodeData, TreeNode } from "./rspc/bindings";
 import { rspc } from "./rspc/router";
 import * as d3 from "d3";
 import pfp from "./assets/pfp.png";
@@ -7,7 +6,7 @@ import { createChildPath } from "./paths";
 import Binder from "./ui/Binder";
 import FamilyTree from "./ui/FamilyTree";
 import { AttributePanel } from "./AttributePanel";
-import { CharacterSheetBanner } from "./CharacterSheetBanner";
+import { Banner } from "./Banner";
 
 function App() {
 
@@ -18,11 +17,17 @@ function App() {
       </div>
       <div className="basis-full mx-20">
         <div className="relative">
-          <CharacterSheetBanner />
-          <div className="absolute h-48 w-48 bg-blue-500 bottom-[50%] transform translate-y-[105%] left-10 rounded-md border-8 border-white"></div>
+          <Banner />
+          <div className="flex gap-4 px-4 py-2">
+            <div className="h-48 w-48 bg-blue-500 rounded-md border-8 border-white mt-[-100px]"></div>
+            <h2 className="text-2xl">Lord Blackwood</h2>
+          </div>
         </div>
-        <div className="mt-32">
-          <AttributePanel />
+        <div className="flex justify-end">
+          <div>
+            <AttributePanel />
+            <AttributePanel />
+          </div>
         </div>
       </div>
     </div>
