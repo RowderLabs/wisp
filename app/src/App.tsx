@@ -5,8 +5,8 @@ import pfp from "./assets/pfp.png";
 import { createChildPath } from "./paths";
 import Binder from "./ui/Binder";
 import FamilyTree from "./ui/FamilyTree";
-import { AttributePanel } from "./AttributePanel";
-import { Banner } from "./Banner";
+import { AttributePanel } from "./ui/AttributePanel";
+import { Banner } from "./ui/Banner";
 
 function App() {
 
