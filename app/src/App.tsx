@@ -1,14 +1,10 @@
-import { useEffect, useRef } from "react";
-import { rspc } from "./rspc/router";
-import * as d3 from "d3";
-import pfp from "./assets/pfp.png";
-import { createChildPath } from "./paths";
 import Binder from "./ui/Binder";
-import FamilyTree from "./ui/FamilyTree";
 import { AttributePanel } from "./ui/AttributePanel";
 import { Banner } from "./ui/Banner";
+import { rspc } from "./rspc/router";
 
 function App() {
+  const { data: character } = rspc.useQuery(["characters.with_id", 1]);
 
   return (
     <div className="flex gap-4 h-screen">
@@ -23,6 +19,7 @@ function App() {
             <h2 className="text-2xl">Lord Blackwood</h2>
           </div>
         </div>
+        <div>{JSON.stringify(character)}</div>
         <div className="flex justify-end">
           <div>
             <AttributePanel />

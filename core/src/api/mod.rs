@@ -11,9 +11,10 @@ use crate::{
     tree::{family_tree::tree_person, BuildableTree, Tree},
 };
 
-use self::binder::binder_router;
+use self::{binder::binder_router, characters::characters_router};
 
 mod binder;
+mod characters;
 
 pub struct Ctx {
     pub client: Arc<prisma::PrismaClient>,
@@ -30,6 +31,7 @@ pub fn new() -> RouterBuilder<Ctx> {
         .config(Config::new().export_ts_bindings(
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../app/src/rspc/bindings.ts"),
         ))
+        .merge("characters.", characters_router())
         .merge("binder.", binder_router())
         .query("version", |t| t(|_, _: ()| env!("CARGO_PKG_VERSION")))
         .query("display_tree", |t| {
