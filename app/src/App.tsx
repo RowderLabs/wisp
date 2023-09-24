@@ -2,6 +2,7 @@ import Binder from "./ui/Binder";
 import { AttributePanel } from "./ui/AttributePanel";
 import { Banner } from "./ui/Banner";
 import { rspc } from "./rspc/router";
+import { CharacterCreationModal } from "./ui/CharacterCreationModal";
 
 function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
@@ -26,6 +27,7 @@ function App() {
           </div>
         </div>
       </div>
+      <CharacterCreationModal />
     </div>
   );
 }
