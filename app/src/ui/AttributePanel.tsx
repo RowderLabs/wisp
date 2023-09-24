@@ -1,26 +1,24 @@
+
 import React, { FC, PropsWithChildren } from "react";
 
-const data = [
-  {
-    id: 1,
-    name: "Basic Info",
-    attrs: [
-      { id: 1, label: "Age", attribute: 22 },
-      { id: 2, label: "Occupation", attribute: "Blacksmith" },
-    ],
-  },
-];
+type AttributePanelProps = {
+  attributes: {
+    attributeValue: string,
+    attribute: {
+      id: number,
+      label: string,
+      attribute_group: string
+    }
+  }[]
+}
 
-const AttributePanel: React.FC<PropsWithChildren> = () => {
+
+const AttributePanel: React.FC<PropsWithChildren<AttributePanelProps>> = ({attributes}) => {
   return (
     <div className="w-[400px] flex flex-col gap-4 rounded-md border p-6">
-      {data.map((group) => (
-        <AttributePanelGroup key={group.id} name={group.name}>
-          {group.attrs.map((attr) => (
-            <AttributePanelItem key={attr.id} label={attr.label} attribute={attr.attribute} />
-          ))}
-        </AttributePanelGroup>
-      ))}
+      {attributes.map((item) => (
+         <AttributePanelItem {...item} />
+        ))}
     </div>
   );
 };
@@ -40,16 +38,13 @@ const AttributePanelGroup: FC<PropsWithChildren<AttributePanelGroupProps>> = ({ 
   );
 };
 
-type AttributePanelItemProps = {
-  label: string;
-  attribute: any;
-};
+type AttributePanelItemProps = AttributePanelProps['attributes'][0]
 
-const AttributePanelItem = ({ label, attribute }: AttributePanelItemProps) => {
+const AttributePanelItem = ({ attributeValue, attribute }: AttributePanelItemProps) => {
   return (
     <div className="text-sm grid gap-6 grid-cols-2 break-words border-b">
-      <p>{label}</p>
-      <p>{attribute}</p>
+      <p>{attribute.label}</p>
+      <p>{attributeValue}</p>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 use crate::prisma::{
-    self, attribute, attribute_on,
+    self, attribute,
     binder_item::{self},
     binder_path, family, person, relationship,
 };
@@ -103,18 +103,18 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
 
     let age = prisma
         .attribute()
-        .create("age".into(), vec![])
+        .create("age".into(), "characters".into(), vec![])
         .exec()
         .await
         .unwrap();
-    let x = prisma
-        .attribute_on()
+
+    prisma
+        .character_attribute()
         .create(
             "22".into(),
             attribute::id::equals(age.id),
-            vec![attribute_on::character::connect(person::id::equals(
-                lord.id,
-            ))],
+            person::id::equals(lord.id),
+            vec![],
         )
         .exec()
         .await

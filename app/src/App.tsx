@@ -16,13 +16,13 @@ function App() {
           <Banner />
           <div className="flex gap-4 px-4 py-2">
             <div className="h-48 w-48 bg-blue-500 rounded-md border-8 border-white mt-[-100px]"></div>
-            <h2 className="text-2xl">Lord Blackwood</h2>
+            <p className="text-2xl font-semibold">{character?.name}</p>
+
           </div>
         </div>
-        <div>{JSON.stringify(character)}</div>
         <div className="flex justify-end">
           <div>
-            <AttributePanel />
+            {character && <AttributePanel attributes={character.attributes}/>}
           </div>
         </div>
       </div>
