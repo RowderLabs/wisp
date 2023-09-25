@@ -2,7 +2,7 @@ import React, { FC, PropsWithChildren } from 'react'
 
 export const Menu: FC<PropsWithChildren> = ({children}) => {
   return (
-    <ul className='rounded-md'>
+    <ul className='rounded-md text-sm'>
         {children}
     </ul>
   )

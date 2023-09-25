@@ -1,7 +1,7 @@
 import { PropsWithChildren, useState } from "react";
 import { useBinder } from "./useBinder";
 import { BinderCharacterPath } from "../rspc/bindings";
-import {HiUser, HiUsers} from 'react-icons/hi'
+import { HiUser, HiUsers } from "react-icons/hi";
 
 interface SimpleNode {
   id: number;
@@ -32,7 +32,7 @@ export default function Binder() {
           {characters[ROOT_PATH].map((c) => (
             <BinderNode<BinderCharacterPath>
               ctx={c}
-              renderItem={({ name, isCollection }) =>
+              renderItem={({ name, isCollection, item }) =>
                 isCollection ? (
                   <div className="flex gap-1 items-center">
                     <HiUsers />
@@ -41,7 +41,7 @@ export default function Binder() {
                 ) : (
                   <div className="flex gap-1 items-center">
                     <HiUser />
-                    <span className="basis-full">{name}</span>
+                    <span className="basis-full">{item?.character?.name}</span>
                   </div>
                 )
               }
@@ -59,7 +59,7 @@ export default function Binder() {
 export function ExpandableBinderItem<TNodeType extends SimpleNode>({
   children,
   renderItem,
-  ctx
+  ctx,
 }: PropsWithChildren<BinderNodeProps<TNodeType>>) {
   const [expanded, setExpanded] = useState(false);
   return (
@@ -91,9 +91,7 @@ export function BinderNode<TNodeType extends SimpleNode>(props: BinderNodeProps<
     return <BinderItem {...props} />;
   }
 
-  const children = props.getChildren
-    ? props.getChildren(`${props.path}/${props.id}`)
-    : [];
+  const children = props.getChildren ? props.getChildren(`${props.path}/${props.id}`) : [];
 
   return (
     <ExpandableBinderItem {...props}>
