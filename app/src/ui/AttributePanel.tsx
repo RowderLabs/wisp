@@ -29,7 +29,7 @@ const AttributePanel: React.FC<PropsWithChildren<AttributePanelProps>> = ({ attr
   return (
     <div className="w-[400px] flex flex-col gap-4 rounded-md border p-6">
       {Object.entries(grouped).map((entry) => (
-        <AttributePanelGroup name={entry[0]} attributes={entry[1]} />
+        <AttributePanelGroup key={entry[0]} name={entry[0]} attributes={entry[1]} />
       ))}
     </div>
   );

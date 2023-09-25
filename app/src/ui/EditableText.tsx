@@ -1,4 +1,11 @@
-import { FC, KeyboardEventHandler, PropsWithChildren, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  KeyboardEventHandler,
+  PropsWithChildren,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import useDoubleClick from "use-double-click";
 import { mergeRefs } from "react-merge-refs";
 import { useClickOutside } from "../hooks/useClickOutside";
@@ -11,6 +18,7 @@ export const EditableText: FC<PropsWithChildren<EditableTextProps>> = ({ childre
   const [editing, setEditing] = useState(false);
   const textRef = useRef<HTMLInputElement | null>(null);
   const clickAwayRef = useClickOutside(() => setEditing(false));
+
   useDoubleClick({
     onDoubleClick: () => setEditing(true),
     ref: textRef,
@@ -18,7 +26,10 @@ export const EditableText: FC<PropsWithChildren<EditableTextProps>> = ({ childre
   });
 
   useEffect(() => {
-    if (editing && textRef.current) textRef.current.focus();
+    if (editing && textRef.current) {
+        textRef.current.value = children?.toString() || ''
+        textRef.current.focus()
+    };
   }, [editing]);
 
   const handleSubmit: KeyboardEventHandler<HTMLInputElement> = (e) => {
@@ -33,7 +44,9 @@ export const EditableText: FC<PropsWithChildren<EditableTextProps>> = ({ childre
       {editing ? (
         <input ref={mergeRefs([clickAwayRef, textRef])} onKeyDown={handleSubmit} type="text" />
       ) : (
-        <p className="text-lg" ref={textRef}>{children}</p>
+        <p className="text-xl" ref={textRef}>
+          {children}
+        </p>
       )}
     </>
   );
