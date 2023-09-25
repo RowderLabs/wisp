@@ -42,9 +42,9 @@ export const EditableText: FC<PropsWithChildren<EditableTextProps>> = ({ childre
   return (
     <>
       {editing ? (
-        <input ref={mergeRefs([clickAwayRef, textRef])} onKeyDown={handleSubmit} type="text" />
+        <input className="outline-none py-2 text-xl" ref={mergeRefs([clickAwayRef, textRef])} onKeyDown={handleSubmit} type="text" />
       ) : (
-        <p className="text-xl" ref={textRef}>
+        <p className="text-xl py-2" ref={textRef}>
           {children}
         </p>
       )}
