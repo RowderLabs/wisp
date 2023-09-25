@@ -2,7 +2,6 @@ import Binder from "./ui/Binder";
 import { AttributePanel } from "./ui/AttributePanel";
 import { Banner } from "./ui/Banner";
 import { rspc } from "./rspc/router";
-import { CharacterCreationModal } from "./ui/CharacterCreationModal";
 import { EditableText } from "./ui/EditableText";
 
 function App() {
@@ -10,6 +9,7 @@ function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
   const { mutate: updateName } = rspc.useMutation("characters.change_name", {onSuccess: () => {
     queryClient.invalidateQueries(['characters.with_id', 1])
+    queryClient.invalidateQueries(['binder.characters', null])
   }});
 
   return (
@@ -29,7 +29,8 @@ function App() {
             )}
           </div>
         </div>
-        <div className="flex justify-end">
+        <div className="flex gap-4 justify-between">
+          <div className="p-4 border basis-full"></div>
           <div>{character && <AttributePanel attributes={character.attributes} />}</div>
         </div>
       </div>
