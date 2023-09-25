@@ -1,10 +1,18 @@
 use crate::prisma::{
-    self,
+    self, attribute,
     binder_item::{self},
     binder_path, family, person, relationship,
 };
 
 pub async fn seed(prisma: &prisma::PrismaClient) {
+    //reset db
+    prisma
+        ._db_push()
+        .accept_data_loss()
+        .force_reset()
+        .await
+        .unwrap();
+
     let family = prisma
         .family()
         .create("Blackwoods".into(), vec![])
@@ -89,6 +97,25 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
             //connect character obj
             binder_item::character::connect(person::id::equals(lord.id)),
         ])
+        .exec()
+        .await
+        .unwrap();
+
+    let age = prisma
+        .attribute()
+        .create("age".into(), "characters".into(), vec![])
+        .exec()
+        .await
+        .unwrap();
+
+    prisma
+        .character_attribute()
+        .create(
+            "22".into(),
+            attribute::id::equals(age.id),
+            person::id::equals(lord.id),
+            vec![],
+        )
         .exec()
         .await
         .unwrap();

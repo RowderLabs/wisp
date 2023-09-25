@@ -15,6 +15,7 @@ async fn main() -> Result<(), snafu::Whatever> {
         .whatever_context("Failed to initialize prisma client")?
         .into();
 
+    wispcore::seed::seed(&prisma).await;
 
     tauri::Builder::default()
         .plugin(rspc::integrations::tauri::plugin(router, move || {

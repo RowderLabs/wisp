@@ -48,6 +48,7 @@ model Person {
     //relationships where person is a member
     relationships Relationship[] @relation("members")
     binderItem BinderItem? @relation(fields: [binderItemId], references: [id])
+    attributes CharacterAttribute[]
 }
 
 model Family {
@@ -63,4 +64,21 @@ model Relationship {
     members Person[] @relation("members")
     //children that are a product of a specific relationship
     children Person[] @relation("children")
+}
+
+//lookup table for all attributes
+model Attribute {
+    id Int @id @default(autoincrement())
+    label String
+    attribute_group String
+    character_has_attribute CharacterAttribute[]
+}
+
+model CharacterAttribute {
+    attributeValue String
+    attributeId Int
+    characterId Int
+    attribute Attribute @relation(fields: [attributeId], references: [id])
+    character Person @relation(fields: [characterId], references: [id])
+    @@id([attributeId, characterId])
 }
