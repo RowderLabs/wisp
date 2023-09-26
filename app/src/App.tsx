@@ -3,6 +3,7 @@ import { AttributePanel } from "./ui/AttributePanel";
 import { Banner } from "./ui/Banner";
 import { rspc } from "./rspc/router";
 import { EditableText } from "./ui/EditableText";
+import WispBlockEditor from "./ui/WispBlockEditor";
 
 function App() {
   const queryClient = rspc.useContext().queryClient
@@ -30,7 +31,9 @@ function App() {
           </div>
         </div>
         <div className="flex gap-4 justify-between">
-          <div className="p-4 border basis-full"></div>
+          <div className="p-4 border basis-full">
+            <WispBlockEditor/>
+          </div>
           <div>{character && <AttributePanel attributes={character.attributes} />}</div>
         </div>
       </div>
