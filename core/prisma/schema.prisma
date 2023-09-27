@@ -23,12 +23,15 @@ model BinderItem {
 model BinderPath {
     id Int @id @default(autoincrement())
     isCollection Boolean @default(false)
+    //path to parent 
     path String
     name String
     parentId Int?
     parent BinderPath? @relation("directchildren",fields: [parentId], references: [id])
     //paths to all items in collecion
     children BinderPath[] @relation("directchildren")
+
+    @@unique([path, name])
     item BinderItem?
 }
 

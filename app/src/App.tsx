@@ -13,6 +13,10 @@ function App() {
     queryClient.invalidateQueries(['binder.characters', null])
   }});
 
+  const {mutate: createCharacter} = rspc.useMutation('characters.create', {onSuccess: () => {
+    queryClient.invalidateQueries(['binder.characters', null])
+  }})
+
   return (
     <div className="flex gap-4 h-screen">
       <div className="h-full w-[300px] shadow-md border">
@@ -33,6 +37,7 @@ function App() {
         <div className="flex gap-4 justify-between">
           <div className="p-4 border basis-full">
             <WispBlockEditor/>
+            <button onClick={() => createCharacter({name: 'Sage', path_id: null})}>Create Sage</button>
           </div>
           <div>{character && <AttributePanel attributes={character.attributes} />}</div>
         </div>
