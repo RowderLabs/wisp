@@ -5,14 +5,14 @@ import { HiUser, HiUsers } from "react-icons/hi";
 
 interface SimpleNode {
   id: number;
-  name: string;
+  name: string | null;
   path: string;
   isCollection: boolean;
 }
 
 interface BinderNodeProps<TNodeType extends SimpleNode> {
   id: number;
-  name: string;
+  name: string | null;
   path: string;
   isCollection: boolean;
   ctx: TNodeType;
@@ -23,7 +23,7 @@ interface BinderNodeProps<TNodeType extends SimpleNode> {
 const ROOT_PATH = "/characters";
 
 export default function Binder() {
-  const { characters } = useBinder();
+  const { characters, error } = useBinder();
 
   return (
     <div>
