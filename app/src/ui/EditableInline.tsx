@@ -1,20 +1,18 @@
-import {
-  FC,
-  KeyboardEventHandler,
-  PropsWithChildren,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FC, KeyboardEventHandler, PropsWithChildren, useEffect, useRef, useState } from "react";
 import useDoubleClick from "use-double-click";
 import { mergeRefs } from "react-merge-refs";
 import { useClickOutside } from "../hooks/useClickOutside";
 
 type EditableTextProps = {
   onSubmit: (text: string) => void;
+  value: string;
 };
 
-export const EditableText: FC<PropsWithChildren<EditableTextProps>> = ({ children, onSubmit }) => {
+export const EditableInline: FC<PropsWithChildren<EditableTextProps>> = ({
+  children,
+  onSubmit,
+  value = "",
+}) => {
   const [editing, setEditing] = useState(false);
   const textRef = useRef<HTMLInputElement | null>(null);
   const clickAwayRef = useClickOutside(() => setEditing(false));
@@ -27,9 +25,8 @@ export const EditableText: FC<PropsWithChildren<EditableTextProps>> = ({ childre
 
   useEffect(() => {
     if (editing && textRef.current) {
-        textRef.current.value = children?.toString() || ''
-        textRef.current.focus()
-    };
+      textRef.current.focus();
+    }
   }, [editing]);
 
   const handleSubmit: KeyboardEventHandler<HTMLInputElement> = (e) => {
@@ -42,11 +39,15 @@ export const EditableText: FC<PropsWithChildren<EditableTextProps>> = ({ childre
   return (
     <>
       {editing ? (
-        <input className="outline-none py-2 text-xl" ref={mergeRefs([clickAwayRef, textRef])} onKeyDown={handleSubmit} type="text" />
+        <input
+          defaultValue={value}
+          className="outline-none py-2 text-xl"
+          ref={mergeRefs([clickAwayRef, textRef])}
+          onKeyDown={handleSubmit}
+          type="text"
+        />
       ) : (
-        <p className="text-xl py-2" ref={textRef}>
-          {children}
-        </p>
+          <div ref={textRef}>{children}</div>
       )}
     </>
   );
