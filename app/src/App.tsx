@@ -12,7 +12,6 @@ function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
   const {changeName} = useEditCharacter()
   const {deleteCharacter, error} = useDeleteCharacter()
-  const {createCharacter} = useCreateCharacter()
   return (
     <div className="flex gap-4 h-screen">
       <div className="h-full w-[300px] shadow-md border">
@@ -35,7 +34,7 @@ function App() {
           <div className="p-4 border basis-full">
             <WispBlockEditor />
             <button onClick={() => deleteCharacter('Lord')}>
-              Create Sage
+              Delete 
             </button>
           </div>
           <div>{character && <AttributePanel attributes={character.attributes} />}</div>

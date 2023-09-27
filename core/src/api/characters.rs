@@ -56,7 +56,7 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
         })
     }).mutation("delete_with_name", |t| {
         t(|ctx: Ctx, name: String| async move {
-            ctx.client.person().delete(person::name::equals(name)).exec().await.unwrap()
+            ctx.client.person().delete(person::name::equals(name.clone())).exec().await.map_err(|err| rspc::Error::with_cause(rspc::ErrorCode::BadRequest, format!("Could not delete character {}, since they do not exist.", name), err))
         })
     })
 }
