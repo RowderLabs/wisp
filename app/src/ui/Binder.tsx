@@ -27,7 +27,6 @@ export default function Binder() {
 
   return (
     <div>
-      {JSON.stringify(characters)}
       {characters && (
         <ul>
           {characters[ROOT_PATH].map((c) => (
