@@ -20,7 +20,7 @@ interface ContextMenuItemProps extends ContextMenuItem {}
 const ContextMenu: FC<PropsWithChildren<{ ctx: { groups: ContextGroup[] } }>> = ({ children, ctx }) => {
   return (
     <RadixContextMenu.Root>
-      <RadixContextMenu.Trigger>{children}</RadixContextMenu.Trigger>
+      <RadixContextMenu.Trigger className="w-full">{children}</RadixContextMenu.Trigger>
       <RadixContextMenu.Portal>
         <RadixContextMenu.Content className="min-w-[200px] bg-white rounded-md text-xs text-slate-800 overflow-hidden p-1 shadow-sm">
           {ctx.groups.map((group, i) => (
