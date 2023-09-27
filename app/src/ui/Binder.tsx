@@ -42,21 +42,21 @@ export default function Binder() {
                     <span className="basis-full">{name}</span>
                   </div>
                 ) : (
-                  <EditableInline
-                    value={item?.character?.name || ''}
-                    onSubmit={(name) => {
-                      if (item?.character?.id) {
-                        changeName({ id: item.character.id, name });
-                      }
-                    }}
-                  >
-                    <li className="p-1 ml-2 pl-2 flex gap-1 items-center text-sm font-semibold text-slate-600 cursor-pointer rounded-lg hover:bg-slate-300 hover:text-white">
-                      <div className="flex gap-1 items-center">
-                        <HiUser />
+                  <li className="p-1 ml-2 pl-2 flex gap-1 items-center text-sm font-semibold text-slate-600 cursor-pointer rounded-lg">
+                    <div className="flex gap-1 items-center">
+                      <HiUser />
+                      <EditableInline
+                        value={item?.character?.name || ""}
+                        onSubmit={(name) => {
+                          if (item?.character?.id) {
+                            changeName({ id: item.character.id, name });
+                          }
+                        }}
+                      >
                         <span className="basis-full">{item?.character?.name}</span>
-                      </div>
-                    </li>
-                  </EditableInline>
+                      </EditableInline>
+                    </div>
+                  </li>
                 )
               }
               key={Math.random() * 4}

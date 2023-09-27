@@ -7,11 +7,13 @@ import WispBlockEditor from "./ui/WispBlockEditor";
 import { useEditCharacter } from "./hooks/useEditCharacter";
 import { useCreateCharacter } from "./hooks/useCreateCharacter";
 import { useDeleteCharacter } from "./hooks/useDeleteCharacter";
+import { useRef, useState } from "react";
 
 function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
   const { changeName } = useEditCharacter();
-  const { deleteCharacter } = useDeleteCharacter();
+  const inputRef = useRef(null);
+  const { createCharacter } = useCreateCharacter();
   return (
     <div className="flex gap-4 h-screen">
       <div className="h-full w-[300px] shadow-md border">
@@ -34,8 +36,19 @@ function App() {
         </div>
         <div className="flex gap-4 justify-between">
           <div className="p-4 border basis-full">
-            <WispBlockEditor />
-            <button onClick={() => deleteCharacter("Lord")}>Delete</button>
+            <label htmlFor="new-character">Add</label>
+            <input
+              name="new-character"
+              type="text"
+              className="border rounded-lg ml-2"
+              ref={inputRef}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  createCharacter({ name: e.currentTarget.value, path_id: null });
+                  e.currentTarget.value = ''
+                }
+              }}
+            />
           </div>
           <div>{character && <AttributePanel attributes={character.attributes} />}</div>
         </div>

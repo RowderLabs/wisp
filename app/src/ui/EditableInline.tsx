@@ -1,4 +1,4 @@
-import { FC, KeyboardEventHandler, PropsWithChildren, useEffect, useRef, useState } from "react";
+import { FC, FocusEventHandler, KeyboardEventHandler, PropsWithChildren, useEffect, useRef, useState } from "react";
 import useDoubleClick from "use-double-click";
 import { mergeRefs } from "react-merge-refs";
 import { useClickOutside } from "../hooks/useClickOutside";
@@ -15,7 +15,6 @@ export const EditableInline: FC<PropsWithChildren<EditableTextProps>> = ({
 }) => {
   const [editing, setEditing] = useState(false);
   const textRef = useRef<HTMLInputElement | null>(null);
-  const clickAwayRef = useClickOutside(() => setEditing(false));
 
   useDoubleClick({
     onDoubleClick: () => setEditing(true),
@@ -36,13 +35,18 @@ export const EditableInline: FC<PropsWithChildren<EditableTextProps>> = ({
     }
   };
 
+  const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
+    setEditing(false)
+  }
+
   return (
     <>
       {editing ? (
         <input
           defaultValue={value}
           className="outline-none"
-          ref={mergeRefs([clickAwayRef, textRef])}
+          ref={textRef}
+          onBlur={handleBlur}
           onKeyDown={handleSubmit}
           type="text"
         />
