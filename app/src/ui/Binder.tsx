@@ -2,6 +2,8 @@ import { PropsWithChildren, useState } from "react";
 import { useBinder } from "./useBinder";
 import { BinderCharacterPath } from "../rspc/bindings";
 import { HiUser, HiUsers } from "react-icons/hi";
+import { EditableInline } from "./EditableInline";
+import { useEditCharacter } from "../hooks/useEditCharacter";
 
 interface SimpleNode {
   id: number;
@@ -23,7 +25,8 @@ interface BinderNodeProps<TNodeType extends SimpleNode> {
 const ROOT_PATH = "/characters";
 
 export default function Binder() {
-  const { characters, error } = useBinder();
+  const { characters } = useBinder();
+  const { changeName } = useEditCharacter();
 
   return (
     <div>
@@ -39,10 +42,21 @@ export default function Binder() {
                     <span className="basis-full">{name}</span>
                   </div>
                 ) : (
-                  <div className="flex gap-1 items-center">
-                    <HiUser />
-                    <span className="basis-full">{item?.character?.name}</span>
-                  </div>
+                  <EditableInline
+                    value={item?.character?.name || ''}
+                    onSubmit={(name) => {
+                      if (item?.character?.id) {
+                        changeName({ id: item.character.id, name });
+                      }
+                    }}
+                  >
+                    <li className="p-1 ml-2 pl-2 flex gap-1 items-center text-sm font-semibold text-slate-600 cursor-pointer rounded-lg hover:bg-slate-300 hover:text-white">
+                      <div className="flex gap-1 items-center">
+                        <HiUser />
+                        <span className="basis-full">{item?.character?.name}</span>
+                      </div>
+                    </li>
+                  </EditableInline>
                 )
               }
               key={Math.random() * 4}
@@ -79,11 +93,7 @@ export function BinderItem<TNodeType extends SimpleNode>({
   ctx,
   renderItem,
 }: Omit<BinderNodeProps<TNodeType>, "items">) {
-  return (
-    <li className="p-1 ml-2 pl-2 flex gap-1 items-center text-sm font-semibold text-slate-600 cursor-pointer rounded-lg hover:bg-slate-300 hover:text-white">
-      {renderItem(ctx)}
-    </li>
-  );
+  return <li>{renderItem(ctx)}</li>;
 }
 
 export function BinderNode<TNodeType extends SimpleNode>(props: BinderNodeProps<TNodeType>) {

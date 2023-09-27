@@ -11,11 +11,10 @@ import { useDeleteCharacter } from "./hooks/useDeleteCharacter";
 function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
   const { changeName } = useEditCharacter();
-  const { deleteCharacter, error } = useDeleteCharacter();
+  const { deleteCharacter } = useDeleteCharacter();
   return (
     <div className="flex gap-4 h-screen">
       <div className="h-full w-[300px] shadow-md border">
-        {JSON.stringify(error)}
         <Binder />
       </div>
       <div className="basis-full mx-20">

@@ -41,7 +41,7 @@ export const EditableInline: FC<PropsWithChildren<EditableTextProps>> = ({
       {editing ? (
         <input
           defaultValue={value}
-          className="outline-none py-2 text-xl"
+          className="outline-none"
           ref={mergeRefs([clickAwayRef, textRef])}
           onKeyDown={handleSubmit}
           type="text"
