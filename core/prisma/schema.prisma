@@ -11,7 +11,8 @@ generator client {
 model BinderItem {
     id Int @id @default(autoincrement())
     itemType String?
-    character Person?
+    character Person? 
+    //belongs to specific path
     pathId Int? @unique
     //path to self
     binderPath BinderPath? @relation(fields: [pathId], references: [id])
@@ -23,22 +24,22 @@ model BinderItem {
 model BinderPath {
     id Int @id @default(autoincrement())
     isCollection Boolean @default(false)
+    //Name collections
+    name String?
     //path to parent 
     path String
-    name String
     parentId Int?
     parent BinderPath? @relation("directchildren",fields: [parentId], references: [id])
     //paths to all items in collecion
     children BinderPath[] @relation("directchildren")
 
-    @@unique([path, name])
     item BinderItem?
 }
 
 
 model Person {
     id Int @id @default(autoincrement())
-    name String
+    name String @unique
     parentRelationId Int?
     familyId Int?
     binderItemId Int? @unique

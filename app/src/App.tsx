@@ -10,10 +10,11 @@ import { useCreateCharacter } from "./hooks/useCreateCharacter";
 function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
   const {changeName} = useEditCharacter()
-  const {createCharacter} = useCreateCharacter()
+  const {createCharacter, error} = useCreateCharacter()
   return (
     <div className="flex gap-4 h-screen">
       <div className="h-full w-[300px] shadow-md border">
+        {JSON.stringify(error)}
         <Binder />
       </div>
       <div className="basis-full mx-20">
@@ -31,7 +32,7 @@ function App() {
         <div className="flex gap-4 justify-between">
           <div className="p-4 border basis-full">
             <WispBlockEditor />
-            <button onClick={() => createCharacter({ name: "Sage", path_id: null })}>
+            <button onClick={() => createCharacter({ name: "Bob", path_id: null })}>
               Create Sage
             </button>
           </div>
