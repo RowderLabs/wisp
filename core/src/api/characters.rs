@@ -54,5 +54,9 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
             Ok(())
 
         })
+    }).mutation("delete_with_name", |t| {
+        t(|ctx: Ctx, name: String| async move {
+            ctx.client.person().delete(person::name::equals(name)).exec().await.unwrap()
+        })
     })
 }

@@ -11,11 +11,12 @@ generator client {
 model BinderItem {
     id Int @id @default(autoincrement())
     itemType String?
-    character Person? 
+    characterId Int? @unique
+    character Person? @relation(fields: [characterId], references: [id], onDelete: Cascade)
     //belongs to specific path
     pathId Int? @unique
     //path to self
-    binderPath BinderPath? @relation(fields: [pathId], references: [id])
+    binderPath BinderPath?
 }
 
 // /characters => 1 true characters null null 1 
@@ -32,8 +33,8 @@ model BinderPath {
     parent BinderPath? @relation("directchildren",fields: [parentId], references: [id])
     //paths to all items in collecion
     children BinderPath[] @relation("directchildren")
-
-    item BinderItem?
+    binderItemId Int? @unique
+    item BinderItem? @relation(fields: [binderItemId], references: [id], onDelete: Cascade)
 }
 
 
@@ -43,15 +44,16 @@ model Person {
     parentRelationId Int?
     familyId Int?
     binderItemId Int? @unique
-    family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
+    binderPathId Int? @unique
+    family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
     parents   Person[]   @relation("parentchildren")
     //all children belonging to person
     children Person[]  @relation("parentchildren")
     //relationship in which person is a product of
-    childOf Relationship? @relation("children", fields: [parentRelationId], references: [id])
+    childOf Relationship? @relation("children", fields: [parentRelationId], references: [id], onDelete: SetNull)
     //relationships where person is a member
     relationships Relationship[] @relation("members")
-    binderItem BinderItem? @relation(fields: [binderItemId], references: [id])
+    binderItem BinderItem?
     attributes CharacterAttribute[]
 }
 
@@ -82,7 +84,7 @@ model CharacterAttribute {
     attributeValue String
     attributeId Int
     characterId Int
-    attribute Attribute @relation(fields: [attributeId], references: [id])
-    character Person @relation(fields: [characterId], references: [id])
+    attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+    character Person @relation(fields: [characterId], references: [id], onDelete: Cascade)
     @@id([attributeId, characterId])
 }
