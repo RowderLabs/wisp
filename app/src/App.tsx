@@ -3,10 +3,8 @@ import { AttributePanel } from "./ui/AttributePanel";
 import { Banner } from "./ui/Banner";
 import { rspc } from "./rspc/router";
 import { EditableInline } from "./ui/EditableInline";
-import WispBlockEditor from "./ui/WispBlockEditor";
 import { useEditCharacter } from "./hooks/useEditCharacter";
 import { useCreateCharacter } from "./hooks/useCreateCharacter";
-import { useDeleteCharacter } from "./hooks/useDeleteCharacter";
 import { useRef, useState } from "react";
 
 function App() {
@@ -44,7 +42,10 @@ function App() {
               ref={inputRef}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  createCharacter({ name: e.currentTarget.value, path_id: null });
+                  createCharacter({
+                    name: e.currentTarget.value,
+                    id: 0
+                  });
                   e.currentTarget.value = ''
                 }
               }}
