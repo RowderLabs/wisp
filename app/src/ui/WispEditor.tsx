@@ -8,15 +8,27 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 import ComponentPickerPlugin from "../plugins/ComponentPickerPlugin";
 
+type LexicalEditorProps = {
+  initalConfig: Parameters<typeof LexicalComposer>['0']['initialConfig'];
+};
+
 export default function WispEditor() {
-  const theme = {};
+
 
   function onError(err: Error) {
     console.error(err);
   }
-  const initialConfig = {
+  const initialConfig: LexicalEditorProps['initalConfig'] = {
     namespace: "MyEditor",
-    theme,
+    theme: {
+      list: {
+        listitem: 'list-disc ml-4',
+        nested: {
+          listitem: '!list-none before:display-none after:display-none'
+        },
+        ul: 'ml-2 list-inside',
+      },
+    },
     onError,
     nodes: [ListNode, ListItemNode]
   }
@@ -25,15 +37,17 @@ export default function WispEditor() {
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <ComponentPickerPlugin/>
-      <ListPlugin/>
-      <RichTextPlugin
-        contentEditable={<ContentEditable className="editor rounded-lg p-8 border" />}
-        placeholder={null}
-        ErrorBoundary={LexicalErrorBoundary}
-      />
-      <TabIndentationPlugin/>
-      <HistoryPlugin />
+      <div className="editor-container">
+        <ComponentPickerPlugin/>
+        <ListPlugin/>
+        <RichTextPlugin
+          contentEditable={<ContentEditable className="editor editor-input" />}
+          placeholder={null}
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        <TabIndentationPlugin/>
+        <HistoryPlugin />
+      </div>
     </LexicalComposer>
   );
 }
