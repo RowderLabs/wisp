@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+* {
+    list-style-type: unset !important;
+    list-style-position: inside;
+}

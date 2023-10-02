@@ -23,6 +23,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.1
         version: 3.2.1(react@18.2.0)
+      '@lexical/list':
+        specifier: ^0.12.2
+        version: 0.12.2(lexical@0.12.2)
       '@lexical/react':
         specifier: ^0.12.2
         version: 0.12.2(lexical@0.12.2)(react-dom@18.2.0)(react@18.2.0)(yjs@13.6.8)

@@ -6,6 +6,7 @@ import { EditableInline } from "./ui/EditableInline";
 import { useEditCharacter } from "./hooks/useEditCharacter";
 import { useCreateCharacter } from "./hooks/useCreateCharacter";
 import { useRef, useState } from "react";
+import WispEditor from "./ui/WispEditor";
 
 function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
@@ -34,22 +35,7 @@ function App() {
         </div>
         <div className="flex gap-4 justify-between">
           <div className="p-4 border basis-full">
-            <label htmlFor="new-character">Add</label>
-            <input
-              name="new-character"
-              type="text"
-              className="border rounded-lg ml-2"
-              ref={inputRef}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  createCharacter({
-                    name: e.currentTarget.value,
-                    id: 0
-                  });
-                  e.currentTarget.value = ''
-                }
-              }}
-            />
+            <WispEditor/>
           </div>
           <div>{character && <AttributePanel attributes={character.attributes} />}</div>
         </div>
