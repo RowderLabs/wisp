@@ -4,7 +4,7 @@ import {INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list'
 import {$createHeadingNode} from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {HiDotsVertical} from 'react-icons/hi'
+import {HiDotsVertical, HiOutlinePencil} from 'react-icons/hi'
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
@@ -48,7 +48,7 @@ const getBaseOptions = (editor: LexicalEditor) => {
     ...([1, 2, 3] as const).map(
       (n) =>
         new ComponentPickerOption(`Heading ${n}`, {
-          icon: <i className={`icon h${n}`} />,
+          icon: <HiOutlinePencil/>,
           keywords: ['heading', 'header', `h${n}`],
           onSelect: () =>
             editor.update(() => {
@@ -152,7 +152,7 @@ const ComponentPickerMenuItem = ({
 }: ComponentPickerMenuItemProps) => {
   return (
     <li
-      className={clsx(selected ? "bg-slate-100" : "", "shadow-sm")}
+      className={clsx(selected ? "bg-slate-100" : "", "shadow-sm p-1")}
       key={index}
       tabIndex={-1}
       onClick={onClick}
