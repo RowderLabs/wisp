@@ -1,7 +1,10 @@
 import { createPortal } from "react-dom";
-import {TextNode} from 'lexical'
+import {TextNode, LexicalEditor, $getSelection, $isRangeSelection} from 'lexical'
 import {INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list'
+import {$createHeadingNode} from '@lexical/rich-text';
+import {$setBlocksType} from '@lexical/selection';
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import {HiDotsVertical} from 'react-icons/hi'
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
@@ -10,12 +13,67 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import clsx from "clsx";
 
+class ComponentPickerOption extends MenuOption {
+  // What shows up in the editor
+  name: string;
+  // Icon for display
+  icon?: JSX.Element;
+  // For extra searching.
+  aliases: Array<string>;
+  // TBD
+  keyboardShortcut?: string;
+  // What happens when you select this option?
+  onSelect: (queryString: string) => void;
+
+  constructor(
+    title: string,
+    options: {
+      icon?: JSX.Element;
+      keywords?: Array<string>;
+      keyboardShortcut?: string;
+      onSelect: (queryString: string) => void;
+    },
+  ) {
+    super(title);
+    this.name = title;
+    this.aliases = options.keywords || [];
+    this.icon = options.icon;
+    this.keyboardShortcut = options.keyboardShortcut;
+    this.onSelect = options.onSelect.bind(this);
+  }
+}
+
+const getBaseOptions = (editor: LexicalEditor) => {
+  return [
+    ...([1, 2, 3] as const).map(
+      (n) =>
+        new ComponentPickerOption(`Heading ${n}`, {
+          icon: <i className={`icon h${n}`} />,
+          keywords: ['heading', 'header', `h${n}`],
+          onSelect: () =>
+            editor.update(() => {
+              const selection = $getSelection();
+              if ($isRangeSelection(selection)) {
+                $setBlocksType(selection, () => $createHeadingNode(`h${n}`));
+              }
+            }),
+        }),
+    ),
+    new ComponentPickerOption('Bulleted List', {
+      icon: <HiDotsVertical/>,
+      keywords: ['bulleted list', 'unordered list', 'ul'],
+      onSelect: () =>
+        editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined),
+    })
+  ]
+}
+
 export default function ComponentPickerPlugin() {
   const [editor] = useLexicalComposerContext();
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", { minLength: 0 });
   const [query, setQuery] = useState<string | null>(null);
   const options = useMemo(() => {
-    const baseOpts = [new MenuOption("List")];
+    const baseOpts = getBaseOptions(editor)
     if (!query) {
       return baseOpts;
     }
@@ -25,14 +83,14 @@ export default function ComponentPickerPlugin() {
 
   const onSelectOption = useCallback(
     (
-      selectedOption: MenuOption,
+      selectedOption: ComponentPickerOption,
       nodeToRemove: TextNode | null,
       closeMenu: () => void,
       matchingString: string,
     ) => {
       editor.update(() => {
         nodeToRemove?.remove()
-        editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
+        selectedOption.onSelect(matchingString)
         closeMenu();
       });
     },
@@ -40,7 +98,7 @@ export default function ComponentPickerPlugin() {
   );
 
   return (
-    <LexicalTypeaheadMenuPlugin<MenuOption>
+    <LexicalTypeaheadMenuPlugin<ComponentPickerOption>
       onQueryChange={setQuery}
       onSelectOption={onSelectOption}
       options={options}
@@ -56,7 +114,7 @@ export default function ComponentPickerPlugin() {
                   {options.map((item, i) => (
                     <ComponentPickerMenuItem
                       key={i}
-                      option={item.key}
+                      option={item}
                       selected={selectedIndex === i}
                       index={i}
                       onClick={() => {
@@ -82,7 +140,7 @@ type ComponentPickerMenuItemProps = {
   index: number;
   onClick: () => void;
   onMouseEnter: () => void;
-  option: string;
+  option: ComponentPickerOption;
 };
 
 const ComponentPickerMenuItem = ({
@@ -100,7 +158,9 @@ const ComponentPickerMenuItem = ({
       onClick={onClick}
       onMouseEnter={onMouseEnter}
     >
-      <span>{option}</span>
+      <div className="flex gap-1 items-center">
+        {option.icon}
+        <span>{option.name}</span></div>
     </li>
   );
 };

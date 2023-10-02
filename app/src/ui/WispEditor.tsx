@@ -1,6 +1,7 @@
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import {HeadingNode} from '@lexical/rich-text'
 import {ListNode, ListItemNode} from '@lexical/list'
 import {ListPlugin} from '@lexical/react/LexicalListPlugin'
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
@@ -21,6 +22,11 @@ export default function WispEditor() {
   const initialConfig: LexicalEditorProps['initalConfig'] = {
     namespace: "MyEditor",
     theme: {
+      heading: {
+        h1: 'text-2xl',
+        h2: 'text-xl',
+        h3: 'text-xl'
+      },
       list: {
         listitem: 'list-disc ml-4',
         nested: {
@@ -30,7 +36,7 @@ export default function WispEditor() {
       },
     },
     onError,
-    nodes: [ListNode, ListItemNode]
+    nodes: [ListNode, ListItemNode, HeadingNode]
   }
 
   

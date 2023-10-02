@@ -29,6 +29,12 @@ importers:
       '@lexical/react':
         specifier: ^0.12.2
         version: 0.12.2(lexical@0.12.2)(react-dom@18.2.0)(react@18.2.0)(yjs@13.6.8)
+      '@lexical/rich-text':
+        specifier: ^0.12.2
+        version: 0.12.2(@lexical/clipboard@0.12.2)(@lexical/selection@0.12.2)(@lexical/utils@0.12.2)(lexical@0.12.2)
+      '@lexical/selection':
+        specifier: ^0.12.2
+        version: 0.12.2(lexical@0.12.2)
       '@radix-ui/react-context-menu':
         specifier: ^2.1.4
         version: 2.1.4(@types/react-dom@18.2.7)(@types/react@18.2.15)(react-dom@18.2.0)(react@18.2.0)
