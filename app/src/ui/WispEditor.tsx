@@ -1,10 +1,11 @@
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import {ListNode, ListItemNode, INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list'
+import {ListNode, ListItemNode} from '@lexical/list'
 import {ListPlugin} from '@lexical/react/LexicalListPlugin'
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 import ComponentPickerPlugin from "../plugins/ComponentPickerPlugin";
 
 export default function WispEditor() {
@@ -27,10 +28,11 @@ export default function WispEditor() {
       <ComponentPickerPlugin/>
       <ListPlugin/>
       <RichTextPlugin
-        contentEditable={<ContentEditable className="rounded-lg p-8 border" />}
+        contentEditable={<ContentEditable className="editor rounded-lg p-8 border" />}
         placeholder={null}
         ErrorBoundary={LexicalErrorBoundary}
       />
+      <TabIndentationPlugin/>
       <HistoryPlugin />
     </LexicalComposer>
   );

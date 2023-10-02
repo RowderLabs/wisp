@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 
-* {
-    list-style-type: unset !important;
-    list-style-position: inside;
+.editor > * {
+    list-style-type: initial !important;
 }
