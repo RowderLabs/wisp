@@ -33,12 +33,7 @@ function App() {
             )}
           </div>
         </div>
-        <div className="flex gap-4 justify-between">
-          <div className="p-4 border basis-full">
-            <WispEditor/>
-          </div>
-          <div>{character && <AttributePanel attributes={character.attributes} />}</div>
-        </div>
+        <WispEditor />
       </div>
     </div>
   );
