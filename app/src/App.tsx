@@ -4,7 +4,7 @@ import { rspc } from "./rspc/router";
 import { EditableInline } from "./ui/EditableInline";
 import { useEditCharacter } from "./hooks/useEditCharacter";
 import WispEditor from "./ui/WispEditor";
-import UploadableImage from "./ui/ImageUpload";
+import UploadableImage from "./ui/UploadableImage";
 
 function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
@@ -17,9 +17,11 @@ function App() {
       </div>
       <div className="basis-full mx-20">
         <div className="relative">
-          <Banner />
+          <Banner className="relative">
+            <UploadableImage/>
+          </Banner>
           <div className="flex gap-4 px-4 py-2 items-start">
-            <div className="h-48 w-48 bg-white rounded-md mt-[-100px]">
+            <div className="relative h-48 w-48 bg-white rounded-md mt-[-100px] border shadow-sm">
               <UploadableImage/>
             </div>
             {character && (

@@ -53,18 +53,18 @@ export default function UploadableImage({ imageSettings, onUpload }: ImageUpload
     })();
   }, [imagePath]);
 
-  return image ? (
-    <ImageUploadImage src={image} {...imageSettings} />
-  ) : (
-    <ImageUploadUploader handleClick={handleUpload} />
-  );
+  return (
+    <div className="absolute top-0 left-0 w-full h-full">
+      {image ? <ImageUploadImage src={image}/> : <ImageUploadUploader handleClick={handleUpload}/>}
+    </div>
+  )
 }
 
 const ImageUploadUploader = ({ handleClick }: { handleClick: () => Promise<void> }) => {
   return (
     <div
       onClick={handleClick}
-      className="w-full h-full flex justify-center border-2 border-dashed items-center cursor-pointer"
+      className="w-full h-full rounded-md flex justify-center border-2 border-slate-500 border-dashed items-center cursor-pointer"
     >
       <div className="flex flex-col items-center gap-2 text-slate-800">
         <span className="text-[32px]">
@@ -76,5 +76,5 @@ const ImageUploadUploader = ({ handleClick }: { handleClick: () => Promise<void>
 };
 
 const ImageUploadImage = ({ src }: { src: string } & ImageUploadProps["imageSettings"]) => {
-  return <img src={src} className="object-center object-contain w-full h-full block rounded-md" />;
+  return <img src={src} className="object-center object-cover w-full h-full block rounded-md" />;
 };
