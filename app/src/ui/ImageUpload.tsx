@@ -1,14 +1,36 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { open } from "@tauri-apps/api/dialog";
 import { HiPhoto } from "react-icons/hi2";
-import { downloadDir, join } from "@tauri-apps/api/path";
+import { downloadDir } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 
-export default function ImageUpload() {
+//TODO: use image position to change part of image shown
+type ImagePosition =
+  | "top-left"
+  | "top"
+  | "top-right"
+  | "left"
+  | "center"
+  | "right"
+  | "bottom-right"
+  | "bottom"
+  | "bottom-left";
+
+type UploadableImageProps = {
+  position: ImagePosition;
+  fit: "object-cover" | "object-contain";
+};
+
+type ImageUploadProps = {
+  onUpload?: () => void;
+  imageSettings?: Partial<UploadableImageProps>;
+};
+
+export default function UploadableImage({ imageSettings, onUpload }: ImageUploadProps) {
   const [imagePath, setImagePath] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
 
-  const handleClick = async () => {
+  const handleUpload = async () => {
     const selected = await open({
       multiple: false,
       filters: [{ name: "Image", extensions: ["png", "jpeg"] }],
@@ -18,6 +40,7 @@ export default function ImageUpload() {
     if (Array.isArray(selected)) throw new Error("Unexpected");
 
     setImagePath(selected);
+    if (onUpload) onUpload();
   };
 
   useEffect(() => {
@@ -31,9 +54,9 @@ export default function ImageUpload() {
   }, [imagePath]);
 
   return image ? (
-    <ImageUploadImage src={image} />
+    <ImageUploadImage src={image} {...imageSettings} />
   ) : (
-    <ImageUploadUploader handleClick={handleClick} />
+    <ImageUploadUploader handleClick={handleUpload} />
   );
 }
 
@@ -52,6 +75,6 @@ const ImageUploadUploader = ({ handleClick }: { handleClick: () => Promise<void>
   );
 };
 
-const ImageUploadImage = ({ src }: { src: string }) => {
+const ImageUploadImage = ({ src }: { src: string } & ImageUploadProps["imageSettings"]) => {
   return <img src={src} className="object-center object-contain w-full h-full block rounded-md" />;
 };
