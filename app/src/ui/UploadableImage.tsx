@@ -3,30 +3,37 @@ import { open } from "@tauri-apps/api/dialog";
 import { HiPhoto } from "react-icons/hi2";
 import { downloadDir } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { cva, type VariantProps } from "class-variance-authority";
 
-//TODO: use image position to change part of image shown
-type ImagePosition =
-  | "top-left"
-  | "top"
-  | "top-right"
-  | "left"
-  | "center"
-  | "right"
-  | "bottom-right"
-  | "bottom"
-  | "bottom-left";
+
+const uploadableImageVariants = cva("absolute top-0 left-0 w-full h-full text-slate-600");
+
+const uploadedImageVariants = cva("w-full h-full block rounded-md", {
+  variants: {
+    position: {
+      center: "object-center",
+      bottom: "object-bottom",
+      left: "object-left",
+      right: "object-right",
+    },
+    fit: { cover: "object-cover", contain: "object-contain" },
+  },
+  defaultVariants: {
+    position: "center",
+    fit: "cover",
+  },
+});
+
+const imageUploaderVariants = cva(
+  "w-full h-full rounded-md flex justify-center border-2 border-slate-500 border-dashed items-center cursor-pointer"
+);
 
 type UploadableImageProps = {
-  position: ImagePosition;
-  fit: "object-cover" | "object-contain";
-};
-
-type ImageUploadProps = {
   onUpload?: () => void;
-  imageSettings?: Partial<UploadableImageProps>;
-};
+  uploadedImage?: VariantProps<typeof uploadedImageVariants>;
+} & VariantProps<typeof uploadableImageVariants>;
 
-export default function UploadableImage({ imageSettings, onUpload }: ImageUploadProps) {
+export default function UploadableImage({ uploadedImage, onUpload }: UploadableImageProps) {
   const [imagePath, setImagePath] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
 
@@ -54,19 +61,20 @@ export default function UploadableImage({ imageSettings, onUpload }: ImageUpload
   }, [imagePath]);
 
   return (
-    <div className="absolute top-0 left-0 w-full h-full">
-      {image ? <ImageUploadImage src={image}/> : <ImageUploadUploader handleClick={handleUpload}/>}
+    <div className={uploadableImageVariants()}>
+      {image ? (
+        <UploadedImage {...uploadedImage} src={image} />
+      ) : (
+        <ImageUploadUploader handleClick={handleUpload} />
+      )}
     </div>
-  )
+  );
 }
 
 const ImageUploadUploader = ({ handleClick }: { handleClick: () => Promise<void> }) => {
   return (
-    <div
-      onClick={handleClick}
-      className="w-full h-full rounded-md flex justify-center border-2 border-slate-500 border-dashed items-center cursor-pointer"
-    >
-      <div className="flex flex-col items-center gap-2 text-slate-800">
+    <div onClick={handleClick} className={imageUploaderVariants()}>
+      <div className="flex flex-col items-center gap-2">
         <span className="text-[32px]">
           <HiPhoto />
         </span>
@@ -75,6 +83,10 @@ const ImageUploadUploader = ({ handleClick }: { handleClick: () => Promise<void>
   );
 };
 
-const ImageUploadImage = ({ src }: { src: string } & ImageUploadProps["imageSettings"]) => {
-  return <img src={src} className="object-center object-cover w-full h-full block rounded-md" />;
+type UploadedImageProps = {
+  src: string;
+} & VariantProps<typeof uploadedImageVariants>;
+
+const UploadedImage = ({ src, position, fit }: UploadedImageProps) => {
+  return <img src={src} className={uploadedImageVariants({ position, fit })} />;
 };

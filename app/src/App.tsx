@@ -18,11 +18,11 @@ function App() {
       <div className="basis-full mx-20">
         <div className="relative">
           <Banner className="relative">
-            <UploadableImage/>
+            <UploadableImage uploadedImage={{position: 'right', fit: 'contain'}}/>
           </Banner>
           <div className="flex gap-4 px-4 py-2 items-start">
             <div className="relative h-48 w-48 bg-white rounded-md mt-[-100px] border shadow-sm">
-              <UploadableImage/>
+              <UploadableImage uploadedImage={{position: 'right', fit: 'contain'}}/>
             </div>
             {character && (
               <EditableInline
