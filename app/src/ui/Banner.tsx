@@ -1,9 +1,19 @@
-import React from 'react'
+import clsx from "clsx";
+import React, { PropsWithChildren } from "react";
 
-export const Banner = () => {
+type BannerProps = {
+  className: string;
+};
+
+export const Banner: React.FC<PropsWithChildren<BannerProps>> = ({ children, className }) => {
   return (
-    <div className="bg-blue-200 min-h-[200px] flex flex-col gap-4 rounded-md border p-6">
-        
+    <div
+      className={clsx(
+        "bg-blue-200 min-h-[200px] flex flex-col gap-4 rounded-md border p-6",
+        className
+      )}
+    >
+      {children}
     </div>
-  )
-}
+  );
+};
