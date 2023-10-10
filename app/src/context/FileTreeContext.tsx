@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useState } from "react";
+import React from "react";
 
 export type FileTreeContextProps<T = any> = {
   nodes?: { [key: string]: T[] };
