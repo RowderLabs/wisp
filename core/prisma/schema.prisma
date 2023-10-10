@@ -25,6 +25,7 @@ model BinderItem {
 model BinderPath {
     id Int @id @default(autoincrement())
     isCollection Boolean @default(false)
+    expanded Boolean @default(false)
     //Name collections
     name String?
     //path to parent 
