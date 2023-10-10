@@ -1,11 +1,12 @@
 
-import React, { PropsWithChildren, useState } from 'react'
+import React, { PropsWithChildren } from 'react'
 import { FileTreeContextProps } from '../context/FileTreeContext';
 
 interface SimpleNode {
     id: number;
     name: string | null;
     path: string;
+    expanded: boolean
     isCollection: boolean;
   }
 
@@ -17,19 +18,21 @@ interface FileTreeNodeProps<TNodeType extends SimpleNode> {
     ctx: TNodeType;
     renderItem: (ctx: TNodeType) => React.ReactNode;
     getChildren?: (pathToChildren: string) => TNodeType[];
+    toggleExpanded?: (id: number) => void
   }
 
 
   type FileTreeProps<T> = {
+    toggleExpanded: (id: number) => void
     renderItem: (ctx: T) => React.ReactNode;
     useFileTree: () => FileTreeContextProps<T>
   }
   
   const ROOT_PATH = "/characters";
   
-  export default function FileTree<T extends SimpleNode>({useFileTree, renderItem}: FileTreeProps<T>) {
+  export default function FileTree<T extends SimpleNode>({useFileTree, renderItem, toggleExpanded}: FileTreeProps<T>) {
     const {nodes} = useFileTree()
-  
+    
     return (
       <div>
         {nodes && (
@@ -40,6 +43,7 @@ interface FileTreeNodeProps<TNodeType extends SimpleNode> {
                 renderItem={renderItem}
                 key={c.id}
                 {...c}
+                toggleExpanded={toggleExpanded}
                 getChildren={(pathToChildren: string) => nodes[pathToChildren] || []}
               />
             ))}
@@ -52,18 +56,18 @@ interface FileTreeNodeProps<TNodeType extends SimpleNode> {
   export function ExpandableFileTreeItem<TNodeType extends SimpleNode>({
     children,
     renderItem,
+    toggleExpanded,
     ctx,
   }: PropsWithChildren<FileTreeNodeProps<TNodeType>>) {
-    const [expanded, setExpanded] = useState(false);
     return (
       <>
-        <li
-          onClick={() => setExpanded(!expanded)}
+        <div
+          onClick={() => {if(toggleExpanded) toggleExpanded(ctx.id)}}
           className="p-1 ml-2 pl-2 text-sm font-semibold text-slate-600 cursor-pointer rounded-lg hover:bg-slate-300 hover:text-white"
         >
           {renderItem(ctx)}
-        </li>
-        {expanded && <ul className="ml-5 pl-2 border-l">{children}</ul>}
+        </div>
+        {ctx.expanded && <ul className="ml-5 pl-2 border-l">{children}</ul>}
       </>
     );
   }
@@ -72,7 +76,7 @@ interface FileTreeNodeProps<TNodeType extends SimpleNode> {
     ctx,
     renderItem,
   }: Omit<FileTreeNodeProps<TNodeType>, "items">) {
-    return <li>{renderItem(ctx)}</li>;
+    return <div>{renderItem(ctx)}</div>;
   }
   
   export function BinderNode<TNodeType extends SimpleNode>(props: FileTreeNodeProps<TNodeType>) {
@@ -91,6 +95,7 @@ interface FileTreeNodeProps<TNodeType extends SimpleNode> {
               renderItem={props.renderItem}
               key={Math.random() * 4}
               getChildren={props.getChildren}
+              toggleExpanded={props.toggleExpanded}
               {...item}
             />
           ))}

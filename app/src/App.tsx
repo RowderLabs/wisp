@@ -14,6 +14,14 @@ function App() {
   const { changeName } = useEditCharacter();
   const { data: characters } = rspc.useQuery(["binder.characters", null]);
   const { FileTreeContext, useFileTree } = createFileTree<BinderCharacterPath>();
+  const queryClient = rspc.useContext().queryClient;
+  const { mutate } = rspc.useMutation(["binder.toggle_expanded"], {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["binder.characters"]);
+      console.log('updated expanstion')
+    },
+  });
+  const toggleExpanded = (id: number) => mutate(id);
 
   return (
     <div className="flex gap-4 h-screen">
@@ -21,6 +29,7 @@ function App() {
         <FileTreeContext.Provider value={{ nodes: characters }}>
           <FileTree<BinderCharacterPath>
             useFileTree={useFileTree}
+            toggleExpanded={toggleExpanded}
             renderItem={({ name, isCollection, item }) =>
               isCollection ? (
                 <div className="flex gap-1 items-center">
