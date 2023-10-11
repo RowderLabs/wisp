@@ -4,65 +4,23 @@ import { EditableInline } from "./ui/EditableInline";
 import { useEditCharacter } from "./hooks/useEditCharacter";
 import WispEditor from "./ui/WispEditor";
 import UploadableImage from "./ui/UploadableImage";
-import { createFileTree } from "./context/FileTreeContext";
-import FileTree from "./ui/FileTree";
-import { BinderCharacterPath } from "./rspc/bindings";
-import { HiUser, HiUsers } from "react-icons/hi";
+import Binder from "./ui/Binder";
 
 function App() {
   const { data: character } = rspc.useQuery(["characters.with_id", 1]);
   const { changeName } = useEditCharacter();
-  const { data: characters } = rspc.useQuery(["binder.characters", null]);
-  const { FileTreeContext, useFileTree } = createFileTree<BinderCharacterPath>();
-  const queryClient = rspc.useContext().queryClient;
-  const { mutate } = rspc.useMutation(["binder.toggle_expanded"], {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["binder.characters"]);
-      console.log('updated expanstion')
-    },
-  });
-  const toggleExpanded = (id: number) => mutate(id);
 
   return (
-    <div className="flex gap-4 h-screen">
+    <div className="flex gap-4 h-screen bg-neutral text-slate-700">
       <div className="h-full w-[300px] shadow-md border">
-        <FileTreeContext.Provider value={{ nodes: characters }}>
-          <FileTree<BinderCharacterPath>
-            useFileTree={useFileTree}
-            toggleExpanded={toggleExpanded}
-            renderItem={({ name, isCollection, item }) =>
-              isCollection ? (
-                <div className="flex gap-1 items-center">
-                  <HiUsers />
-                  <span className="basis-full">{name}</span>
-                </div>
-              ) : (
-                <li className="p-1 ml-2 pl-2 flex gap-1 items-center text-sm font-semibold text-slate-600 cursor-pointer rounded-lg">
-                  <div className="flex gap-1 items-center">
-                    <HiUser />
-                    <EditableInline
-                      value={item?.character?.name || ""}
-                      onSubmit={(name) => {
-                        if (item?.character?.id) {
-                          changeName({ id: item.character.id, name });
-                        }
-                      }}
-                    >
-                      <span className="basis-full">{item?.character?.name}</span>
-                    </EditableInline>
-                  </div>
-                </li>
-              )
-            }
-          />
-        </FileTreeContext.Provider>
+        <Binder/>
       </div>
-      <div className="basis-full mx-20">
+      <div className="basis-full">
         <div className="relative">
           <Banner className="relative">
-            <UploadableImage uploadedImage={{ position: "right", fit: "contain" }} />
+            <UploadableImage uploadedImage={{ position: "center", fit: "cover" }} />
           </Banner>
-          <div className="flex gap-4 px-4 py-2 items-start">
+          <div className="flex gap-4 p-4 items-start">
             <div className="relative h-48 w-48 bg-white rounded-md mt-[-100px] border shadow-sm">
               <UploadableImage uploadedImage={{ position: "right", fit: "contain" }} />
             </div>
