@@ -1,7 +1,7 @@
 
 import React, { PropsWithChildren } from 'react'
 
-interface SimpleNode {
+export interface SimpleNode {
     id: number;
     name: string | null;
     path: string;
@@ -22,20 +22,20 @@ interface FileTreeNodeProps<TNodeType extends SimpleNode> {
 
 
   type FileTreeProps<T> = {
+    rootPath: string
     toggleExpanded: (id: number) => void
     renderItem: (ctx: T) => React.ReactNode;
     nodes: {[key: string]: T[]}
   }
   
-  const ROOT_PATH = "/characters";
   
-  export default function FileTree<T extends SimpleNode>({nodes, renderItem, toggleExpanded}: FileTreeProps<T>) {
+  export default function FileTree<T extends SimpleNode>({nodes, renderItem, toggleExpanded, rootPath}: FileTreeProps<T>) {
     
     return (
       <div>
         {nodes && (
           <ul>
-            {nodes[ROOT_PATH].map((c) => (
+            {nodes[rootPath].map((c) => (
               <BinderNode<T>
                 ctx={c}
                 renderItem={renderItem}
