@@ -6,20 +6,6 @@
 .editor > * {
     list-style-type: initial !important;
 }
-
-
-.editor-container {
-    background: #fff;
-    border: 1px solid red;
-    border-radius: 2px;
-    max-width: 600px;
-    color: #000;
-    position: relative;
-    line-height: 36px;
-    font-weight: 400;
-    text-align: left;
-    border-radius: 10px;
-  }
   
   .editor-input {
     min-height: 150px;

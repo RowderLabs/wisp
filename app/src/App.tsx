@@ -13,9 +13,9 @@ function App() {
   return (
     <div className="flex gap-4 h-screen bg-neutral text-slate-700">
       <div className="h-full w-[300px] shadow-md border">
-        <Binder/>
+        <Binder />
       </div>
-      <div className="basis-full">
+      <div className="basis-full flex flex-col">
         <div className="relative">
           <Banner className="relative">
             <UploadableImage uploadedImage={{ position: "center", fit: "cover" }} />
