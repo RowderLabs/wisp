@@ -10,9 +10,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "turbo": "^1.10.12"
-  },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.4"
   }
