@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "turbo run dev",
+    "app:dev": "pnpm --filter app dev",
     "lint": "turbo run lint"
   },
   "keywords": [],
