@@ -1,0 +1,8 @@
+{
+  "name": "@wisp/tsconfig",
+  "version": "1.0.0",
+  "files": ["./base.json", "./react-library.json"],
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

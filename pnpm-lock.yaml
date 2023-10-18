@@ -120,11 +120,16 @@ importers:
         specifier: ^4.4.4
         version: 4.4.4
 
+  packages/tsconfig: {}
+
   packages/ui:
     dependencies:
       '@types/react':
         specifier: ^18.2.15
         version: 18.2.15
+      '@wisp/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       react:
         specifier: ^18.2.0
         version: 18.2.0
