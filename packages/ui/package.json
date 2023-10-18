@@ -4,7 +4,9 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./index.css": "./index.css",
+    "./tailwind-config": "./tailwind.config.js"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +15,8 @@
     "@types/react": "^18.2.15",
     "react": "^18.2.0",
     "typescript": "^5.0.2"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.3"
   }
 }

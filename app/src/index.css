@@ -1,20 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+@import url('@wisp/ui/index.css');
 
 .editor > * {
-    list-style-type: initial !important;
+  list-style-type: initial !important;
 }
-  
-  .editor-input {
-    min-height: 150px;
-    resize: none;
-    font-size: 15px;
-    caret-color: rgb(5, 5, 5);
-    position: relative;
-    tab-size: 1;
-    outline: 0;
-    padding: 0px 10px 20px;
-    caret-color: #444;
-  }
+
+.editor-input {
+  min-height: 150px;
+  resize: none;
+  font-size: 15px;
+  caret-color: rgb(5, 5, 5);
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 0px 10px 20px;
+  caret-color: #444;
+}
