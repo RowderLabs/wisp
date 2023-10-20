@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "core",
 		"crates/*",
-    "app/src-tauri"
+    "apps/app/src-tauri"
 ]
 
 [workspace.dependencies]
