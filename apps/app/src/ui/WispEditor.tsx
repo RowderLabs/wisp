@@ -43,7 +43,7 @@ export default function WispEditor() {
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div className="w-full border border-red-100 relative text-left rounded-md leading-6 text-slate-800 p-4">
+      <div className="border bg-white relative max-w-[1000px] basis-full overflow-y-scroll shadow-sm rounded-md leading-6 text-slate-800 p-4">
         <ComponentPickerPlugin/>
         <ListPlugin/>
         <RichTextPlugin

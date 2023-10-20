@@ -16,7 +16,7 @@ path="src/lib.rs"
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
-wispcore = {path = "../../core" }
+wispcore = {path = "../../../core" }
 tauri = { version = "1.4", features = [ "api-all"] }
 prisma-client-rust = {workspace = true}
 serde = { workspace = true }

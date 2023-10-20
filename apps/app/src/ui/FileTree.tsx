@@ -1,8 +1,7 @@
 
 import React, { PropsWithChildren } from 'react'
-import { FileTreeContextProps } from '../context/FileTreeContext';
 
-interface SimpleNode {
+export interface SimpleNode {
     id: number;
     name: string | null;
     path: string;
@@ -23,21 +22,20 @@ interface FileTreeNodeProps<TNodeType extends SimpleNode> {
 
 
   type FileTreeProps<T> = {
+    rootPath: string
     toggleExpanded: (id: number) => void
     renderItem: (ctx: T) => React.ReactNode;
-    useFileTree: () => FileTreeContextProps<T>
+    nodes: {[key: string]: T[]}
   }
   
-  const ROOT_PATH = "/characters";
   
-  export default function FileTree<T extends SimpleNode>({useFileTree, renderItem, toggleExpanded}: FileTreeProps<T>) {
-    const {nodes} = useFileTree()
+  export default function FileTree<T extends SimpleNode>({nodes, renderItem, toggleExpanded, rootPath}: FileTreeProps<T>) {
     
     return (
       <div>
         {nodes && (
           <ul>
-            {nodes[ROOT_PATH].map((c) => (
+            {nodes[rootPath].map((c) => (
               <BinderNode<T>
                 ctx={c}
                 renderItem={renderItem}
