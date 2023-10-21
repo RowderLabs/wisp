@@ -1,11 +1,29 @@
-import React, { PropsWithChildren } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
+import { rectSortingStrategy, SortableContext, useSortable } from "@dnd-kit/sortable";
 
-export const DraggableGrid: React.FC<PropsWithChildren> = ({ children }) => {
-  return <div className="grid gap-4 grid-cols-12 w-full h-full">{children}</div>;
+type SortableGridProps = {
+  items: { id: number; name: string }[];
+};
+
+export const SortableGrid = ({ items }: SortableGridProps) => {
+  const onDragEnd = (event: DragEndEvent) => {};
+  return (
+    <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext strategy={rectSortingStrategy} items={items}>
+        <div className="grid grid-cols-12 gap-4 w-full h-full">
+          {items.map((child) => (
+            <SortableGridChild id={child.id} key={child.id} disabled={false} />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
 };
 
 type DraggableGridChildProps = {
+  id: number;
   disabled: boolean;
 } & VariantProps<typeof draggableGridChildVariants>;
 
@@ -29,10 +47,23 @@ const draggableGridChildVariants = cva("rounded-md bg-blue-400", {
   },
   defaultVariants: {
     rowSpan: 1,
-    colSpan: 12
-  }
+    colSpan: 12,
+  },
 });
 
-export const DraggableGridChild = ({ rowSpan, colSpan, disabled = false }: DraggableGridChildProps) => {
-  return <div className={draggableGridChildVariants({ rowSpan, colSpan })}></div>;
+export const SortableGridChild = ({ rowSpan, colSpan, disabled = false, id }: DraggableGridChildProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+  return (
+    <div
+      style={style}
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={draggableGridChildVariants({ rowSpan, colSpan })}
+    ></div>
+  );
 };
