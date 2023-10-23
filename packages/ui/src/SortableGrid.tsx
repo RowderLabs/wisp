@@ -1,29 +1,46 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { rectSortingStrategy, SortableContext, useSortable } from "@dnd-kit/sortable";
+import { arrayMove, rectSortingStrategy, SortableContext, useSortable } from "@dnd-kit/sortable";
 import { clsx } from "clsx";
+import { useState } from "react";
 
 type SortableGridChildVariants = VariantProps<typeof sortableGridChildVariants>;
 type SortableGridItem = {
   id: number;
-  rowSpan?: SortableGridChildVariants["rowSpan"];
-  colSpan?: SortableGridChildVariants["colSpan"];
-};
-type SortableGridProps = {
-  items: SortableGridItem[];
+  
 };
 
-export const SortableGrid = ({ items }: SortableGridProps) => {
-  const onDragEnd = (event: DragEndEvent) => {};
+type GridLayoutItem = {
+  rowSpan?: SortableGridChildVariants["rowSpan"];
+  colSpan?: SortableGridChildVariants["colSpan"];
+}
+type SortableGridProps = {
+  initialItems: SortableGridItem[];
+  layout?: GridLayoutItem[]
+};
+
+export const SortableGrid = ({ initialItems, layout }: SortableGridProps) => {
+  const [gridItems, setGridItems] = useState(initialItems)
+
   return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-      <SortableContext  strategy={rectSortingStrategy} items={items}>
+    <DndContext collisionDetection={closestCenter} onDragEnd={(e) => {
+      if (!e.over || !e.active) return
+
+      setGridItems((items) => {
+        const overIndex = items.findIndex(item => item.id === e.over?.id)
+        const activeIndex = items.findIndex(item => item.id === e.active.id)
+        const newArray = arrayMove(items, activeIndex, overIndex)
+        return newArray
+      })
+
+    }}>
+      <SortableContext strategy={rectSortingStrategy} items={gridItems}>
         <div className="grid grid-cols-12 gap-4 w-full h-full">
-          {items.map((child) => (
+          {gridItems.map((child, i) => (
             <SortableGridChild
-              rowSpan={child.rowSpan || 1}
-              colSpan={child.colSpan || 12}
+              rowSpan={layout ? layout[i].rowSpan : 1}
+              colSpan={layout ? layout[i].colSpan : 12}
               id={child.id}
               key={child.id}
             />
@@ -65,7 +82,7 @@ const sortableGridChildVariants = cva("rounded-md bg-blue-400", {
 export const SortableGridChild = ({ rowSpan, colSpan, id }: SortableGridChildProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
   };
   return (
