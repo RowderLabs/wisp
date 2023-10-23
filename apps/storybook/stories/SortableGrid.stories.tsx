@@ -12,14 +12,15 @@ type Story = StoryObj<typeof SortableGrid>;
 
 export const Default: Story = {
   args: {
-    items: [{id: 1, name: "First"}, {id: 2, name: "First"}, {id: 3, name: "First"}, {id: 4, name: "First"}]
+    items: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
   },
   render: (args) => {
     return (
       <div className="w-[400px] h-[400px]">
-        <SortableGrid {...args}>
-        </SortableGrid>
+        <SortableGrid {...args}></SortableGrid>
       </div>
     );
   },
 };
+
+

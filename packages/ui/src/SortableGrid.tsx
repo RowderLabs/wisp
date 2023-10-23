@@ -2,19 +2,31 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { rectSortingStrategy, SortableContext, useSortable } from "@dnd-kit/sortable";
+import { clsx } from "clsx";
 
+type SortableGridChildVariants = VariantProps<typeof sortableGridChildVariants>;
+type SortableGridItem = {
+  id: number;
+  rowSpan?: SortableGridChildVariants["rowSpan"];
+  colSpan?: SortableGridChildVariants["colSpan"];
+};
 type SortableGridProps = {
-  items: { id: number; name: string }[];
+  items: SortableGridItem[];
 };
 
 export const SortableGrid = ({ items }: SortableGridProps) => {
   const onDragEnd = (event: DragEndEvent) => {};
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-      <SortableContext strategy={rectSortingStrategy} items={items}>
+      <SortableContext  strategy={rectSortingStrategy} items={items}>
         <div className="grid grid-cols-12 gap-4 w-full h-full">
           {items.map((child) => (
-            <SortableGridChild id={child.id} key={child.id} disabled={false} />
+            <SortableGridChild
+              rowSpan={child.rowSpan || 1}
+              colSpan={child.colSpan || 12}
+              id={child.id}
+              key={child.id}
+            />
           ))}
         </div>
       </SortableContext>
@@ -22,12 +34,11 @@ export const SortableGrid = ({ items }: SortableGridProps) => {
   );
 };
 
-type DraggableGridChildProps = {
+type SortableGridChildProps = {
   id: number;
-  disabled: boolean;
-} & VariantProps<typeof draggableGridChildVariants>;
+} & SortableGridChildVariants;
 
-const draggableGridChildVariants = cva("rounded-md bg-blue-400", {
+const sortableGridChildVariants = cva("rounded-md bg-blue-400", {
   variants: {
     rowSpan: {
       1: "row-span-1",
@@ -51,7 +62,7 @@ const draggableGridChildVariants = cva("rounded-md bg-blue-400", {
   },
 });
 
-export const SortableGridChild = ({ rowSpan, colSpan, disabled = false, id }: DraggableGridChildProps) => {
+export const SortableGridChild = ({ rowSpan, colSpan, id }: SortableGridChildProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -63,7 +74,12 @@ export const SortableGridChild = ({ rowSpan, colSpan, disabled = false, id }: Dr
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={draggableGridChildVariants({ rowSpan, colSpan })}
-    ></div>
+      className={clsx(
+        sortableGridChildVariants({ rowSpan, colSpan }),
+        "flex item-center justify-center p-2"
+      )}
+    >
+      <span>{id}</span>
+    </div>
   );
 };
