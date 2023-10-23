@@ -12,8 +12,8 @@ type Story = StoryObj<typeof SortableGrid>;
 
 export const Default: Story = {
   args: {
-    initialItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }],
-    layout: [{colSpan: 3,}, {colSpan: 3,}, {colSpan: 3}, {colSpan: 6}, {colSpan: 4,}, {colSpan: 4,}, {colSpan: 4,}, {colSpan: 12}]
+    initialItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, {id: 5}],
+    layout: [{colSpan: 3}, {colSpan: 3}, {colSpan: 3}, {colSpan: 3, rowSpan: 4}, {colSpan: 9, rowSpan: 3}]
   },
   render: (args) => {
     return (
