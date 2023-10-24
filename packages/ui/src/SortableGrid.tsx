@@ -1,61 +1,55 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
+import { UniqueIdentifier } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { arrayMove, rectSortingStrategy, SortableContext, useSortable } from "@dnd-kit/sortable";
+import {
+  arraySwap,
+  rectSwappingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
 import { clsx } from "clsx";
-import { useState } from "react";
+import { PropsWithChildren } from "react";
+import { Sortable } from "./Sortable";
 
 type SortableGridChildVariants = VariantProps<typeof sortableGridChildVariants>;
 type SortableGridItem = {
   id: number;
 };
 
-type GridLayout = Record<number, GridLayoutDef>
+type GridLayout = Record<number, GridLayoutDef>;
 
 type GridLayoutDef = {
   rowSpan?: SortableGridChildVariants["rowSpan"];
   colSpan?: SortableGridChildVariants["colSpan"];
-}
+};
 type SortableGridProps = {
   initialItems: SortableGridItem[];
-  defaultColumns?: GridLayoutDef
-  layout?: GridLayout
+  defaultColumns?: GridLayoutDef;
+  layout?: GridLayout;
+};
+const Grid: React.FC<PropsWithChildren> = ({ children }) => {
+  return <div className="grid grid-cols-12 gap-8 w-full h-full">{children}</div>;
 };
 
-
 export const SortableGrid = ({ initialItems, layout, defaultColumns }: SortableGridProps) => {
-  const [gridItems, setGridItems] = useState(initialItems)
-
   return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={(e) => {
-      if (!e.over || !e.active) return
-
-      setGridItems((items) => {
-        const overIndex = items.findIndex(item => item.id === e.over?.id)
-        const activeIndex = items.findIndex(item => item.id === e.active.id)
-        const newArray = arrayMove(items, activeIndex, overIndex)
-        return newArray
-      })
-
-    }}>
-      <SortableContext strategy={rectSortingStrategy} items={gridItems}>
-        <div className="grid grid-cols-12 gap-4 w-full h-full">
-          {gridItems.map((child, i) => (
-            <SortableGridChild
-              rowSpan={layout && layout[i]?.rowSpan || defaultColumns?.rowSpan}
-              colSpan={layout && layout[i]?.colSpan || defaultColumns?.colSpan}
-              id={child.id}
-              key={child.id}
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+    <Sortable
+      renderItem={(item, index) => (
+        <SortableGridChild
+          id={item.id}
+          rowSpan={layout && layout[index]?.rowSpan || defaultColumns?.rowSpan}
+          colSpan={layout && layout[index]?.colSpan || defaultColumns?.colSpan}
+        />
+      )}
+      Container={Grid}
+      strategy={rectSwappingStrategy}
+      reorder={arraySwap}
+      initialItems={initialItems}
+    />
   );
 };
 
 type SortableGridChildProps = {
-  id: number;
+  id: UniqueIdentifier;
 } & SortableGridChildVariants;
 
 const sortableGridChildVariants = cva("rounded-md border border-slate-800 bg-slate-100", {
@@ -97,7 +91,6 @@ export const SortableGridChild = ({ rowSpan, colSpan, id }: SortableGridChildPro
       {...listeners}
       className={clsx(
         sortableGridChildVariants({ rowSpan, colSpan }),
-        "flex item-center justify-center p-2"
       )}
     >
       <span>{id}</span>
