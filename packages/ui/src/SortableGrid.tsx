@@ -9,6 +9,7 @@ import {
 import { clsx } from "clsx";
 import { PropsWithChildren } from "react";
 import { Sortable } from "./Sortable";
+import Grid, { GridProps } from "./Grid";
 
 type SortableGridChildVariants = VariantProps<typeof sortableGridChildVariants>;
 type SortableGridItem = {
@@ -25,12 +26,10 @@ type SortableGridProps = {
   initialItems: SortableGridItem[];
   defaultColumns?: GridLayoutDef;
   layout?: GridLayout;
-};
-const Grid: React.FC<PropsWithChildren> = ({ children }) => {
-  return <div className="grid grid-cols-12 gap-8 w-full h-full">{children}</div>;
-};
+} & GridProps
 
-export const SortableGrid = ({ initialItems, layout, defaultColumns }: SortableGridProps) => {
+
+export const SortableGrid = ({ initialItems, layout, defaultColumns, cols, gap}: SortableGridProps) => {
   return (
     <Sortable
       renderItem={(item, index) => (
@@ -40,7 +39,7 @@ export const SortableGrid = ({ initialItems, layout, defaultColumns }: SortableG
           colSpan={layout && layout[index]?.colSpan || defaultColumns?.colSpan}
         />
       )}
-      Container={Grid}
+      renderContainer={(items) => <Grid cols={cols} gap={gap}>{items}</Grid>}
       strategy={rectSwappingStrategy}
       reorder={arraySwap}
       initialItems={initialItems}

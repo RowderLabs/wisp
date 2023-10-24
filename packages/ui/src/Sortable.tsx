@@ -1,15 +1,8 @@
 import { DndContext, UniqueIdentifier, closestCenter } from "@dnd-kit/core";
-import type {
-  DragEndEvent,
-  DragStartEvent,
-  DraggableSyntheticListeners,
-  DraggableAttributes,
-} from "@dnd-kit/core";
-import { SortableContext, rectSortingStrategy, useSortable } from "@dnd-kit/sortable";
-import { CSS, Transform } from "@dnd-kit/utilities";
+import type { DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { SortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import React, { PropsWithChildren, forwardRef, useState } from "react";
-import { SortableGridChild } from "./SortableGrid";
+import React, { useState } from "react";
 
 type Item = { id: UniqueIdentifier };
 
@@ -18,17 +11,17 @@ interface Props<T extends Item> {
   strategy?: SortingStrategy;
   reorder?: typeof arrayMove;
   renderItem: (item: T, index: number) => React.ReactElement;
-  Container: any;
+  renderContainer: (renderedItems: ReturnType<Props<T>["renderItem"]>[]) => React.ReactElement;
 }
 export function Sortable<T extends Item>({
   initialItems,
   renderItem,
   strategy = rectSortingStrategy,
-  Container,
+  renderContainer,
   reorder = arrayMove,
 }: Props<T>) {
   const [items, setItems] = useState<T[]>(initialItems);
-
+  const renderedItems = items.map(renderItem)
 
   const onDragEnd = (e: DragEndEvent) => {
     if (!e.over || !e.active) return;
@@ -44,12 +37,8 @@ export function Sortable<T extends Item>({
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext strategy={strategy} items={initialItems}>
-        <Container>{items.map(renderItem)}</Container>
+        {renderContainer(renderedItems)}
       </SortableContext>
     </DndContext>
   );
-}
-
-interface SortableItemProps {
-  id: UniqueIdentifier;
 }

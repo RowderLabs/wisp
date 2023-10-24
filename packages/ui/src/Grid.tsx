@@ -26,7 +26,7 @@ const gridVariants = cva("grid w-full h-full", {
   },
 });
 
-type GridProps = {} & GridVariants
+export type GridProps = {} & GridVariants
 
 export default function Grid({children, cols, gap }: PropsWithChildren<GridProps>) {
   return <div className={gridVariants({cols, gap})}>{children}</div>;
