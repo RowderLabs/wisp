@@ -28,25 +28,21 @@ export function Sortable<T extends Item>({
   reorder = arrayMove,
 }: Props<T>) {
   const [items, setItems] = useState<T[]>(initialItems);
-  const [activeId, setActiveId] = useState<UniqueIdentifier>();
 
-  const onDragStart = (e: DragStartEvent) => {
-    setActiveId(e.active.id);
-  };
 
   const onDragEnd = (e: DragEndEvent) => {
     if (!e.over || !e.active) return;
 
     setItems((items) => {
       const overIndex = items.findIndex((item) => item.id === e.over?.id);
-      const activeIndex = items.findIndex((item) => item.id === activeId);
+      const activeIndex = items.findIndex((item) => item.id === e.active.id);
       const newArray = reorder(items, activeIndex, overIndex);
       return newArray;
     });
   };
 
   return (
-    <DndContext collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+    <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext strategy={strategy} items={initialItems}>
         <Container>{items.map(renderItem)}</Container>
       </SortableContext>
