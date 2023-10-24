@@ -8,19 +8,22 @@ import { useState } from "react";
 type SortableGridChildVariants = VariantProps<typeof sortableGridChildVariants>;
 type SortableGridItem = {
   id: number;
-  
 };
 
-type GridLayoutItem = {
+type GridLayout = Record<number, GridLayoutDef>
+
+type GridLayoutDef = {
   rowSpan?: SortableGridChildVariants["rowSpan"];
   colSpan?: SortableGridChildVariants["colSpan"];
 }
 type SortableGridProps = {
   initialItems: SortableGridItem[];
-  layout?: GridLayoutItem[]
+  defaultColumns?: GridLayoutDef
+  layout?: GridLayout
 };
 
-export const SortableGrid = ({ initialItems, layout }: SortableGridProps) => {
+
+export const SortableGrid = ({ initialItems, layout, defaultColumns }: SortableGridProps) => {
   const [gridItems, setGridItems] = useState(initialItems)
 
   return (
@@ -39,8 +42,8 @@ export const SortableGrid = ({ initialItems, layout }: SortableGridProps) => {
         <div className="grid grid-cols-12 gap-4 w-full h-full">
           {gridItems.map((child, i) => (
             <SortableGridChild
-              rowSpan={layout ? layout[i].rowSpan : 1}
-              colSpan={layout ? layout[i].colSpan : 12}
+              rowSpan={layout && layout[i]?.rowSpan || defaultColumns?.rowSpan}
+              colSpan={layout && layout[i]?.colSpan || defaultColumns?.colSpan}
               id={child.id}
               key={child.id}
             />
@@ -55,7 +58,7 @@ type SortableGridChildProps = {
   id: number;
 } & SortableGridChildVariants;
 
-const sortableGridChildVariants = cva("rounded-md bg-blue-400", {
+const sortableGridChildVariants = cva("rounded-md border border-slate-800 bg-slate-100", {
   variants: {
     rowSpan: {
       1: "row-span-1",
@@ -76,7 +79,7 @@ const sortableGridChildVariants = cva("rounded-md bg-blue-400", {
   },
   defaultVariants: {
     rowSpan: 1,
-    colSpan: 12,
+    colSpan: 3,
   },
 });
 
