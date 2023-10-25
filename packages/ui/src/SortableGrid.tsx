@@ -1,20 +1,16 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  arraySwap,
-  rectSwappingStrategy,
-  useSortable,
-} from "@dnd-kit/sortable";
+import { arraySwap, rectSwappingStrategy, useSortable } from "@dnd-kit/sortable";
 import { clsx } from "clsx";
 import { PropsWithChildren } from "react";
 import { Sortable } from "./Sortable";
 import Grid, { GridProps } from "./Grid";
 
 type SortableGridChildVariants = VariantProps<typeof sortableGridChildVariants>;
-type SortableGridItem = {
+type SortableGridItem<T = {}> = {
   id: number;
-};
+} & T
 
 type GridLayout = Record<number, GridLayoutDef>;
 
@@ -22,24 +18,37 @@ type GridLayoutDef = {
   rowSpan?: SortableGridChildVariants["rowSpan"];
   colSpan?: SortableGridChildVariants["colSpan"];
 };
-type SortableGridProps = {
-  initialItems: SortableGridItem[];
+type SortableGridProps<T> = {
+  initialItems: SortableGridItem<T>[];
+  gridChild: (item: T) => React.ReactElement;
   defaultColumns?: GridLayoutDef;
   layout?: GridLayout;
-} & GridProps
+} & GridProps;
 
-
-export const SortableGrid = ({ initialItems, layout, defaultColumns, cols, gap}: SortableGridProps) => {
+export function SortableGrid<T = unknown>({
+  initialItems,
+  layout,
+  defaultColumns,
+  cols,
+  gap,
+  gridChild,
+}: SortableGridProps<T>){
   return (
     <Sortable
       renderItem={(item, index) => (
         <SortableGridChild
           id={item.id}
-          rowSpan={layout && layout[index]?.rowSpan || defaultColumns?.rowSpan}
-          colSpan={layout && layout[index]?.colSpan || defaultColumns?.colSpan}
-        />
+          rowSpan={(layout && layout[index]?.rowSpan) || defaultColumns?.rowSpan}
+          colSpan={(layout && layout[index]?.colSpan) || defaultColumns?.colSpan}
+        >
+          {gridChild && gridChild(item)}
+        </SortableGridChild>
       )}
-      renderContainer={(items) => <Grid cols={cols} gap={gap}>{items}</Grid>}
+      renderContainer={(items) => (
+        <Grid cols={cols} gap={gap}>
+          {items}
+        </Grid>
+      )}
       strategy={rectSwappingStrategy}
       reorder={arraySwap}
       initialItems={initialItems}
@@ -76,7 +85,12 @@ const sortableGridChildVariants = cva("rounded-md border border-slate-800 bg-sla
   },
 });
 
-export const SortableGridChild = ({ rowSpan, colSpan, id }: SortableGridChildProps) => {
+export const SortableGridChild = ({
+  rowSpan,
+  colSpan,
+  id,
+  children,
+}: PropsWithChildren<SortableGridChildProps>) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -88,11 +102,9 @@ export const SortableGridChild = ({ rowSpan, colSpan, id }: SortableGridChildPro
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={clsx(
-        sortableGridChildVariants({ rowSpan, colSpan }),
-      )}
+      className={clsx(sortableGridChildVariants({ rowSpan, colSpan }))}
     >
-      <span>{id}</span>
+      {children}
     </div>
   );
 };
