@@ -72,3 +72,20 @@ export const WithGridData: Story<{name?: string}> = {
   },
 };
 
+
+export const DisabledItems: Story = {
+  args: {
+    gridChild: (item) => <p className="p-2 bg-blue-500 text-white">{item.disabled ? 'Hello I\'m disabled rn!' : 'You can drag me!'}</p>,
+    gap: 4,
+    cols: 12,
+    initialItems: [{ id: 1, disabled: true }, { id: 2 }, { id: 4, disabled: true}, { id: 5 }, { id: 6, disabled: true }, { id: 7 }, { id: 8 }],
+    defaultColumns: { colSpan: 4, rowSpan: 1 },
+  },
+  render: (args) => {
+    return (
+      <div className="w-[600px] h-[600px]">
+        <SortableGrid<{name?: string}> {...args} />
+      </div>
+    );
+  },
+};
