@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "app:dev": "pnpm --filter app dev",
+    "playground:dev": "pnpm --filter storybook playground",
     "lint": "turbo run lint"
   },
   "keywords": [],
