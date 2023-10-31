@@ -1,13 +1,17 @@
 import React from "react";
 import Grid, { GridProps } from "./Grid";
-import UploadableImage, { UploadableImageProps } from "./UploadableImage";
+import { ImageUploader, ImageUploaderProps } from "./ImageUploader";
 
 const panels = {
   grid: {
     renderContent: (args: GridProps) => <Grid {...args} />,
   },
   image: {
-    renderContent: (args: UploadableImageProps) => <UploadableImage {...args} />,
+    renderContent: (args: ImageUploaderProps) => (
+      <ImageUploader {...args}>
+        <div className="w-[600px] h-[600px]"></div>
+      </ImageUploader>
+    ),
   },
 };
 

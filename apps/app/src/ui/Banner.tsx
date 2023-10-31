@@ -2,7 +2,7 @@ import clsx from "clsx";
 import React, { PropsWithChildren } from "react";
 
 type BannerProps = {
-  className: string;
+  className?: string;
 };
 
 export const Banner: React.FC<PropsWithChildren<BannerProps>> = ({ children, className }) => {

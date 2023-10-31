@@ -14,9 +14,7 @@ export const Default: Story = {
     render: (_) => {
         const panel = createPanel('image', {size: 'sm'})
       return (
-        <div className="w-[800px] h-[600px]">
           <Panel id={1} content={panel.content}/>
-        </div>
       );
     },
   };
