@@ -17,27 +17,48 @@ export function ImageUploader({
   opts,
   onUpload,
   children,
-}: PropsWithChildren<ImageUploaderProps>) {
-  const { image, uploadImage } = useUploadableImage({ onUpload });
+}: ImageUploaderProps & {
+  children: (
+    props: Omit<ImageUploaderProps, "children" | "onUpload"> & {
+      wrapperStyles: string;
+    } & Omit<UploaderProps, "imageOpts">
+  ) => React.ReactNode;
+}) {
+  const { image: src, uploadImage: handleUpload } = useUploadableImage({ onUpload });
+  const wrapperStyles = "relative";
 
   return (
-    <div>
-      {children}
-      <div className="absolute top-0 left-0 w-full h-full text-slate-600">
-        {image ? <Image {...opts?.image} src={image} /> : <Uploader handleUpload={uploadImage} />}
-      </div>
-    </div>
+    <>
+      {children({
+        src,
+        opts,
+        wrapperStyles,
+        handleUpload,
+      })}
+    </>
   );
 }
 
-const Uploader = ({ handleUpload }: { handleUpload: () => Promise<void> }) => {
+type UploaderProps = {
+  src: string | null;
+  imageOpts?: VariantProps<typeof imageVariants>;
+  handleUpload: () => Promise<void>;
+};
+
+export const ImageUploadOverlay = ({ src, handleUpload, imageOpts }: UploaderProps) => {
   return (
-    <div onClick={handleUpload} className={imageUploaderVariants()}>
-      <div className="flex flex-col items-center gap-2">
-        <span className="text-[32px]">
-          <HiPhoto />
-        </span>
-      </div>
+    <div className="absolute top-0 left-0 w-full h-full text-slate-600">
+      {src ? (
+        <Image {...imageOpts} src={src} />
+      ) : (
+        <div onClick={handleUpload} className={imageUploaderVariants()}>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-[32px]">
+              <HiPhoto />
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
