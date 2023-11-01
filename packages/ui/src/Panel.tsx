@@ -1,15 +1,20 @@
 import React from "react";
 import Grid, { GridProps } from "./Grid";
-import { ImageUploader, ImageUploaderProps } from "./ImageUploader";
+import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUploader";
+import { SortableGrid, SortableGridProps } from "./SortableGrid";
 
 const panels = {
   grid: {
-    renderContent: (args: GridProps) => <Grid {...args} />,
+    renderContent: <TData,>(args: SortableGridProps<TData>) => <SortableGrid {...args} />,
   },
   image: {
     renderContent: (args: ImageUploaderProps) => (
       <ImageUploader {...args}>
-        <div className="w-[600px] h-[600px]"></div>
+        {({ wrapperStyles, ...props }) => (
+          <div className="w-[400px] h-[400px]">
+            <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+          </div>
+        )}
       </ImageUploader>
     ),
   },
@@ -21,15 +26,20 @@ type PanelProps = {
   size?: "sm" | "md" | "lg";
 };
 
-type PanelRenderProps<T extends keyof PanelDef> = Parameters<PanelDef[T]["renderContent"]>[0];
+type PanelKey = keyof typeof panels;
+type PanelDefinition<TData> = {
+  [key in PanelKey]: {
+    renderContent: (args: Parameters<(typeof panels)[key]["renderContent"]>[0]) => JSX.Element; // You can specify a more specific type if needed
+  };
+};
 
-type PanelDef = typeof panels;
-
-export const createPanel = <T extends keyof PanelDef>(
-  pType: T,
-  opts: (PanelRenderProps<T> | undefined) & Omit<PanelProps, "id" | "content">
-): Omit<PanelProps, "id"> => {
-  return { size: opts.size, content: panels[pType].renderContent({ ...opts }) };
+export const createPanel = <TData, TKey extends PanelKey>(
+  pType: TKey,
+  opts: Parameters<PanelDefinition<TData>[TKey]["renderContent"]>[0] &
+    Pick<PanelProps, 'size'>
+) => {
+  const content = panels[pType].renderContent as PanelDefinition<TData>[TKey]["renderContent"];
+  return { size: opts.size, content: content({ ...opts }) };
 };
 
 export function Panel({ content, id }: PanelProps) {

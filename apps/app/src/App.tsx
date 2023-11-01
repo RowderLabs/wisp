@@ -14,7 +14,7 @@ function App() {
 
   return (
     <div className="flex gap-4 h-screen bg-neutral text-slate-700">
-      <div className="h-full w-[300px] shadow-md border">
+      <div className="h-full w-[300px] shadow-md border bg-white">
         <Binder />
       </div>
       <div className="basis-full flex flex-col">
@@ -52,7 +52,6 @@ function App() {
             )}
           </div>
         </div>
-        <WispEditor />
       </div>
     </div>
   );

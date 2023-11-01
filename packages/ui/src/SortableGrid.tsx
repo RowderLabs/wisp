@@ -13,7 +13,7 @@ type GridLayoutDef = {
   rowSpan?: SortableGridChildVariants["rowSpan"];
   colSpan?: SortableGridChildVariants["colSpan"];
 };
-type SortableGridProps<T> = {
+export type SortableGridProps<T> = {
   initialItems: SortableGridItem<T>[];
   gridChild: (item: SortableGridItem<T>) => React.ReactElement;
   defaultColumns?: GridLayoutDef;
