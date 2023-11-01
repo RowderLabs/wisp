@@ -17,6 +17,7 @@ const gridVariants = cva("grid w-full h-full", {
         4: 'grid-cols-4',
         6: 'grid-cols-6', 
         8: 'grid-cols-8',
+        9: 'grid-cols-9',
         12: 'grid-cols-12'
     }
   },

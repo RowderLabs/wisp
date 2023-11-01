@@ -10,6 +10,7 @@ const imageUploaderVariants = cva(
 
 export type ImageUploaderProps = {
   onUpload?: () => void;
+  wrapperStyle?: React.CSSProperties,
   opts?: { image?: VariantProps<typeof imageVariants> };
 } & VariantProps<typeof imageUploaderVariants>;
 
@@ -17,22 +18,21 @@ export function ImageUploader({
   opts,
   onUpload,
   children,
+  wrapperStyle
 }: ImageUploaderProps & {
   children: (
-    props: Omit<ImageUploaderProps, "children" | "onUpload"> & {
-      wrapperStyles: string;
-    } & Omit<UploaderProps, "imageOpts">
+    props: Omit<ImageUploaderProps, "children" | "onUpload">
+    & Omit<UploaderProps, "imageOpts">
   ) => React.ReactNode;
 }) {
   const { image: src, uploadImage: handleUpload } = useUploadableImage({ onUpload });
-  const wrapperStyles = "relative";
 
   return (
     <>
       {children({
         src,
         opts,
-        wrapperStyles,
+        wrapperStyle: {position: 'relative'},
         handleUpload,
       })}
     </>
