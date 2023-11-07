@@ -9,23 +9,19 @@ import { ImageUploadOverlay, ImageUploader, Panel, PanelProps, createPanel } fro
 import clsx from "clsx";
 import { useState } from "react";
 
-
 function App() {
-  const [panel, setPanel] = useState<Omit<PanelProps, 'id'>>()
-  const setImagePanel = () => {
-    setPanel(createPanel('image', {}))
-  }
-
+  const [panel, setPanel] = useState<Omit<PanelProps, "id">>(createPanel('gallery', {itemCount: 4}));
 
   return (
     <div className="flex gap-4 h-screen bg-neutral text-slate-700">
       <div className="h-full w-[300px] shadow-md border bg-white">
         <Binder />
       </div>
-      <div style={{height: '600px', width: '900px'}} className="grid grid-cols-3">
-        {panel && <Panel id={1} {...panel} />}
+      <div>
+        <div className="w-[600px] h-[600px]">
+          <Panel id={1} content={panel.content} />
+        </div>
       </div>
-      <button onClick={setImagePanel}>Set To Image</button>
     </div>
   );
 }

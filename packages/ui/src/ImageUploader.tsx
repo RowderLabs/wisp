@@ -32,7 +32,7 @@ export function ImageUploader({
       {children({
         src,
         opts,
-        wrapperStyle: {position: 'relative'},
+        wrapperStyle: {position: 'relative', width: '100%', height: '100%'},
         handleUpload,
       })}
     </>
