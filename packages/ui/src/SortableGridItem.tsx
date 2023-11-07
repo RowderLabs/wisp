@@ -10,7 +10,7 @@ type SortableGridChildProps = {
   disabled?: boolean;
 } & SortableGridChildVariants;
 
-const sortableGridChildVariants = cva("rounded-md bg-white border h-[150px] overflow-hidden", {
+const sortableGridChildVariants = cva("rounded-md bg-white border min-h-[200px] overflow-hidden", {
   variants: {
     rowSpan: {
       1: "row-span-1",

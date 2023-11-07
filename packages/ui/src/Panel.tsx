@@ -2,16 +2,14 @@ import React from "react";
 import Grid, { GridProps } from "./Grid";
 import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUploader";
 import { SortableGrid, SortableGridProps } from "./SortableGrid";
+import clsx from "clsx";
 
 const panels = {
-  grid: {
-    renderContent: <TData,>(args: SortableGridProps<TData>) => <SortableGrid {...args} />,
-  },
   image: {
     renderContent: (args: ImageUploaderProps) => (
       <ImageUploader {...args}>
-        {({ wrapperStyles, ...props }) => (
-          <div className="w-[400px] h-[400px]">
+        {({ wrapperStyle, ...props }) => (
+          <div style={wrapperStyle}>
             <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
           </div>
         )}
@@ -20,7 +18,7 @@ const panels = {
   },
 };
 
-type PanelProps = {
+export type PanelProps = {
   id: number;
   content: JSX.Element;
   size?: "sm" | "md" | "lg";
@@ -35,13 +33,12 @@ type PanelDefinition<TData> = {
 
 export const createPanel = <TData, TKey extends PanelKey>(
   pType: TKey,
-  opts: Parameters<PanelDefinition<TData>[TKey]["renderContent"]>[0] &
-    Pick<PanelProps, 'size'>
+  opts: Parameters<PanelDefinition<TData>[TKey]["renderContent"]>[0] & Pick<PanelProps, "size">
 ) => {
   const content = panels[pType].renderContent as PanelDefinition<TData>[TKey]["renderContent"];
   return { size: opts.size, content: content({ ...opts }) };
 };
 
 export function Panel({ content, id }: PanelProps) {
-  return <div>{content}</div>;
+  return <>{content}</>;
 }

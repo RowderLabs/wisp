@@ -1,4 +1,5 @@
 import { VariantProps, cva } from "class-variance-authority";
+import clsx from "clsx";
 import React, { PropsWithChildren } from "react";
 
 type GridVariants = VariantProps<typeof gridVariants>;
@@ -17,6 +18,7 @@ const gridVariants = cva("grid w-full h-full", {
         4: 'grid-cols-4',
         6: 'grid-cols-6', 
         8: 'grid-cols-8',
+        9: 'grid-cols-9',
         12: 'grid-cols-12'
     }
   },
@@ -26,8 +28,8 @@ const gridVariants = cva("grid w-full h-full", {
   },
 });
 
-export type GridProps = {} & GridVariants
+export type GridProps = {className?: string} & GridVariants
 
-export default function Grid({children, cols, gap }: PropsWithChildren<GridProps>) {
-  return <div className={gridVariants({cols, gap})}>{children}</div>;
+export default function Grid({children, cols, gap, className }: PropsWithChildren<GridProps>) {
+  return <div className={clsx(className, gridVariants({cols, gap}))}>{children}</div>;
 }
