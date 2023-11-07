@@ -5,31 +5,6 @@ import { SortableGrid, SortableGridProps } from "./SortableGrid";
 import clsx from "clsx";
 
 const panels = {
-  gallery: {
-    renderContent: ({
-      itemCount,
-    }: {
-      itemCount: NonNullable<SortableGridProps<unknown>["cols"]>;
-    }) => {
-      const items = Array.from({ length: itemCount }, (_, i) => ({ id: i + 1 }));
-      return (
-        <SortableGrid
-          initialItems={items}
-          cols={itemCount}
-          defaultColumns={{ colSpan: 4 }}
-          gridChild={(item) => (
-            <ImageUploader>
-              {({ wrapperStyle, ...props }) => (
-                <div style={wrapperStyle}>
-                  <ImageUploadOverlay {...props} />
-                </div>
-              )}
-            </ImageUploader>
-          )}
-        />
-      );
-    },
-  },
   image: {
     renderContent: (args: ImageUploaderProps) => (
       <ImageUploader {...args}>

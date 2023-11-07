@@ -22,6 +22,7 @@ export type SortableGridProps<T> = {
 
 export function SortableGrid<T = unknown>({
   initialItems,
+  className,
   layout,
   defaultColumns,
   cols,
@@ -42,7 +43,7 @@ export function SortableGrid<T = unknown>({
         </SortableGridChild>
       )}
       renderContainer={(items) => (
-        <Grid cols={cols} gap={gap}>
+        <Grid className={className} cols={cols} gap={gap}>
           {items}
         </Grid>
       )}
