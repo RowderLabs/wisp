@@ -1,4 +1,4 @@
-interface TreeViewNode {
+export interface TreeViewNode {
   path: string | null;
   name: string;
   children?: TreeViewNode[];
