@@ -1,39 +1,59 @@
-export interface TreeViewNode {
-  path: string | null;
+import { PropsWithChildren } from "react";
+import { TreeViewContext, TreeViewContextProvider, useTreeView } from "./hooks/TreeViewContext";
+
+export type TreeViewItem = {
+  id: string;
   name: string;
-  children?: TreeViewNode[];
-  expanded: boolean;
-  isCollection: boolean;
-}
+  children: string[];
+};
 
-type TreeViewItemProps = {} & Omit<TreeViewNode, "children">;
+export function TreeViewNode({
+  name,
+  id,
+  children,
+}: {
+  name: string;
+  id: string;
+  children: string[];
+}) {
+  const { data, open, dispatch } = useTreeView();
 
-export function TreeViewItem({ name }: TreeViewItemProps) {
-  return <div className="rounded-md border p-1">{name}</div>;
-}
-
-type TreeViewExpanderProps = {} & TreeViewNode;
-
-export function TreeViewExpander({ children, name, expanded }: TreeViewExpanderProps) {
-  const childNodes = children?.map((child) =>
-    child.children ? <TreeViewExpander key={child.path} {...child} /> : <TreeViewItem key={child.path} {...child} />
+  return (
+    <li className="rounded-md select-none flex flex-col cursor-pointer list-none">
+      <div
+        onClick={() =>
+          open.get(id) ? dispatch({ id, type: "CLOSE" }) : dispatch({ id, type: "OPEN" })
+        }
+        className="rounded-md px-1 whitespace-nowrap overflow-hidden hover:bg-blue-100"
+      >
+        {name}
+      </div>
+      {children.length > 0 && open.get(id) && (
+        <ul className="pl-4">
+          {children.map((c) => (
+            <TreeViewNode key={data[c].id} {...data[c]} />
+          ))}
+        </ul>
+      )}
+    </li>
   );
+}
+
+export function TreeViewRoot() {
+  const { data } = useTreeView();
   return (
     <>
-      <div>
-        <span>{name}</span>
-      </div>
-      {expanded && <div className="pl-2">{childNodes}</div>}
+      {data["root"].children.map((c) => (
+        <TreeViewNode key={data[c].id} {...data[c]} />
+      ))}
     </>
   );
 }
-type TreeViewProps = {
-  data: TreeViewNode[];
-};
-export function TreeView({ data }: TreeViewProps) {
-  const nodes = data.map((node) =>
-    node.children ? <TreeViewExpander key={node.path} {...node} /> : <TreeViewItem key={node.path} {...node} />
-  );
 
-  return <div>{nodes}</div>;
+export function TreeView({ items }: { items: Record<string, TreeViewItem> }) {
+  return (
+    <TreeViewContextProvider initialItems={items}>
+      <TreeViewRoot />
+    </TreeViewContextProvider>
+  );
 }
