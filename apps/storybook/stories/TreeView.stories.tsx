@@ -16,7 +16,7 @@ export const Default: Story = {
             root: {
                 id: 'root',
                 name: 'root',
-                children: ['item-1', 'item-2']
+                children: ['item-1', 'item-2', 'item-4']
             },
             'item-1': {
                 id: 'item-1',
@@ -32,6 +32,11 @@ export const Default: Story = {
                 id: 'item-3',
                 children: [],
                 name: 'Item 3'
+            },
+            'item-4': {
+                id: 'item-4',
+                children: [],
+                name: 'Item 4'
             }
         }
     },
