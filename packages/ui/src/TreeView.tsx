@@ -17,33 +17,24 @@ type TreeViewProps = {
 
 export function TreeView({ initialData }: TreeViewProps) {
   const [treeData, setTreeData] = useState<Record<string, TreeViewNode>>(initialData);
-  const [test, setTest] = useState<Map<string, boolean | undefined>>(
-    new Map([
-      ["root", true],
-      ["item-1", true],
-      ["item-3", true],
-    ])
-  );
-  const [viewState, setViewState] = useState<Map<string, boolean | undefined>>(
-    new Map([
-      ["root", true],
-      ["item-1", true],
-      ["item-3", true],
-    ])
-  );
-  const flattenedTree = useMemo(() => flattenTree("root"), [treeData]);
+  const [viewState, setViewState] = useState<Map<string, boolean | undefined>>(new Map([["root", true]]));
+  const flattenedTree = useMemo(() => flattenTree("root"), [treeData, viewState]);
 
-  function collapseNodes(id: string) {
+  function toggleExpand(id: string) {
     //find all folder children
     const nodeViewState = viewState.get(id) ? undefined : true;
-    const folders = new Map(
-      flattenTree(id)
-        .filter((node) => node.children.length > 0)
-        .map((node) => [node.id, nodeViewState])
-    );
-    setViewState((old) => {
-      return new Map([...new Map(old).set(id, nodeViewState), ...folders]);
-    });
+    setViewState((old) => new Map(old).set(id, nodeViewState));
+  }
+
+  function expandAll() {
+    const expandAllViewState: [string, boolean | undefined][] = Object.keys(treeData)
+      .filter((key) => treeData[key].children.length > 0)
+      .map((key) => [key, true]);
+    setViewState(new Map([...expandAllViewState]));
+  }
+
+  function collapseAll() {
+    setViewState(new Map([['root', true]]));
   }
 
   function flattenTree(rootId: string) {
@@ -57,6 +48,10 @@ export function TreeView({ initialData }: TreeViewProps) {
       if (curr.id !== rootId) result.push(curr);
       parentId = curr.id;
 
+      //skip processing children if parent not visible
+      if (!viewState.get(parentId)) {
+        continue;
+      }
       for (let i = curr.children.length - 1; i >= 0; i--) {
         const child = treeData[curr.children[i]];
         stack.push({ ...child, depth: curr.depth + 1, parentId });
@@ -70,12 +65,16 @@ export function TreeView({ initialData }: TreeViewProps) {
     <div>
       {flattenedTree.map((node) => (
         <TreeViewNode
-          handleExpand={() => collapseNodes(node.id)}
+          handleExpand={() => toggleExpand(node.id)}
           visible={!node.parentId || viewState.get(node.parentId) === true}
           isCollection={node.children.length > 0}
           {...node}
         />
       ))}
+      <div className="mt-2">
+        <button className="rounded-md border p-2"  onClick={expandAll}>Expand All</button>
+        <button className="rounded-md border p-2" onClick={collapseAll}>Collapse All</button>
+      </div>
     </div>
   );
 }
@@ -89,13 +88,7 @@ type TreeViewNodeProps = {
   depth: number;
 };
 
-export function TreeViewNode({
-  name,
-  isCollection,
-  visible,
-  depth,
-  handleExpand,
-}: TreeViewNodeProps) {
+export function TreeViewNode({ name, isCollection, visible, depth, handleExpand }: TreeViewNodeProps) {
   return (
     <>
       {visible && (
