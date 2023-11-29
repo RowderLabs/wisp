@@ -12,11 +12,11 @@ type Story = StoryObj<typeof TreeView>;
 
 export const Default: Story = {
     args: {
-        items: {
+        initialData: {
             root: {
                 id: 'root',
                 name: 'root',
-                children: ['item-1', 'item-2', 'item-4']
+                children: ['item-1', 'item-2']
             },
             'item-1': {
                 id: 'item-1',
@@ -30,7 +30,7 @@ export const Default: Story = {
             },
             'item-3': {
                 id: 'item-3',
-                children: [],
+                children: ['item-4'],
                 name: 'Item 3'
             },
             'item-4': {
