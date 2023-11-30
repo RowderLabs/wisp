@@ -51,12 +51,18 @@ export const Default: Story = {
         treeRef.current?.collapseAll()
     }
 
+    const deleteItemOne = () => {
+        console.log(treeRef.current?.deleteNode('item-1'))
+    }
+
     return (
       <div className="w-[300px] h-[600px]">
         <TreeView ref={treeRef} {...args} />
         <div className="mb-2">
           <button className="rounded-md p-1 text-sm  border" onClick={expandAll}>Expand All</button>
           <button className="rounded-md p-1 text-sm  border"  onClick={collapseAll}>Collapse All</button>
+          <button className="rounded-md p-1 text-sm  border"  onClick={deleteItemOne}>Delete Item One</button>
+
         </div>
       </div>
     );
