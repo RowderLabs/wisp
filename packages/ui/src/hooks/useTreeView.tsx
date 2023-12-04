@@ -17,10 +17,6 @@ export type TreeViewApiHandle = {
   toggleExpand: (id: string) => void;
   deleteNode: (id: string) => void;
 };
-type TreeViewProps = {
-  initialData: Record<string, TreeViewNode>;
-  indentation?: number;
-};
 
 export function useTreeView({ initialData }: { initialData: Record<string, TreeViewNode> }) {
   const [treeData, setTreeData] = useState<Record<string, TreeViewNode>>(initialData);
@@ -48,10 +44,7 @@ export function useTreeView({ initialData }: { initialData: Record<string, TreeV
     setViewState(new Map([["root", true]]));
   }
 
-  const flattenedTree = useMemo(
-    () => buildTree({ rootId: "root", treeData, viewState }),
-    [treeData, viewState]
-  );
+  
 
   const treeApi = {
     viewState,
@@ -61,5 +54,5 @@ export function useTreeView({ initialData }: { initialData: Record<string, TreeV
     deleteNode,
   };
 
-  return { treeApi, flattenedTree };
+  return {treeData, treeApi}
 }

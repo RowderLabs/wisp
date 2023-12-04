@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { TreeView } from "@wisp/ui";
-import { TreeViewApiHandle } from "@wisp/ui/src/hooks/useTreeView";
+import { useTreeView } from "@wisp/ui/hooks"
 
 const meta: Meta<typeof TreeView> = {
   component: TreeView,
@@ -13,7 +13,7 @@ type Story = StoryObj<typeof TreeView>;
 export const Default: Story = {
   args: {
     indentation: 20,
-    initialData: {
+    treeData: {
       root: {
         id: "root",
         name: "root",
@@ -42,27 +42,23 @@ export const Default: Story = {
     },
   },
   render: (args) => {
-    const treeRef = useRef<TreeViewApiHandle>(null);
-
-    const expandAll = () => {
-        treeRef.current?.expandAll()
-    }
-    const collapseAll = () => {
-        treeRef.current?.collapseAll()
-    }
-
-    const deleteItemOne = () => {
-        console.log(treeRef.current?.deleteNode('item-1'))
-    }
+    const { treeData, treeApi } = useTreeView({ initialData: args.treeData });
 
     return (
       <div className="w-[300px] h-[600px]">
-        <TreeView ref={treeRef} {...args} />
+        <TreeView
+          onExpansionChange={treeApi.toggleExpand}
+          treeData={treeData}
+          indentation={args.indentation}
+          {...treeApi}
+        />
         <div className="mb-2">
-          <button className="rounded-md p-1 text-sm  border" onClick={expandAll}>Expand All</button>
-          <button className="rounded-md p-1 text-sm  border"  onClick={collapseAll}>Collapse All</button>
-          <button className="rounded-md p-1 text-sm  border"  onClick={deleteItemOne}>Delete Item One</button>
-
+          <button className="rounded-md p-1 text-sm  border" onClick={treeApi.expandAll}>
+            Expand All
+          </button>
+          <button className="rounded-md p-1 text-sm  border" onClick={treeApi.collapseAll}>
+            Collapse All
+          </button>
         </div>
       </div>
     );

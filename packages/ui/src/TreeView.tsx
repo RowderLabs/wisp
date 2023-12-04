@@ -1,7 +1,8 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useState } from "react";
-import { TreeViewApiHandle, useTreeView } from "./hooks/useTreeView";
+import { TreeViewApiHandle, TreeViewNode } from "./hooks/useTreeView";
 import { HiChevronRight, HiChevronDown } from "react-icons/hi";
 import { HiDocumentText } from "react-icons/hi";
+import { buildTree } from "./util/treeView";
 
 type TreeViewNodeInner = {
   id: string;
@@ -11,29 +12,32 @@ type TreeViewNodeInner = {
   children: string[];
 };
 
-type TreeViewNode = Omit<TreeViewNodeInner, "parentId" | "depth">;
 
 type TreeViewProps = {
-  initialData: Record<string, TreeViewNode>;
+  treeData: Record<string, TreeViewNode>;
+  viewState: Map<string, boolean | undefined>;
+  onExpansionChange: (id: string) => void;
   indentation?: number;
 };
 
 export const TreeView = forwardRef<TreeViewApiHandle, TreeViewProps>(function TreeViewInner(
-  { initialData, indentation },
+  { treeData, viewState, indentation, onExpansionChange },
   ref
 ) {
 
-  const { flattenedTree, treeApi } = useTreeView({ initialData });
-  useImperativeHandle(ref, () => treeApi, [])
+  const flattenedTree = useMemo(
+    () => buildTree({ rootId: "root", treeData, viewState }),
+    [treeData, viewState]
+  );
 
   return (
     <div>
       {flattenedTree.map((node) => (
         <TreeViewNode
           indentation={indentation || 25}
-          handleExpand={() => treeApi.toggleExpand(node.id)}
-          visible={!node.parentId || treeApi.viewState.get(node.parentId) === true}
-          expanded={node.children.length > 0 && treeApi.viewState.get(node.id) === true}
+          handleExpand={() => onExpansionChange(node.id)}
+          visible={!node.parentId || viewState.get(node.parentId) === true}
+          expanded={node.children.length > 0 && viewState.get(node.id) === true}
           isCollection={node.children.length > 0}
           {...node}
         />
@@ -53,7 +57,7 @@ type TreeViewNodeProps = {
   depth: number;
 };
 
-export function TreeViewNode({
+function TreeViewNode({
   name,
   isCollection,
   visible,
