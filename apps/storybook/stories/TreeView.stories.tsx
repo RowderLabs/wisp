@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { TreeView } from "@wisp/ui";
-import { useTreeView } from "@wisp/ui/hooks"
+import { useTreeView } from "@wisp/ui/src/hooks"
 
 const meta: Meta<typeof TreeView> = {
   component: TreeView,
@@ -42,7 +42,7 @@ export const Default: Story = {
     },
   },
   render: (args) => {
-    const { treeData, treeApi } = useTreeView({ initialData: args.treeData });
+    const [treeData, treeApi] = useTreeView({ initialData: args.treeData });
 
     return (
       <div className="w-[300px] h-[600px]">

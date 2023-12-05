@@ -1,20 +1,13 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useState } from "react";
-import { TreeViewApiHandle, TreeViewNode } from "./hooks/useTreeView";
+import { forwardRef, useMemo } from "react";
+import { TreeData, TreeViewApiHandle, TreeViewNode as TreeViewNodeType } from "./hooks/useTreeView";
 import { HiChevronRight, HiChevronDown } from "react-icons/hi";
 import { HiDocumentText } from "react-icons/hi";
 import { buildTree } from "./util/treeView";
 
-type TreeViewNodeInner = {
-  id: string;
-  name: string;
-  parentId: string | null;
-  depth: number;
-  children: string[];
-};
-
+const ROOT_ID = 'root'
 
 type TreeViewProps = {
-  treeData: Record<string, TreeViewNode>;
+  treeData: TreeData;
   viewState: Map<string, boolean | undefined>;
   onExpansionChange: (id: string) => void;
   indentation?: number;
@@ -26,14 +19,14 @@ export const TreeView = forwardRef<TreeViewApiHandle, TreeViewProps>(function Tr
 ) {
 
   const flattenedTree = useMemo(
-    () => buildTree({ rootId: "root", treeData, viewState }),
+    () => buildTree({ rootId: ROOT_ID, treeData, viewState }),
     [treeData, viewState]
   );
 
   return (
     <div>
       {flattenedTree.map((node) => (
-        <TreeViewNode
+        <TreeViewItem
           indentation={indentation || 25}
           handleExpand={() => onExpansionChange(node.id)}
           visible={!node.parentId || viewState.get(node.parentId) === true}
@@ -46,7 +39,7 @@ export const TreeView = forwardRef<TreeViewApiHandle, TreeViewProps>(function Tr
   );
 });
 
-type TreeViewNodeProps = {
+type TreeViewItemProps = {
   id: string;
   name: string;
   handleExpand: () => void;
@@ -57,7 +50,7 @@ type TreeViewNodeProps = {
   depth: number;
 };
 
-function TreeViewNode({
+function TreeViewItem({
   name,
   isCollection,
   visible,
@@ -65,13 +58,13 @@ function TreeViewNode({
   handleExpand,
   expanded,
   indentation,
-}: TreeViewNodeProps) {
+}: TreeViewItemProps) {
   return (
     <>
       {visible && (
         <li
           onClick={() => isCollection && handleExpand()}
-          className="rounded-md list-none hover:bg-blue-100"
+          className="rounded-md list-none cursor-pointer hover:bg-blue-100"
         >
           <div style={{ marginLeft: depth * indentation }} className="flex gap-1 items-center p-1">
             {isCollection ? expanded ? <HiChevronDown /> : <HiChevronRight /> : <HiDocumentText />}

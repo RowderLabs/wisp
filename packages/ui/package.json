@@ -5,7 +5,7 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./hooks": "./src/hooks/index.ts",
+    "./src/hooks": "./src/hooks/index.ts",
     "./index.css": "./index.css",
     "./tailwind-config": "./tailwind.config.js"
   },

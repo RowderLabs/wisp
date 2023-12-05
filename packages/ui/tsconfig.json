@@ -1,4 +1,4 @@
 {
     "extends": "@wisp/tsconfig/react-library.json",
-    "include": ["."]
+    "include": ["src"]
   }
