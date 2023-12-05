@@ -4,7 +4,7 @@ import { HiChevronRight, HiChevronDown } from "react-icons/hi";
 import { HiDocumentText } from "react-icons/hi";
 import { buildTree } from "./util/treeView";
 
-const ROOT_ID = 'root'
+const ROOT_ID = "root";
 
 type TreeViewProps = {
   treeData: TreeData;
@@ -13,11 +13,7 @@ type TreeViewProps = {
   indentation?: number;
 };
 
-export const TreeView = forwardRef<TreeViewApiHandle, TreeViewProps>(function TreeViewInner(
-  { treeData, viewState, indentation, onExpansionChange },
-  ref
-) {
-
+export function TreeView({ treeData, viewState, indentation, onExpansionChange }: TreeViewProps) {
   const flattenedTree = useMemo(
     () => buildTree({ rootId: ROOT_ID, treeData, viewState }),
     [treeData, viewState]
@@ -37,7 +33,7 @@ export const TreeView = forwardRef<TreeViewApiHandle, TreeViewProps>(function Tr
       ))}
     </div>
   );
-});
+}
 
 type TreeViewItemProps = {
   id: string;
