@@ -13,7 +13,7 @@ type Story = StoryObj<typeof PanelCanvas>;
 export const Default: Story = {
   render: (_) => {
     return (
-      <div className="w-[1200px] h-[600px]">
+      <div className="w-[1200px] h-[400px]">
         <PanelCanvas/>
       </div>
     );
