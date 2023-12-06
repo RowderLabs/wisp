@@ -16,6 +16,11 @@ const panels = {
       </ImageUploader>
     ),
   },
+  textbox: {
+    renderContent: () => (
+      <textarea className="text-xs border p-1 w-[250px] bg-blue-200 h-[125px] rounded-sm"/>
+    )
+  }
 };
 
 export type PanelProps = {
@@ -33,10 +38,10 @@ type PanelDefinition<TData> = {
 
 export const createPanel = <TData, TKey extends PanelKey>(
   pType: TKey,
-  opts: Parameters<PanelDefinition<TData>[TKey]["renderContent"]>[0] & Pick<PanelProps, "size">
+  opts?: Parameters<PanelDefinition<TData>[TKey]["renderContent"]>[0]
 ) => {
   const content = panels[pType].renderContent as PanelDefinition<TData>[TKey]["renderContent"];
-  return { size: opts.size, content: content({ ...opts }) };
+  return { size: 'md', content: content({ ...opts }) };
 };
 
 export function Panel({ content, id }: PanelProps) {

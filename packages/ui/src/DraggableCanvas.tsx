@@ -1,41 +1,63 @@
-import { DndContext, UniqueIdentifier, useDraggable } from "@dnd-kit/core";
+import { DndContext, MouseSensor, UniqueIdentifier, useDraggable, useSensor } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, forwardRef, useImperativeHandle } from "react";
 import { useState } from "react";
 
 type CanvasItem = {
   id: UniqueIdentifier;
   x: number;
   y: number;
+  renderItem?: () => JSX.Element;
 };
 
 type DraggableCanvasProps = {
-    initialItems: CanvasItem[]
-}
+  initialItems?: CanvasItem[];
+};
 
-export function DraggableCanvas({initialItems}: DraggableCanvasProps) {
-  const [canvasItems, setCanvasItems] = useState<CanvasItem[]>(initialItems);
-  return (
-    <DndContext
-      onDragEnd={({ active, delta }) => {
-        const activeItem = canvasItems.find((item) => item.id === active.id);
-        if (!activeItem) return;
 
-        const updated = {
-          id: active.id,
-          x: activeItem.x + delta.x,
-          y: activeItem.y + delta.y,
-        };
-        setCanvasItems((prev) => [...prev.filter((item) => item.id !== active.id), updated]);
+export type DraggableCanvasHandle = {
+  createCanvasItem: (item: CanvasItem) => void;
+};
 
-      }}
-    >
-      {canvasItems.map((item) => (
-        <DraggableItem key={item.id} offsetX={item.x} offsetY={item.y} id={item.id} />
-      ))}
-    </DndContext>
-  );
-}
+export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvasProps>(
+  ({ initialItems = [] }, ref) => {
+
+    useImperativeHandle(ref, () => {
+      return {
+        createCanvasItem: (item) => {
+          setCanvasItems((old) => [...old, item])
+        } 
+      }
+    })
+    const mouseSensor = useSensor(MouseSensor, {
+      activationConstraint: { delay: 150, tolerance: 5 },
+    });
+    const [canvasItems, setCanvasItems] = useState<CanvasItem[]>(initialItems);
+    return (
+      <DndContext
+        sensors={[mouseSensor]}
+        onDragEnd={({ active, delta }) => {
+          const activeItem = canvasItems.find((item) => item.id === active.id);
+          if (!activeItem) return;
+
+          const updated = {
+            ...activeItem,
+            x: activeItem.x + delta.x,
+            y: activeItem.y + delta.y,
+          };
+          setCanvasItems((prev) => [...prev.filter((item) => item.id !== active.id), updated]);
+        }}
+      >
+        {canvasItems.map((item) => (
+          <DraggableItem key={item.id} offsetX={item.x} offsetY={item.y} id={item.id}>
+            {item.renderItem ? item.renderItem() : <div className="w-[50px] h-[50px] bg-red-500"></div>}
+          </DraggableItem>
+        ))}
+
+      </DndContext>
+    );
+  }
+);
 
 type DraggableItemProps = {
   id: UniqueIdentifier;
@@ -54,7 +76,7 @@ function DraggableItem({ id, children, offsetX, offsetY }: PropsWithChildren<Dra
 
   return (
     <div
-      className="rounded-sm border w-[100px] h-[100px] bg-blue-300 absolute"
+      className="rounded-sm absolute p-1"
       style={{ ...style, top: offsetY, left: offsetX }}
       {...listeners}
       {...attributes}
