@@ -252,6 +252,9 @@ importers:
         specifier: ^5.0.2
         version: 5.0.2
     devDependencies:
+      react-icons:
+        specifier: ^4.11.0
+        version: 4.11.0(react@18.2.0)
       tailwindcss:
         specifier: ^3.3.3
         version: 3.3.3
