@@ -1,4 +1,5 @@
 import { DndContext, MouseSensor, UniqueIdentifier, useDraggable, useSensor } from "@dnd-kit/core";
+import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import React, { PropsWithChildren, forwardRef, useImperativeHandle } from "react";
 import { useState } from "react";
@@ -36,6 +37,7 @@ export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvas
     return (
       <DndContext
         sensors={[mouseSensor]}
+        modifiers={[restrictToParentElement]}
         onDragEnd={({ active, delta }) => {
           const activeItem = canvasItems.find((item) => item.id === active.id);
           if (!activeItem) return;
