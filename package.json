@@ -12,6 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.0.5"
+    "@radix-ui/react-dialog": "^1.0.4"
   }
 }
