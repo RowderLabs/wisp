@@ -12,7 +12,7 @@ type Story = StoryObj<typeof Panel>;
 
 export const Default: Story = {
   render: (_) => {
-    const panel = createPanel("gallery", { itemCount: 9 });
+    const panel = createPanel('textbox');
     return (
       <div className="w-[600px] h-[600px]">
         <Panel id={1} content={panel.content} />

@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { DraggableCanvas, DraggableCanvasHandle } from "./DraggableCanvas";
 import { HiOutlineAnnotation } from "react-icons/hi";
-import { createPanel } from "./Panel";
+import { createPanel } from "./panels";
 
 export function PanelCanvas() {
   const canvasRef = useRef<DraggableCanvasHandle | null>(null);
