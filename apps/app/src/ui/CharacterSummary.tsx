@@ -1,4 +1,4 @@
-import { ImageUploader, ImageUploadOverlay, PanelCanvas } from "@wisp/ui";
+import { ImageUploader, ImageUploadOverlay, PanelCanvas, Divider } from "@wisp/ui";
 import { Banner } from "./Banner";
 import WispEditor from "./WispEditor";
 import { AttributePanel } from "./AttributePanel";
@@ -31,13 +31,13 @@ export default function CharacterSummary() {
             </ImageUploader>
             {/**Name */}
             <h2 className="font-semibold text-slate-700 text-lg mx-auto">Holo (The Wise Wolf)</h2>
-            <div className="border-b border-2 my-4"></div>
+            <Divider/>
             {/**Bio*/}
             <p className="font-semibold text-slate-700">Bio</p>
             <div className="h-36 rounded-md">
               <WispEditor />
             </div>
-            <div className="border-b border-2 my-4"></div>
+            <Divider/>
             <AttributePanel
               attributes={[
                 { name: "Race", value: "Wolf God" },
@@ -52,7 +52,7 @@ export default function CharacterSummary() {
                 </div>
               )}
             </AttributePanel>
-            <div className="border-b border-2 my-4"></div>
+            <Divider/>
           </div>
         </div>
       </div>
