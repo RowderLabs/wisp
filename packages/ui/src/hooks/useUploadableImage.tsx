@@ -12,7 +12,7 @@ export function useUploadableImage({onUpload, onUploadAsync}: {onUpload?: () => 
 
         const selectedImage = await open({
             multiple: false,
-            filters: [{ name: "Image", extensions: ["png", "jpeg"] }],
+            filters: [{ name: "Image", extensions: ["png", "jpeg", "webp", "gif"] }],
             defaultPath: await downloadDir(),
           }) as string | null
 

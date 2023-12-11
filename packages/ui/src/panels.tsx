@@ -2,13 +2,13 @@ import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUp
 const panels = {
   image: {
     renderContent: (args: ImageUploaderProps) => (
-      <ImageUploader {...args}>
-        {({ wrapperStyle, ...props }) => (
-          <div style={wrapperStyle}>
-            <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
-          </div>
-        )}
-      </ImageUploader>
+        <ImageUploader {...args}>
+          {({ wrapperStyle, ...props }) => (
+            <div style={wrapperStyle} className="bg-slate-300">
+              <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+            </div>
+          )}
+        </ImageUploader>
     ),
   },
   textbox: {

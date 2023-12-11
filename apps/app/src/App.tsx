@@ -1,5 +1,6 @@
-import { PanelCanvas, TreeView } from "@wisp/ui";
+import { ImageUploadOverlay, ImageUploader, PanelCanvas, TreeView } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
+import { Banner } from "./ui/Banner";
 
 function App() {
   const data: TreeData = {
@@ -8,12 +9,12 @@ function App() {
       name: "root",
       children: ["characters", "timelines"],
     },
-    "characters": {
+    characters: {
       id: "characters",
       children: ["sage"],
       name: "Characters",
     },
-    "timelines": {
+    timelines: {
       id: "timelines",
       children: ["the-first-war"],
       name: "Timelines",
@@ -21,9 +22,9 @@ function App() {
     "the-first-war": {
       id: "the-first-war",
       children: [],
-      name: "The First War"
+      name: "The First War",
     },
-    "sage": {
+    sage: {
       id: "sage",
       children: [],
       name: "Sage",
@@ -32,16 +33,18 @@ function App() {
   const [treeData, treeApi] = useTreeView({ initialData: data });
 
   return (
-    <div className="flex gap-4 h-screen bg-neutral text-slate-700">
-      <div className="h-full w-[300px] shadow-md border bg-white">
-        <TreeView
-          onExpansionChange={treeApi.toggleExpand}
-          treeData={treeData}
-          indentation={25}
-          {...treeApi}
-        />
+    <div className="flex gap-2 h-screen bg-neutral text-slate-700">
+      <div className="h-full basis-[300px] shadow-md border bg-white">
+        <TreeView onExpansionChange={treeApi.toggleExpand} treeData={treeData} indentation={25} {...treeApi} />
       </div>
-      <div className="w-[1200px] h-[800px]">
+      <div className="basis-full h-[800px] px-4">
+        <ImageUploader>
+          {({ wrapperStyle, ...props }) => (
+            <Banner style={wrapperStyle} className="bg-slate-300">
+              <ImageUploadOverlay {...props} />
+            </Banner>
+          )}
+        </ImageUploader>
         <PanelCanvas />
       </div>
     </div>
