@@ -1,0 +1,63 @@
+import { ImageUploader, ImageUploadOverlay, PanelCanvas } from "@wisp/ui";
+import { Banner } from "./Banner";
+import WispEditor from "./WispEditor";
+import { AttributePanel } from "./AttributePanel";
+
+export default function CharacterSummary() {
+  return (
+    <div className="basis-full  px-4">
+      <ImageUploader>
+        {({ wrapperStyle, ...props }) => (
+          <Banner style={wrapperStyle} className="bg-slate-300">
+            <ImageUploadOverlay {...props} />
+          </Banner>
+        )}
+      </ImageUploader>
+      {/** Character SHeet*/}
+      <div className="flex">
+        <div style={{ height: "800px" }} className="basis-full h-full">
+          <PanelCanvas />
+        </div>
+        <div className="basis-[400px] h-full bg-white p-8 rounded-md">
+          <div className="flex flex-col gap-2 h-full">
+            <ImageUploader
+              wrapperStyle={{ height: "150px", width: "150px", border: "1px solid white", borderRadius: "8px" }}
+            >
+              {({ wrapperStyle, ...props }) => (
+                <div style={wrapperStyle} className="mx-auto bg-slate-200">
+                  <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+                </div>
+              )}
+            </ImageUploader>
+            {/**Name */}
+            <h2 className="font-semibold text-slate-700 text-lg mx-auto">Holo (The Wise Wolf)</h2>
+            <div className="border-b border-2 my-4"></div>
+            {/**Bio*/}
+            <p className="font-semibold text-slate-700">Bio</p>
+            <div className="h-36 rounded-md">
+              <WispEditor />
+            </div>
+            <div className="border-b border-2 my-4"></div>
+            <AttributePanel
+              attributes={[
+                { name: "Race", value: "Wolf God" },
+                { name: "Age", value: "300 years old (15 probably)" },
+              ]}
+              title="Characteristics"
+            >
+              {({ name, value }) => (
+                <div key={name} className="flex justify-between border-b">
+                  <p>{name}</p>
+                  <p>{value}</p>
+                </div>
+              )}
+            </AttributePanel>
+            <div className="border-b border-2 my-4"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
