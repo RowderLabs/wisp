@@ -1,6 +1,7 @@
-import { TreeView } from "@wisp/ui";
+import { ImageUploadOverlay, ImageUploader, PanelCanvas, TreeView } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
 import CharacterSummary from "./ui/CharacterSummary";
+import { Banner } from "./ui/Banner";
 
 function App() {
   const data: TreeData = {
@@ -33,11 +34,26 @@ function App() {
   const [treeData, treeApi] = useTreeView({ initialData: data });
 
   return (
-    <div className="flex gap-2 h-screen bg-neutral text-slate-600">
+    <div className="flex h-screen bg-neutral text-slate-600">
       <div className="h-full basis-[300px] bg-white">
         <TreeView onExpansionChange={treeApi.toggleExpand} treeData={treeData} indentation={25} {...treeApi} />
       </div>
-      <CharacterSummary/>
+      <div className="basis-full  px-4">
+        <ImageUploader>
+          {({ wrapperStyle, ...props }) => (
+            <Banner style={wrapperStyle} className="bg-slate-300">
+              <ImageUploadOverlay {...props} />
+            </Banner>
+          )}
+        </ImageUploader>
+        {/** Character SHeet*/}
+        <div className="flex">
+          <div style={{ height: "800px" }} className="basis-full h-full">
+            <PanelCanvas />
+          </div>
+          <CharacterSummary />
+        </div>
+      </div>
     </div>
   );
 }
