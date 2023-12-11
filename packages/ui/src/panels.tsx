@@ -4,7 +4,7 @@ const panels = {
     renderContent: (args: ImageUploaderProps) => (
         <ImageUploader {...args}>
           {({ wrapperStyle, ...props }) => (
-            <div style={wrapperStyle} className="bg-slate-300">
+            <div style={wrapperStyle} className="bg-slate-300 resize overflow-auto">
               <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
             </div>
           )}
@@ -12,7 +12,7 @@ const panels = {
     ),
   },
   textbox: {
-    renderContent: () => <textarea className="text-xs border p-1 w-[250px] bg-slate-200 h-[125px] rounded-sm" />,
+    renderContent: () => <textarea className="text-sm border p-1 w-[250px] bg-slate-200 h-[125px] rounded-sm" />,
   },
 };
 type PanelKey = keyof typeof panels;
