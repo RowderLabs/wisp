@@ -1,6 +1,5 @@
 export * from './Button'
 export * from './SortableGrid'
-export * from './FileTree'
 export * from './TreeView'
 export * from './ImageUploader'
 export * from './Panel'

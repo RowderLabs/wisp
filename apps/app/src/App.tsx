@@ -1,7 +1,5 @@
-import { ImageUploadOverlay, ImageUploader, PanelCanvas, TreeView } from "@wisp/ui";
+import { TreeView } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
-import { Banner } from "./ui/Banner";
-import WispEditor from "./ui/WispEditor";
 import CharacterSummary from "./ui/CharacterSummary";
 
 function App() {
