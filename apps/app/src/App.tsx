@@ -38,7 +38,7 @@ function App() {
       <div className="h-full basis-[300px] bg-white">
         <TreeView onExpansionChange={treeApi.toggleExpand} treeData={treeData} indentation={25} {...treeApi} />
       </div>
-      <div className="basis-full  px-4">
+      <div className="basis-full">
         <ImageUploader>
           {({ wrapperStyle, ...props }) => (
             <Banner style={wrapperStyle} className="bg-slate-300">
@@ -47,11 +47,11 @@ function App() {
           )}
         </ImageUploader>
         {/** Character SHeet*/}
-        <div className="flex">
+        <div className="flex px-4">
           <div style={{ height: "800px" }} className="basis-full h-full">
             <PanelCanvas />
           </div>
-          <CharacterSummary />
+          <CharacterSummary name="John" />
         </div>
       </div>
     </div>
