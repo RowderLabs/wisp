@@ -1,18 +1,19 @@
 import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUploader";
+import TextEditor from "./TextEditor";
 const panels = {
   image: {
     renderContent: (args: ImageUploaderProps) => (
-        <ImageUploader {...args}>
-          {({ wrapperStyle, ...props }) => (
-            <div style={wrapperStyle} className="bg-slate-300 resize overflow-auto">
-              <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
-            </div>
-          )}
-        </ImageUploader>
+      <ImageUploader {...args}>
+        {({ wrapperStyle, ...props }) => (
+          <div style={wrapperStyle} className="bg-slate-300 resize overflow-auto">
+            <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+          </div>
+        )}
+      </ImageUploader>
     ),
   },
   textbox: {
-    renderContent: () => <textarea className="text-sm border p-1 w-[250px] bg-slate-200 h-[125px] rounded-sm" />,
+    renderContent: () => <TextEditor className="bg-white border p-4 rounded-md"/>,
   },
 };
 type PanelKey = keyof typeof panels;

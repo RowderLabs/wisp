@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -247,6 +243,18 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.1
         version: 3.2.1(react@18.2.0)
+      '@lexical/list':
+        specifier: ^0.12.2
+        version: 0.12.2(lexical@0.12.2)
+      '@lexical/react':
+        specifier: ^0.12.2
+        version: 0.12.2(lexical@0.12.2)(react-dom@18.2.0)(react@18.2.0)(yjs@13.6.10)
+      '@lexical/rich-text':
+        specifier: ^0.12.2
+        version: 0.12.2(@lexical/clipboard@0.12.2)(@lexical/selection@0.12.2)(@lexical/utils@0.12.2)(lexical@0.12.2)
+      '@lexical/selection':
+        specifier: ^0.12.2
+        version: 0.12.2(lexical@0.12.2)
       '@tauri-apps/api':
         specifier: ^1.4.0
         version: 1.4.0
@@ -268,6 +276,9 @@ importers:
       framer-motion:
         specifier: ^10.16.4
         version: 10.16.4(react-dom@18.2.0)(react@18.2.0)
+      lexical:
+        specifier: ^0.12.2
+        version: 0.12.2
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -278,6 +289,9 @@ importers:
         specifier: ^5.0.2
         version: 5.0.2
     devDependencies:
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.2.7
       react-icons:
         specifier: ^4.11.0
         version: 4.11.0(react@18.2.0)
@@ -9375,3 +9389,7 @@ packages:
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
