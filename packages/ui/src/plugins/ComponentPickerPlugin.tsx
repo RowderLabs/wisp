@@ -18,6 +18,7 @@ class ComponentPickerOption extends MenuOption {
   name: string;
   // Icon for display
   icon?: JSX.Element;
+  flag: keyof TypeaheadFlags;
   tip?: string;
   // For extra searching.
   aliases: Array<string>;
@@ -28,6 +29,7 @@ class ComponentPickerOption extends MenuOption {
 
   constructor(
     title: string,
+    flag: keyof TypeaheadFlags,
     options: {
       tip?: string;
       icon?: JSX.Element;
@@ -38,6 +40,7 @@ class ComponentPickerOption extends MenuOption {
   ) {
     super(title);
     this.name = title;
+    this.flag = flag;
     this.tip = options.tip;
     this.aliases = options.keywords || [];
     this.icon = options.icon;
@@ -50,7 +53,7 @@ const getBaseOptions = (editor: LexicalEditor) => {
   return [
     ...([1, 2, 3] as const).map(
       (n) =>
-        new ComponentPickerOption(`Heading ${n}`, {
+        new ComponentPickerOption(`Heading ${n}`, "headings", {
           tip: "Heading Tip",
           icon: <HiOutlinePencil />,
           keywords: ["heading", "header", `h${n}`],
@@ -63,7 +66,7 @@ const getBaseOptions = (editor: LexicalEditor) => {
             }),
         })
     ),
-    new ComponentPickerOption("Bulleted List", {
+    new ComponentPickerOption("Bulleted List", "lists", {
       tip: "Can be used to display unordered list with a really long tip",
       icon: <HiDotsVertical />,
       keywords: ["bulleted list", "unordered list", "ul"],
@@ -72,12 +75,29 @@ const getBaseOptions = (editor: LexicalEditor) => {
   ];
 };
 
-export default function ComponentPickerPlugin() {
+const typeaheadFlags = ["headings", "lists", "full"] as const;
+
+type ComponentPickerPluginProps = {
+  enabled?: Partial<TypeaheadFlags>;
+};
+export type TypeaheadFlags = {
+  [K in (typeof typeaheadFlags)[number]]: boolean | undefined;
+};
+
+export default function ComponentPickerPlugin({ enabled }: ComponentPickerPluginProps) {
   const [editor] = useLexicalComposerContext();
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", { minLength: 0 });
   const [query, setQuery] = useState<string | null>(null);
+  const optionEnabled = useCallback(
+    (flag?: boolean) => {
+      return flag ? true : Boolean(enabled?.full);
+    },
+    [enabled]
+  );
   const options = useMemo(() => {
-    const baseOpts = getBaseOptions(editor);
+    const baseOpts = getBaseOptions(editor).filter(
+      (opt) => enabled && (optionEnabled(enabled[opt.flag]) || enabled.full)
+    );
     if (!query) {
       return baseOpts;
     }
@@ -106,7 +126,10 @@ export default function ComponentPickerPlugin() {
       onQueryChange={setQuery}
       onSelectOption={onSelectOption}
       options={options}
-      menuRenderFn={(anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => {
+      menuRenderFn={(
+        anchorElementRef,
+        { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }
+      ) => {
         console.log(anchorElementRef.current);
         return anchorElementRef.current && options.length > 0
           ? createPortal(
@@ -144,7 +167,12 @@ type ComponentPickerMenuItemProps = {
   option: ComponentPickerOption;
 };
 
-const ComponentPickerMenuItem = ({ selected, onClick, onMouseEnter, option }: ComponentPickerMenuItemProps) => {
+const ComponentPickerMenuItem = ({
+  selected,
+  onClick,
+  onMouseEnter,
+  option,
+}: ComponentPickerMenuItemProps) => {
   return (
     <li
       role="option"

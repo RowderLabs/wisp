@@ -13,13 +13,18 @@ const panels = {
     ),
   },
   textbox: {
-    renderContent: () => <TextEditor className="bg-white border p-4 rounded-md"/>,
+    renderContent: () => (
+      <TextEditor
+        features={{ full: true, typeahead: { lists: true } }}
+        className="bg-white border p-4 rounded-md"
+      />
+    ),
   },
 };
 type PanelKey = keyof typeof panels;
 type PanelDefinition<TData> = {
   [key in PanelKey]: {
-    renderContent: (args: Parameters<typeof panels[key]["renderContent"]>[0]) => JSX.Element; // You can specify a more specific type if needed
+    renderContent: (args: Parameters<(typeof panels)[key]["renderContent"]>[0]) => JSX.Element; // You can specify a more specific type if needed
   };
 };
 

@@ -7,8 +7,11 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
+import ComponentPickerPlugin, { TypeaheadFlags } from "./plugins/ComponentPickerPlugin";
 import clsx from "clsx";
+import { useCallback } from "react";
+
+type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
 type LexicalEditorProps = {
   initalConfig: Parameters<typeof LexicalComposer>["0"]["initialConfig"];
@@ -16,15 +19,25 @@ type LexicalEditorProps = {
 
 type TextEditorProps = {
   className?: string;
+  features: FeatureFlags;
+  editorTheme?: LexicalEditorProps["initalConfig"]["theme"];
 };
 
-export default function TextEditor({ className }: TextEditorProps) {
+export default function TextEditor({ className, features, editorTheme }: TextEditorProps) {
   function onError(err: Error) {
     console.error(err);
   }
+
+  const featureEnabled = useCallback(
+    (flag: FeatureFlags[keyof FeatureFlags]) => {
+      return Boolean(flag) || features.full;
+    },
+    [features]
+  );
+
   const initialConfig: LexicalEditorProps["initalConfig"] = {
     namespace: "MyEditor",
-    theme: {
+    theme: editorTheme || {
       heading: {
         h1: "text-2xl",
         h2: "text-xl",
@@ -41,7 +54,6 @@ export default function TextEditor({ className }: TextEditorProps) {
     onError,
     nodes: [ListNode, ListItemNode, HeadingNode],
   };
-
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div
@@ -50,8 +62,13 @@ export default function TextEditor({ className }: TextEditorProps) {
           "relative overflow-auto min-w-[300px] min-h-[150px] h-full rounded-md leading-6 text-slate-800"
         )}
       >
-        <ComponentPickerPlugin />
-        <ListPlugin />
+        {featureEnabled(features.typeahead) && (
+          <>
+            <ComponentPickerPlugin enabled={features.typeahead} />
+            <ListPlugin />
+          </>
+        )}
+
         <RichTextPlugin
           contentEditable={<ContentEditable className="editor editor-input" />}
           placeholder={null}
