@@ -1,5 +1,5 @@
 import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUploader";
-import TextEditor from "./TextEditor";
+import { TextBox, TextBoxProps } from "./Textbox";
 const panels = {
   image: {
     renderContent: (args: ImageUploaderProps) => (
@@ -13,25 +13,28 @@ const panels = {
     ),
   },
   textbox: {
-    renderContent: () => (
-      <TextEditor
-        features={{ typeahead: { lists: true } }}
-        className="bg-white border p-4 rounded-md"
-      />
-    ),
+    renderContent: (args: TextBoxProps) => <TextBox {...args} />,
   },
 };
 type PanelKey = keyof typeof panels;
-type PanelDefinition<TData> = {
+type PanelDefinition = {
   [key in PanelKey]: {
     renderContent: (args: Parameters<(typeof panels)[key]["renderContent"]>[0]) => JSX.Element; // You can specify a more specific type if needed
   };
 };
 
-export const createPanel = <TData, TKey extends PanelKey>(
+//UTILITY TO GET REQUIRED FIELDS
+type RequiredFieldKeys<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? never : K;
+}[keyof T];
+
+type RequiredFields<T> = Pick<T, RequiredFieldKeys<T>>;
+type RenderProps<TKey extends keyof PanelDefinition> = Parameters<PanelDefinition[TKey]["renderContent"]>[0]
+
+export const createPanel = <TKey extends PanelKey>(
   pType: TKey,
-  opts?: Parameters<PanelDefinition<TData>[TKey]["renderContent"]>[0]
+  reqProps: RenderProps<TKey>,
 ) => {
-  const content = panels[pType].renderContent as PanelDefinition<TData>[TKey]["renderContent"];
-  return { size: "md", content: content({ ...opts }) };
+  const content = panels[pType].renderContent as PanelDefinition[TKey]["renderContent"];
+  return { content: content({ ...reqProps }) };
 };

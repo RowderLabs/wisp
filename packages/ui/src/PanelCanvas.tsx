@@ -12,7 +12,7 @@ export function PanelCanvas() {
       id: Math.round(Math.random() * 1000).toString(),
       x: Math.floor(Math.random() * 400),
       y: Math.floor(Math.random() * 100),
-      renderItem: () => createPanel("textbox").content,
+      renderItem: () => createPanel("textbox", {title: 'Textbox Title'}).content,
     });
   };
 
@@ -21,7 +21,7 @@ export function PanelCanvas() {
       id: Math.round(Math.random() * 1000).toString(),
       x: Math.floor(Math.random() * 400),
       y: Math.floor(Math.random() * 100),
-      renderItem: () => createPanel("image").content,
+      renderItem: () => createPanel("image", {}).content,
     });
   };
 
