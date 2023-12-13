@@ -288,10 +288,16 @@ importers:
       typescript:
         specifier: ^5.0.2
         version: 5.0.2
+      use-double-click:
+        specifier: ^1.0.5
+        version: 1.0.5(react-dom@18.2.0)(react@18.2.0)
     devDependencies:
       '@types/react-dom':
         specifier: ^18.2.7
         version: 18.2.7
+      '@types/use-double-click':
+        specifier: ^1.0.2
+        version: 1.0.2
       react-icons:
         specifier: ^4.11.0
         version: 4.11.0(react@18.2.0)
