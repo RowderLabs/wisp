@@ -7,11 +7,24 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-import ComponentPickerPlugin, { TypeaheadFlags } from "./plugins/ComponentPickerPlugin";
+import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
 import clsx from "clsx";
 import { useCallback } from "react";
 
-type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
+//type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
+
+type FeatureFlags<T> = {
+  [K in keyof T]: T[K] extends object ? Partial<FeatureFlags<T[K]>> | true : true;
+};
+
+export type TextEditorFeatures = FeatureFlags<{
+  typeahead: {
+    lists: boolean;
+    headings: boolean;
+  };
+}>;
+
+type OptTextEditorFeatures = Partial<TextEditorFeatures>;
 
 type LexicalEditorProps = {
   initalConfig: Parameters<typeof LexicalComposer>["0"]["initialConfig"];
@@ -19,7 +32,7 @@ type LexicalEditorProps = {
 
 type TextEditorProps = {
   className?: string;
-  features: FeatureFlags;
+  features: OptTextEditorFeatures;
   editorTheme?: LexicalEditorProps["initalConfig"]["theme"];
 };
 
@@ -29,8 +42,8 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
   }
 
   const featureEnabled = useCallback(
-    (flag: FeatureFlags[keyof FeatureFlags]) => {
-      return Boolean(flag) || features.full;
+    (flag?: Omit<TextEditorFeatures, "full">[keyof Omit<TextEditorFeatures, "full">]) => {
+      return Boolean(flag);
     },
     [features]
   );
@@ -62,9 +75,9 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
           "relative overflow-auto min-w-[300px] min-h-[150px] h-full rounded-md leading-6 text-slate-800"
         )}
       >
-        {featureEnabled(features.typeahead) && (
+        {features.typeahead && featureEnabled(features.typeahead) && (
           <>
-            <ComponentPickerPlugin enabled={features.typeahead} />
+            <ComponentPickerPlugin features={features.typeahead} />
             <ListPlugin />
           </>
         )}

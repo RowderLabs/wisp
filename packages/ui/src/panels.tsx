@@ -15,7 +15,7 @@ const panels = {
   textbox: {
     renderContent: () => (
       <TextEditor
-        features={{ full: true, typeahead: { lists: true } }}
+        features={{ typeahead: { lists: true } }}
         className="bg-white border p-4 rounded-md"
       />
     ),

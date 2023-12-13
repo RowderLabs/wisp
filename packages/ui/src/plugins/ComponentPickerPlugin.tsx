@@ -10,15 +10,17 @@ import {
   MenuOption,
   useBasicTypeaheadTriggerMatch,
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
+import { TextEditorFeatures } from "../TextEditor";
+type TypeaheadFlag = keyof Exclude<TextEditorFeatures["typeahead"], boolean>;
 
 class ComponentPickerOption extends MenuOption {
   // What shows up in the editor
   name: string;
   // Icon for display
   icon?: JSX.Element;
-  flag: keyof TypeaheadFlags;
+  flag: TypeaheadFlag;
   tip?: string;
   // For extra searching.
   aliases: Array<string>;
@@ -29,7 +31,7 @@ class ComponentPickerOption extends MenuOption {
 
   constructor(
     title: string,
-    flag: keyof TypeaheadFlags,
+    flag: TypeaheadFlag,
     options: {
       tip?: string;
       icon?: JSX.Element;
@@ -75,29 +77,19 @@ const getBaseOptions = (editor: LexicalEditor) => {
   ];
 };
 
-const typeaheadFlags = ["headings", "lists", "full"] as const;
-
 type ComponentPickerPluginProps = {
-  enabled?: Partial<TypeaheadFlags>;
+  features: TextEditorFeatures["typeahead"];
 };
-export type TypeaheadFlags = {
-  [K in (typeof typeaheadFlags)[number]]: boolean | undefined;
-};
-
-export default function ComponentPickerPlugin({ enabled }: ComponentPickerPluginProps) {
+export default function ComponentPickerPlugin({ features }: ComponentPickerPluginProps) {
+  useEffect(() => console.log(features), []);
   const [editor] = useLexicalComposerContext();
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", { minLength: 0 });
   const [query, setQuery] = useState<string | null>(null);
-  const optionEnabled = useCallback(
-    (flag?: boolean) => {
-      return flag ? true : Boolean(enabled?.full);
-    },
-    [enabled]
-  );
   const options = useMemo(() => {
-    const baseOpts = getBaseOptions(editor).filter(
-      (opt) => enabled && (optionEnabled(enabled[opt.flag]) || enabled.full)
-    );
+    const baseOpts = getBaseOptions(editor).filter((opt) => {
+      if (typeof features === 'boolean') return features
+      return features[opt.flag]
+    });
     if (!query) {
       return baseOpts;
     }
