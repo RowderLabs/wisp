@@ -49,7 +49,7 @@ function App() {
         {/** Character SHeet*/}
         <div className="flex px-4">
           <div style={{ height: "800px" }} className="basis-full h-full">
-            <PanelCanvas />
+            <PanelCanvas/>
           </div>
           <CharacterSummary name="John" />
         </div>
