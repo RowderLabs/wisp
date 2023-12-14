@@ -1,8 +1,7 @@
-import { ImageUploadOverlay, ImageUploader, TreeView } from "@wisp/ui";
+import { ImageUploadOverlay, ImageUploader, PanelCanvas, TreeView } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
 import CharacterSummary from "./ui/CharacterSummary";
 import { Banner } from "./ui/Banner";
-import TraitMenu from "./ui/TraitMenu";
 
 function App() {
   const data: TreeData = {
@@ -50,7 +49,7 @@ function App() {
         {/** Character SHeet*/}
         <div className="flex px-4">
           <div style={{ height: "800px" }} className="basis-full h-full">
-            <TraitMenu/>
+            <PanelCanvas/>
           </div>
           <CharacterSummary name="John" />
         </div>

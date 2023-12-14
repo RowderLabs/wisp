@@ -1,8 +1,10 @@
 import { useRef } from "react";
 import { DraggableCanvas, DraggableCanvasHandle } from "./DraggableCanvas";
 import { HiOutlineAnnotation } from "react-icons/hi";
+import { HiListBullet } from "react-icons/hi2";
 import { createPanel } from "./panels";
 import { HiPhoto } from "react-icons/hi2";
+import TraitMenu from "./TraitMenu";
 
 export function PanelCanvas() {
   const canvasRef = useRef<DraggableCanvasHandle | null>(null);
@@ -12,7 +14,7 @@ export function PanelCanvas() {
       id: Math.round(Math.random() * 1000).toString(),
       x: Math.floor(Math.random() * 400),
       y: Math.floor(Math.random() * 100),
-      renderItem: () => createPanel("textbox", {title: 'Textbox Title'}).content,
+      renderItem: () => createPanel("textbox", { title: "Textbox Title" }).content,
     });
   };
 
@@ -40,9 +42,13 @@ export function PanelCanvas() {
         >
           <HiPhoto />
         </span>
-        <span className="rounded-md h-full w-8 bg-slate-300"></span>
-        <span className="rounded-md h-full w-8 bg-slate-300"></span>
-        <span className="rounded-md h-full w-8 bg-slate-300"></span>
+        <TraitMenu
+          trigger={
+            <span className="rounded-md h-full w-8 flex justify-center items-center hover:bg-blue-500 hover:text-white">
+              <HiListBullet />
+            </span>
+          }
+        />
       </div>
       <div className="w-full h-full">
         <DraggableCanvas ref={canvasRef} />
