@@ -18,6 +18,7 @@ type DraggableCanvasProps = {
 
 export type DraggableCanvasHandle = {
   createCanvasItem: (item: CanvasItem) => void;
+  deleteCanvasItem: (id: CanvasItem['id']) => void;
 };
 
 export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvasProps>(
@@ -27,6 +28,9 @@ export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvas
       return {
         createCanvasItem: (item) => {
           setCanvasItems((old) => [...old, item])
+        },
+        deleteCanvasItem: (id) => {
+          setCanvasItems((old) => old.filter((item) => item.id !== id))
         } 
       }
     })
