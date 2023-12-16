@@ -25,6 +25,7 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@tauri-apps/api": "^1.4.0",
     "@types/react": "^18.2.15",
+    "@uidotdev/usehooks": "^2.4.1",
     "@wisp/tsconfig": "workspace:*",
     "app": "^0.1.0",
     "class-variance-authority": "^0.7.0",
