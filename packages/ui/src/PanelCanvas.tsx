@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { DraggableCanvas, DraggableCanvasHandle } from "./DraggableCanvas";
 import { HiOutlineAnnotation } from "react-icons/hi";
 import { HiListBullet } from "react-icons/hi2";
+import { HiArrowUturnLeft, HiArrowUturnRight } from "react-icons/hi2";
 import { createPanel } from "./panels";
 import { HiPhoto } from "react-icons/hi2";
 import TraitMenu from "./TraitMenu";
@@ -41,6 +42,18 @@ export function PanelCanvas() {
           className="rounded-md h-full w-8 flex justify-center items-center hover:bg-blue-500 hover:text-white"
         >
           <HiPhoto />
+        </span>
+        <span
+          onClick={() => canvasRef.current?.undo()}
+          className="rounded-md h-full w-8 flex justify-center items-center hover:bg-blue-500 hover:text-white"
+        >
+          <HiArrowUturnLeft />
+        </span>
+        <span
+          onClick={() => canvasRef.current?.redo()}
+          className="rounded-md h-full w-8 flex justify-center items-center hover:bg-blue-500 hover:text-white"
+        >
+          <HiArrowUturnRight />
         </span>
         <TraitMenu
           trigger={

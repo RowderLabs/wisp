@@ -3,6 +3,7 @@ import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import React, { PropsWithChildren, forwardRef, useImperativeHandle } from "react";
 import { useState } from "react";
+import { useCommandSystem } from "./hooks/useCommandSystem";
 
 type CanvasItem = {
   id: UniqueIdentifier;
@@ -15,55 +16,72 @@ type DraggableCanvasProps = {
   initialItems?: CanvasItem[];
 };
 
-
 export type DraggableCanvasHandle = {
   createCanvasItem: (item: CanvasItem) => void;
-  deleteCanvasItem: (id: CanvasItem['id']) => void;
+  deleteCanvasItem: (id: CanvasItem["id"]) => void;
+  undo: () => void;
+  redo: () => void;
 };
 
-export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvasProps>(
-  ({ initialItems = [] }, ref) => {
+export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvasProps>(({ initialItems = [] }, ref) => {
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: { delay: 150, tolerance: 5 },
+  });
 
-    useImperativeHandle(ref, () => {
-      return {
-        createCanvasItem: (item) => {
-          setCanvasItems((old) => [...old, item])
-        },
-        deleteCanvasItem: (id) => {
-          setCanvasItems((old) => old.filter((item) => item.id !== id))
-        } 
+  useImperativeHandle(ref, () => ({
+    createCanvasItem: (item) => canvasSystem.executeCommand({ type: "CREATE_ITEM", payload: { item } }),
+    deleteCanvasItem: (id) => canvasSystem.executeCommand({ type: "DELETE_ITEM", payload: { id } }),
+    undo: () => canvasSystem.undo(),
+    redo: () => canvasSystem.redo(),
+  }));
+
+  type CANVAS_ACTION =
+    | { type: "CREATE_ITEM"; payload: { item: CanvasItem } }
+    | { type: "DELETE_ITEM"; payload: { id: UniqueIdentifier } }
+    | { type: "MOVE_ITEM"; payload: { item: CanvasItem } };
+
+  const canvasReducer = (state: typeof initialItems, action: CANVAS_ACTION) => {
+    switch (action.type) {
+      case "CREATE_ITEM": {
+        return [...state, action.payload.item];
       }
-    })
-    const mouseSensor = useSensor(MouseSensor, {
-      activationConstraint: { delay: 150, tolerance: 5 },
-    });
-    const [canvasItems, setCanvasItems] = useState<CanvasItem[]>(initialItems);
-    return (
-      <DndContext
-        sensors={[mouseSensor]}
-        modifiers={[restrictToParentElement]}
-        onDragEnd={({ active, delta }) => {
-          const activeItem = canvasItems.find((item) => item.id === active.id);
-          if (!activeItem) return;
+      case "DELETE_ITEM": {
+        return state.filter((item) => item.id !== action.payload.id);
+      }
+      case "MOVE_ITEM": {
+        const updatedItem = action.payload.item;
+        return [...state.filter((item) => item.id !== updatedItem.id), updatedItem];
+      }
+      default:
+        throw new Error("Unknown action");
+    }
+  };
 
-          const updated = {
-            ...activeItem,
-            x: activeItem.x + delta.x,
-            y: activeItem.y + delta.y,
-          };
-          setCanvasItems((prev) => [...prev.filter((item) => item.id !== active.id), updated]);
-        }}
-      >
-        {canvasItems.map((item) => (
-          <DraggableItem key={item.id} offsetX={item.x} offsetY={item.y} id={item.id}>
-            {item.renderItem ? item.renderItem() : <div className="w-[50px] h-[50px] bg-red-500"></div>}
-          </DraggableItem>
-        ))}
+  const canvasSystem = useCommandSystem(canvasReducer, initialItems);
+  return (
+    <DndContext
+      sensors={[mouseSensor]}
+      modifiers={[restrictToParentElement]}
+      onDragEnd={({ active, delta }) => {
+        const activeItem = canvasSystem.state.find((item) => item.id === active.id);
+        if (!activeItem) return;
 
-      </DndContext>
-    );
-  }
-);
+        const updated = {
+          ...activeItem,
+          x: activeItem.x + delta.x,
+          y: activeItem.y + delta.y,
+        };
+        canvasSystem.executeCommand({ type: "MOVE_ITEM", payload: { item: updated } });
+      }}
+    >
+      {canvasSystem.state.map((item) => (
+        <DraggableItem key={item.id} offsetX={item.x} offsetY={item.y} id={item.id}>
+          {item.renderItem ? item.renderItem() : <div className="w-[50px] h-[50px] bg-red-500"></div>}
+        </DraggableItem>
+      ))}
+    </DndContext>
+  );
+});
 
 type DraggableItemProps = {
   id: UniqueIdentifier;

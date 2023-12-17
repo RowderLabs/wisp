@@ -8,84 +8,54 @@ generator client {
     output   = "../src/prisma.rs"
 }
 
-model BinderItem {
+model Character {
+
     id Int @id @default(autoincrement())
-    itemType String?
-    characterId Int? @unique
-    character Person? @relation(fields: [characterId], references: [id], onDelete: Cascade)
-    //belongs to specific path
-    pathId Int? @unique
-    //path to self
-    binderPath BinderPath?
+    fullName String
+    traits CharacterHasTrait[]
+    characterSheet CharacterSheet?
 }
 
-// /characters => 1 true characters null null 1 
-// /characters/1 => 2 false Lord character {id 1, name Lord} 2
-
-model BinderPath {
+model CharacterSheet {
     id Int @id @default(autoincrement())
-    isCollection Boolean @default(false)
-    expanded Boolean @default(false)
-    //Name collections
-    name String?
-    //path to parent 
-    path String
-    parentId Int?
-    parent BinderPath? @relation("directchildren",fields: [parentId], references: [id])
-    //paths to all items in collecion
-    children BinderPath[] @relation("directchildren")
-    binderItemId Int? @unique
-    item BinderItem? @relation(fields: [binderItemId], references: [id], onDelete: Cascade)
+    photoPath String
+    bannerPath String
+    canvasPath String 
+
+
+    characterId Int @unique
+    character Character @relation(fields: [characterId], references: [id])
+    
 }
 
 
-model Person {
-    id Int @id @default(autoincrement())
-    name String @unique
-    parentRelationId Int?
-    familyId Int?
-    binderItemId Int? @unique
-    binderPathId Int? @unique
-    family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
-    parents   Person[]   @relation("parentchildren")
-    //all children belonging to person
-    children Person[]  @relation("parentchildren")
-    //relationship in which person is a product of
-    childOf Relationship? @relation("children", fields: [parentRelationId], references: [id], onDelete: SetNull)
-    //relationships where person is a member
-    relationships Relationship[] @relation("members")
-    binderItem BinderItem?
-    attributes CharacterAttribute[]
-}
+model TraitCategory {
 
-model Family {
     id Int @id @default(autoincrement())
     name String
-    members Person[]
+    traits Trait[]
+    
 }
 
-model Relationship {
+model Trait {
+
     id Int @id @default(autoincrement())
-    relationshipType String
-    //members of a specific relationship
-    members Person[] @relation("members")
-    //children that are a product of a specific relationship
-    children Person[] @relation("children")
+    name String
+    categoryId Int
+    category TraitCategory @relation(fields: [categoryId], references: [id])
+    characterHasTrait CharacterHasTrait[]
 }
 
-//lookup table for all attributes
-model Attribute {
-    id Int @id @default(autoincrement())
-    label String
-    attribute_group String
-    character_has_attribute CharacterAttribute[]
-}
+model CharacterHasTrait {
 
-model CharacterAttribute {
-    attributeValue String
-    attributeId Int
+    trait Trait @relation(fields: [traitId], references: [id])
+    traitId Int
+    visible Boolean
+    character Character @relation(fields: [characterId], references: [id])
     characterId Int
-    attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-    character Person @relation(fields: [characterId], references: [id], onDelete: Cascade)
-    @@id([attributeId, characterId])
+
+    @@id([characterId, traitId])
 }
+
+
+
