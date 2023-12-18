@@ -26,8 +26,8 @@ export function TreeView({ treeData, viewState, indentation, onExpansionChange }
           indentation={indentation || 25}
           handleExpand={() => onExpansionChange(node.id)}
           visible={!node.parentId || viewState.get(node.parentId) === true}
-          expanded={node.children.length > 0 && viewState.get(node.id) === true}
-          isCollection={node.children.length > 0}
+          expanded={Boolean(node.children) && viewState.get(node.id) === true}
+          isCollection={Boolean(node.children)}
           {...node}
         />
       ))}

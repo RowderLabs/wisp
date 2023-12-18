@@ -9,9 +9,10 @@ generator client {
 }
 
 model Character {
-
     id Int @id @default(autoincrement())
     fullName String
+    isCollection Boolean @default(false)
+    path String @unique
     traits CharacterHasTrait[]
     characterSheet CharacterSheet?
 }
@@ -21,8 +22,6 @@ model CharacterSheet {
     photoPath String
     bannerPath String
     canvasPath String 
-
-
     characterId Int @unique
     character Character @relation(fields: [characterId], references: [id])
     
@@ -56,6 +55,4 @@ model CharacterHasTrait {
 
     @@id([characterId, traitId])
 }
-
-
 
