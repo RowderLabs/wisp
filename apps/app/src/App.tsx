@@ -1,7 +1,7 @@
-import { ImageUploadOverlay, ImageUploader, PanelCanvas, TreeView } from "@wisp/ui";
+import { ImageUploadOverlay, ImageUploader, TreeView } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
-import CharacterSummary from "./ui/CharacterSummary";
 import { Banner } from "./ui/Banner";
+import { Link, Outlet } from "@tanstack/react-router";
 
 function App() {
   const data: TreeData = {
@@ -47,11 +47,9 @@ function App() {
           )}
         </ImageUploader>
         {/** Character SHeet*/}
+        <Link to="/characters">CHARACTERS</Link>
         <div className="flex px-4">
-          <div style={{ height: "800px" }} className="basis-full h-full">
-            <PanelCanvas/>
-          </div>
-          <CharacterSummary name="John" />
+          <Outlet />
         </div>
       </div>
     </div>

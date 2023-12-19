@@ -6,7 +6,7 @@ type CharacterSummaryProps = {
   name: string
 };
 
-export default function CharacterSummary({ name }: CharacterSummaryProps) {
+export function CharacterSummary({ name }: CharacterSummaryProps) {
   return (
     <div style={{ height: "800px" }} className="basis-[400px] h-full bg-white p-8 mt-4 rounded-md">
       {/**transformed content */}
