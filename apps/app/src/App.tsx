@@ -1,42 +1,40 @@
-import { ImageUploadOverlay, ImageUploader, PanelCanvas, TreeView } from "@wisp/ui";
+import { ImageUploadOverlay, ImageUploader, TreeView } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
 import CharacterSummary from "./ui/CharacterSummary";
 import { Banner } from "./ui/Banner";
+import { rspc } from "./rspc/router";
+import { HiChevronDown, HiChevronRight, HiFolder, HiMiniUserCircle } from "react-icons/hi2";
 
 function App() {
-  const data: TreeData = {
-    root: {
-      id: "root",
-      name: "root",
-      children: ["characters", "timelines"],
-    },
-    characters: {
-      id: "characters",
-      children: ["sage"],
-      name: "Characters",
-    },
-    timelines: {
-      id: "timelines",
-      children: ["the-first-war"],
-      name: "Timelines",
-    },
-    "the-first-war": {
-      id: "the-first-war",
-      children: [],
-      name: "The First War",
-    },
-    sage: {
-      id: "sage",
-      children: [],
-      name: "Sage",
-    },
-  };
-  const [treeData, treeApi] = useTreeView({ initialData: data });
+
+  const [_, treeApi] = useTreeView();
+  const { data: tree } = rspc.useQuery(["characters.build_tree"]);
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
       <div className="h-full basis-[300px] bg-white">
-        <TreeView onExpansionChange={treeApi.toggleExpand} treeData={treeData} indentation={25} {...treeApi} />
+        {tree && (
+          <TreeView
+            renderItem={({ name, isCollection, expanded }) => {
+              return isCollection ? (
+                <>
+                  <HiFolder/>
+                  {expanded ? <HiChevronDown /> : <HiChevronRight />}
+                  <span>{name}</span>
+                </>
+              ) : (
+                <>
+                  <HiMiniUserCircle/>
+                  <span>{name}</span>
+                </>
+              );
+            }}
+            onExpansionChange={treeApi.toggleExpand}
+            treeData={tree as TreeData}
+            indentation={40}
+            {...treeApi}
+          />
+        )}
       </div>
       <div className="basis-full">
         <ImageUploader>
@@ -49,7 +47,9 @@ function App() {
         {/** Character SHeet*/}
         <div className="flex px-4">
           <div style={{ height: "800px" }} className="basis-full h-full">
-            <PanelCanvas/>
+            <div className="w-96">
+              <code>{JSON.stringify(tree)}</code>
+            </div>
           </div>
           <CharacterSummary name="John" />
         </div>
