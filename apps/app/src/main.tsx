@@ -1,4 +1,3 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import { rspc, client, queryClient } from "./rspc/router";
@@ -19,9 +18,7 @@ declare module '@tanstack/react-router' {
 
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
     <rspc.Provider client={client} queryClient={queryClient}>
       <RouterProvider router={router} />
     </rspc.Provider>
-  </React.StrictMode>,
 );

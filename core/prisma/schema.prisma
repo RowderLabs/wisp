@@ -9,10 +9,9 @@ generator client {
 }
 
 model Character {
-    id Int @id @default(autoincrement())
+    path String @id
     fullName String
-    isCollection Boolean @default(false)
-    path String @unique
+    isCollection Boolean
     traits CharacterHasTrait[]
     characterSheet CharacterSheet?
 }
@@ -22,8 +21,8 @@ model CharacterSheet {
     photoPath String
     bannerPath String
     canvasPath String 
-    characterId Int @unique
-    character Character @relation(fields: [characterId], references: [id])
+    characterId String @unique
+    character Character @relation(fields: [characterId], references: [path])
     
 }
 
@@ -50,8 +49,8 @@ model CharacterHasTrait {
     trait Trait @relation(fields: [traitId], references: [id])
     traitId Int
     visible Boolean
-    character Character @relation(fields: [characterId], references: [id])
-    characterId Int
+    character Character @relation(fields: [characterId], references: [path])
+    characterId String
 
     @@id([characterId, traitId])
 }
