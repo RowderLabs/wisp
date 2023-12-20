@@ -21,6 +21,7 @@ export function TreeView({ treeData, renderItem, viewState, indentation, onExpan
     <div className="text-sm">
       {flattenedTree.map((node) => (
         <TreeViewItem
+          key={node.id}
           renderItem={renderItem}
           indentation={indentation || 25}
           handleExpand={() => onExpansionChange(node.id)}

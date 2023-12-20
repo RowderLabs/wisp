@@ -1,12 +1,14 @@
-use crate::{api::characters::construct_path, prisma};
+use crate::{api::characters::{construct_path, generate_id}, prisma};
 
 pub async fn seed(prisma: &prisma::PrismaClient) {
     //reset db
 
+    let characters_id = generate_id("Characters".into());
     let characters = prisma
         .character()
         .create(
-            construct_path("Characters", &None),
+            characters_id.clone(),
+            construct_path(&characters_id, &None),
             "Characters".into(),
             true,
             vec![],
@@ -15,10 +17,12 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         .await
         .unwrap();
 
+    let sotiria_id = generate_id("Sotiria".into());
     let sotiria = prisma
         .character()
         .create(
-            construct_path("Sotiria", &Some(characters.path.as_str())),
+            sotiria_id.clone(),
+            construct_path(&sotiria_id, &Some(characters.path.as_str())),
             "Sotiria".into(),
             false,
             vec![],
@@ -27,10 +31,12 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         .await
         .unwrap();
 
+    let sage_id = generate_id("Sage".into());
     let sage = prisma
         .character()
         .create(
-            construct_path("Sage", &Some(&characters.path)),
+            sage_id.clone(),
+            construct_path(&sage_id, &Some(&characters.path)),
             "Sage".into(),
             false,
             vec![],

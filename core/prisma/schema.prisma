@@ -9,7 +9,8 @@ generator client {
 }
 
 model Character {
-    path String @id
+    id String @id
+    path String @unique
     fullName String
     isCollection Boolean
     traits CharacterHasTrait[]

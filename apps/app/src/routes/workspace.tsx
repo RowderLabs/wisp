@@ -5,39 +5,39 @@ import { Banner } from "../ui/Banner";
 import { rspc } from "../rspc/router";
 import { HiFolder, HiChevronDown, HiChevronRight } from "react-icons/hi";
 import { HiMiniUserCircle } from "react-icons/hi2";
-import { CharacterSummary } from "../ui/CharacterSummary";
 
 export const Route = new FileRoute("/workspace").createRoute({
   component: WorkspacePage,
 });
 
 function WorkspacePage() {
-
   const [_, treeApi] = useTreeView();
-  const {data: tree} = rspc.useQuery(['characters.build_tree'])
+  const { data: tree } = rspc.useQuery(["characters.build_tree"]);
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
       <div className="h-full basis-[300px] bg-white">
         {tree && (
           <TreeView
-            renderItem={({ name, isCollection, expanded }) => {
+            renderItem={({ id, name, isCollection, expanded }) => {
               return isCollection ? (
                 <>
-                  <HiFolder/>
+                  <HiFolder />
                   {expanded ? <HiChevronDown /> : <HiChevronRight />}
-                  <span>{name}</span>
+                  <span className="basis-full">{name}</span>
                 </>
               ) : (
                 <>
-                  <HiMiniUserCircle/>
-                  <span>{name}</span>
+                  <HiMiniUserCircle />
+                  <Link className="basis-full" from={Route.id} to="./characters/$characterId" params={{ characterId: id }}>
+                    {name}
+                  </Link>
                 </>
               );
             }}
             onExpansionChange={treeApi.toggleExpand}
             treeData={tree as TreeData}
-            indentation={40}
+            indentation={25}
             {...treeApi}
           />
         )}
@@ -51,17 +51,16 @@ function WorkspacePage() {
           )}
         </ImageUploader>
         {/** Character SHeet*/}
-        <Outlet />
         <Link from={Route.id} to="./characters/$characterId" params={{ characterId: "1" }}>
           Characters
         </Link>
+        <div>
+          <code>
+            {JSON.stringify(tree)}
+          </code>
+        </div>
         <div className="flex px-4">
-          <div style={{ height: "800px" }} className="basis-full h-full">
-            <div className="w-96">
-              <code>{JSON.stringify(tree)}</code>
-            </div>
-          </div>
-          <CharacterSummary name="John" />
+          <Outlet />
         </div>
       </div>
     </div>

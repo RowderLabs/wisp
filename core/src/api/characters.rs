@@ -47,7 +47,6 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
         }
 
         for (index, location) in locations.iter().enumerate() {
-
             //append location to graph
             graph.entry(location.to_string()).or_insert(FileTreeItem {
                 id: location.to_string(),
@@ -60,7 +59,9 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
             if index == locations.len() - 1 {
                 let maybe_parent = locations.get(locations.len().wrapping_sub(2));
                 if let Some(parent) = maybe_parent {
-                    graph.entry(parent.to_string()).and_modify(|e| e.children.push(location.to_string()));
+                    graph
+                        .entry(parent.to_string())
+                        .and_modify(|e| e.children.push(location.to_string()));
                 }
             }
         }
@@ -69,18 +70,21 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
         id: "root".to_string(),
         name: "root".to_string(),
         children: in_root.into_iter().collect_vec(),
-        is_collection: true
+        is_collection: true,
     };
     graph.insert("root".to_string(), root);
     graph
 }
 
-pub fn construct_path(name: &str, parent_path: &Option<&str>) -> String {
-    let formatted_name = name.replace(" ", "-").to_lowercase();
+pub fn generate_id(name: &str) -> String {
+    format!("{}-{}", name.replace(" ", "-").to_lowercase(), nanoid!(8))
+}
+
+pub fn construct_path(id: &str, parent_path: &Option<&str>) -> String {
     if let Some(parent) = parent_path {
-        return format!("/{}/{}-{}", parent, formatted_name, nanoid!(8));
+        return format!("{}/{}", parent, id);
     }
-    format!("/{}-{}", formatted_name, nanoid!(8))
+    format!("/{}", id.to_string())
 }
 
 pub fn characters_router() -> RouterBuilder<Ctx> {
@@ -112,10 +116,10 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
             })
         })
         .query("with_id", |t| {
-            t(|ctx: Ctx, path: String| async move {
+            t(|ctx: Ctx, id: String| async move {
                 ctx.client
                     .character()
-                    .find_unique(character::path::equals(path))
+                    .find_unique(character::id::equals(id))
                     .exec()
                     .await
                     .map_err(Into::into)
@@ -128,10 +132,13 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     parent,
                     is_collection,
                 } = character_details;
+
+                let id = generate_id(&full_name);
                 ctx.client
                     .character()
                     .create(
-                        construct_path(&full_name, &parent.as_deref()),
+                        id.clone(),
+                        construct_path(&id, &parent.as_deref()),
                         full_name.clone(),
                         is_collection,
                         vec![],
@@ -142,10 +149,10 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
             })
         })
         .mutation("delete", |t| {
-            t(|ctx: Ctx, path: String| async move {
+            t(|ctx: Ctx, id: String| async move {
                 ctx.client
                     .character()
-                    .delete(character::path::equals(path))
+                    .delete(character::id::equals(id))
                     .exec()
                     .await
                     .map_err(Into::into)
