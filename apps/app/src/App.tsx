@@ -1,7 +1,8 @@
-import { ImageUploadOverlay, ImageUploader, PanelCanvas, TreeView } from "@wisp/ui";
+import { ImageUploadOverlay, ImageUploader, TreeView } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
 import CharacterSummary from "./ui/CharacterSummary";
 import { Banner } from "./ui/Banner";
+import { rspc } from "./rspc/router";
 
 function App() {
   const data: TreeData = {
@@ -32,11 +33,12 @@ function App() {
     },
   };
   const [treeData, treeApi] = useTreeView({ initialData: data });
+  const { data: tree } = rspc.useQuery(["characters.build_tree"]);
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
       <div className="h-full basis-[300px] bg-white">
-        <TreeView onExpansionChange={treeApi.toggleExpand} treeData={treeData} indentation={25} {...treeApi} />
+        {tree && <TreeView onExpansionChange={treeApi.toggleExpand} treeData={tree as TreeData} indentation={25} {...treeApi} />}
       </div>
       <div className="basis-full">
         <ImageUploader>
@@ -49,7 +51,11 @@ function App() {
         {/** Character SHeet*/}
         <div className="flex px-4">
           <div style={{ height: "800px" }} className="basis-full h-full">
-            <PanelCanvas/>
+            <div className="w-96">
+              <code>
+                {JSON.stringify(tree)}
+              </code>
+            </div>
           </div>
           <CharacterSummary name="John" />
         </div>

@@ -1,10 +1,12 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use super::Ctx;
 use super::RouterBuilder;
 use crate::prisma;
 use crate::prisma::character;
 use itertools::Itertools;
+use nanoid::nanoid;
 use rspc::Error;
 use serde::Deserialize;
 use serde::Serialize;
@@ -13,7 +15,8 @@ use serde::Serialize;
 #[serde(rename_all = "camelCase")]
 struct CreateCharacter {
     full_name: String,
-    path: String,
+    parent: Option<String>,
+    is_collection: bool,
 }
 
 #[derive(Serialize, Deserialize, specta::Type)]
@@ -23,29 +26,58 @@ struct FileTreeItem {
     name: String,
     children: Vec<String>,
 }
-fn create_adjacency_list(characters: Vec<character::Data>) -> HashMap<String, FileTreeItem> {
+
+fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTreeItem> {
     let mut graph: HashMap<String, FileTreeItem> = HashMap::new();
+    let mut in_root = HashSet::new();
 
-    // Populate the tree
     for character in characters {
-        let components: Vec<&str> = character.path.trim_start_matches('/').split('/').collect();
+        let locations = character
+            .path
+            .trim_start_matches("/")
+            .split("/")
+            .collect_vec();
 
-        for i in 0..components.len() {
-            let node_id = components[0..=i].join("/");
-            graph.entry(node_id.clone()).or_insert(FileTreeItem {
-                id: node_id.clone(),
+        //add location to root node
+        if locations.len() == 1 {
+            if let Some(location) = locations.first() {
+                in_root.insert(location.to_string());
+            }
+        }
+
+        for (index, location) in locations.iter().enumerate() {
+
+            //append location to graph
+            graph.entry(location.to_string()).or_insert(FileTreeItem {
+                id: location.to_string(),
                 name: character.full_name.to_string(),
-                children: Vec::new(),
+                children: vec![],
             });
 
-            if i < components.len() - 1 {
-                let child_id = components[0..=i + 1].join("/");
-                graph.get_mut(&node_id).unwrap().children.push(child_id);
+            //append location to parent
+            if index == locations.len() - 1 {
+                let maybe_parent = locations.get(locations.len().wrapping_sub(2));
+                if let Some(parent) = maybe_parent {
+                    graph.entry(parent.to_string()).and_modify(|e| e.children.push(location.to_string()));
+                }
             }
         }
     }
-
+    let root = FileTreeItem {
+        id: "root".to_string(),
+        name: "root".to_string(),
+        children: in_root.into_iter().collect_vec(),
+    };
+    graph.insert("root".to_string(), root);
     graph
+}
+
+pub fn construct_path(name: &str, parent_path: &Option<&str>) -> String {
+    let formatted_name = name.replace(" ", "-").to_lowercase();
+    if let Some(parent) = parent_path {
+        return format!("/{}/{}-{}", parent, formatted_name, nanoid!(8));
+    }
+    format!("/{}-{}", formatted_name, nanoid!(8))
 }
 
 pub fn characters_router() -> RouterBuilder<Ctx> {
@@ -72,15 +104,15 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .await
                     .unwrap();
 
-                let graph = create_adjacency_list(characters);
+                let graph = create_file_tree(&characters);
                 graph
             })
         })
         .query("with_id", |t| {
-            t(|ctx: Ctx, id: i32| async move {
+            t(|ctx: Ctx, path: String| async move {
                 ctx.client
                     .character()
-                    .find_unique(character::id::equals(id))
+                    .find_unique(character::path::equals(path))
                     .exec()
                     .await
                     .map_err(Into::into)
@@ -88,20 +120,29 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
         })
         .mutation("create", |t| {
             t(|ctx: Ctx, character_details: CreateCharacter| async move {
-                let CreateCharacter { full_name, path } = character_details;
+                let CreateCharacter {
+                    full_name,
+                    parent,
+                    is_collection,
+                } = character_details;
                 ctx.client
                     .character()
-                    .create(full_name.clone(), path, vec![])
+                    .create(
+                        construct_path(&full_name, &parent.as_deref()),
+                        full_name.clone(),
+                        is_collection,
+                        vec![],
+                    )
                     .exec()
                     .await
                     .map_err(Into::into)
             })
         })
         .mutation("delete", |t| {
-            t(|ctx: Ctx, id: i32| async move {
+            t(|ctx: Ctx, path: String| async move {
                 ctx.client
                     .character()
-                    .delete(character::id::equals(id))
+                    .delete(character::path::equals(path))
                     .exec()
                     .await
                     .map_err(Into::into)
