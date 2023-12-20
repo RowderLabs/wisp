@@ -4,6 +4,7 @@ import { deleteNodeInner, buildTree } from "../util/treeView";
 export type TreeViewNodeInner = {
   id: string;
   name: string;
+  isCollection: boolean;
   parentId: string | null;
   depth: number;
   children: string[];
@@ -20,8 +21,8 @@ export type TreeViewApiHandle = {
   deleteNode: (id: string) => void;
 };
 
-export function useTreeView({ initialData }: { initialData: Record<string, TreeViewNode> }): [TreeData, TreeViewApiHandle] {
-  const [treeData, setTreeData] = useState<Record<string, TreeViewNode>>(initialData);
+export function useTreeView(): [TreeData, TreeViewApiHandle] {
+  const [treeData, setTreeData] = useState<Record<string, TreeViewNode>>({});
   const [viewState, setViewState] = useState<Map<string, boolean | undefined>>(
     new Map([["root", true]])
   );

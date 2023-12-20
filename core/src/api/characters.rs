@@ -24,6 +24,7 @@ struct CreateCharacter {
 struct FileTreeItem {
     id: String,
     name: String,
+    is_collection: bool,
     children: Vec<String>,
 }
 
@@ -52,6 +53,7 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
                 id: location.to_string(),
                 name: character.full_name.to_string(),
                 children: vec![],
+                is_collection: character.is_collection,
             });
 
             //append location to parent
@@ -67,6 +69,7 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
         id: "root".to_string(),
         name: "root".to_string(),
         children: in_root.into_iter().collect_vec(),
+        is_collection: true
     };
     graph.insert("root".to_string(), root);
     graph
