@@ -51,14 +51,6 @@ function WorkspacePage() {
           )}
         </ImageUploader>
         {/** Character SHeet*/}
-        <Link from={Route.id} to="./characters/$characterId" params={{ characterId: "1" }}>
-          Characters
-        </Link>
-        <div>
-          <code>
-            {JSON.stringify(tree)}
-          </code>
-        </div>
         <div className="flex px-4">
           <Outlet />
         </div>

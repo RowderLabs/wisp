@@ -13,7 +13,6 @@ function WorkspaceCharacterSheetPage() {
   const {data: character} = rspc.useQuery(['characters.with_id', characterId])
   return (
     <div className="flex w-full px-4">
-      <span>{characterId}</span>
       <div className="basis-full" style={{ height: "800px" }}>
         <PanelCanvas />
       </div>
