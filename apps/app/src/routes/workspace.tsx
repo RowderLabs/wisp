@@ -1,14 +1,20 @@
-import { ImageUploadOverlay, ImageUploader, TreeView } from "@wisp/ui";
+import { FileRoute, Link, Outlet } from "@tanstack/react-router";
+import { TreeView, ImageUploader, ImageUploadOverlay } from "@wisp/ui";
 import { TreeData, useTreeView } from "@wisp/ui/src/hooks";
-import CharacterSummary from "./ui/CharacterSummary";
-import { Banner } from "./ui/Banner";
-import { rspc } from "./rspc/router";
-import { HiChevronDown, HiChevronRight, HiFolder, HiMiniUserCircle } from "react-icons/hi2";
+import { Banner } from "../ui/Banner";
+import { rspc } from "../rspc/router";
+import { HiFolder, HiChevronDown, HiChevronRight } from "react-icons/hi";
+import { HiMiniUserCircle } from "react-icons/hi2";
+import { CharacterSummary } from "../ui/CharacterSummary";
 
-function App() {
+export const Route = new FileRoute("/workspace").createRoute({
+  component: WorkspacePage,
+});
+
+function WorkspacePage() {
 
   const [_, treeApi] = useTreeView();
-  const { data: tree } = rspc.useQuery(["characters.build_tree"]);
+  const {data: tree} = rspc.useQuery(['characters.build_tree'])
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
@@ -45,6 +51,10 @@ function App() {
           )}
         </ImageUploader>
         {/** Character SHeet*/}
+        <Outlet />
+        <Link from={Route.id} to="./characters/$characterId" params={{ characterId: "1" }}>
+          Characters
+        </Link>
         <div className="flex px-4">
           <div style={{ height: "800px" }} className="basis-full h-full">
             <div className="w-96">
@@ -57,5 +67,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

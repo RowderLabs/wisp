@@ -1,0 +1,14 @@
+import { FileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+
+export const Route = new FileRoute("/").createRoute({
+  component: Home,
+});
+
+function Home() {
+  const navigate = useNavigate({from: '/'});
+  useEffect(() => {
+    navigate({to: '/workspace'})
+  }, [])
+  return <Outlet />;
+}
