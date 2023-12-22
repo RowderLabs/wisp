@@ -1,16 +1,18 @@
 import { FileRoute } from "@tanstack/react-router";
 import { PanelCanvas } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
-import { rspc } from "../rspc/router";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
-  loader: (opts) => opts.params.characterId,
+  loader: ({context, params}) =>
+    context.rspc.queryClient.ensureQueryData({
+      queryKey: ["characters.with_id", { id: params.characterId }],
+      queryFn: () => context.rspc.client.query(["characters.with_id", params.characterId]),
+    }),
   component: WorkspaceCharacterSheetPage,
 });
 
 function WorkspaceCharacterSheetPage() {
-  const characterId = Route.useLoaderData();
-  const {data: character} = rspc.useQuery(['characters.with_id', characterId])
+  const character = Route.useLoaderData();
   return (
     <div className="flex w-full px-4">
       <div className="basis-full" style={{ height: "800px" }}>

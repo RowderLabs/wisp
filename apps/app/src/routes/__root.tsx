@@ -1,8 +1,11 @@
 import { Outlet, rootRouteWithContext } from '@tanstack/react-router'
-import { QueryClient } from "@tanstack/react-query";
+import { client, queryClient } from '../rspc/router';
 
 export const Route = rootRouteWithContext<{
-  queryClient: QueryClient
+  rspc: {
+    client: typeof client,
+    queryClient: typeof queryClient
+  }
 }>()({
   component: RootComponent,
 })
