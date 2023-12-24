@@ -8,9 +8,16 @@ importers:
 
   .:
     dependencies:
+      '@radix-ui/react-context-menu':
+        specifier: ^2.1.4
+        version: 2.1.4(@types/react-dom@18.2.7)(@types/react@18.2.15)(react-dom@18.2.0)(react@18.2.0)
       '@radix-ui/react-dialog':
         specifier: ^1.0.4
         version: 1.0.4(@types/react-dom@18.2.7)(@types/react@18.2.15)(react-dom@18.2.0)(react@18.2.0)
+    devDependencies:
+      react-icons:
+        specifier: ^4.11.0
+        version: 4.11.0(react@18.2.0)
 
   apps/app:
     dependencies:

@@ -12,6 +12,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@radix-ui/react-context-menu": "^2.1.4",
     "@radix-ui/react-dialog": "^1.0.4"
+  },
+  "devDependencies": {
+    "react-icons": "^4.11.0"
   }
 }
