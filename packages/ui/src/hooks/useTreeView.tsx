@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { deleteNodeInner, buildTree } from "../util/treeView";
+import { UniqueIdentifier } from "@dnd-kit/core";
 
 export type TreeViewNodeInner = {
   id: string;
@@ -21,14 +22,18 @@ export type TreeViewApiHandle = {
   deleteNode: (id: string) => void;
 };
 
-export function useTreeView(): [TreeData, TreeViewApiHandle] {
+type UseTreeViewProps = {
+  onDelete: (id: string) => void;
+}
+
+export function useTreeView({onDelete}: UseTreeViewProps): [TreeData, TreeViewApiHandle] {
   const [treeData, setTreeData] = useState<Record<string, TreeViewNode>>({});
   const [viewState, setViewState] = useState<Map<string, boolean | undefined>>(
     new Map([["root", true]])
   );
 
   function deleteNode(id: string) {
-    setTreeData((oldTreeData) => deleteNodeInner(oldTreeData, id));
+    onDelete(id)
   }
 
   function toggleExpand(id: string) {
@@ -47,7 +52,6 @@ export function useTreeView(): [TreeData, TreeViewApiHandle] {
     setViewState(new Map([["root", true]]));
   }
 
-  
 
   const treeApi = {
     viewState,

@@ -8,7 +8,7 @@ interface ContextMenuProps extends RadixContextMenu.MenuContentProps {
 }
 
 const contextMenuVariants = cva(
-  "cursor-default min-w-[12rem] text-xs max-w-[16rem] rounded-md border shadow-md bg-white p-1"
+  "cursor-default min-w-[12rem] max-w-[16rem] rounded-md border shadow-md bg-white p-1"
 );
 
 const Root = ({ trigger, children }: PropsWithChildren<ContextMenuProps>) => {
@@ -31,18 +31,18 @@ const Separator = () => {
 const contextMenuItemVariants = cva(
   clsx(
     //item format
-    "flex max-h-fit min-h-10 overflow-clip rounded-sm px-2 py-1 hover:bg-blue-100 focus:bg-blue-100",
+    "flex max-h-fit min-h-10 text-xs overflow-clip rounded-sm px-2 py-1 hover:bg-blue-100 focus:bg-blue-100"
   )
 );
 
 interface ContextMenuItemsProps extends RadixContextMenu.MenuItemProps {
-  icon?: React.ReactNode
+  icon?: React.ReactNode;
 }
 
-const Item = ({ children, icon }: ContextMenuItemsProps) => {
+const Item = ({ children, icon, onClick }: ContextMenuItemsProps) => {
   return (
-    <RadixContextMenu.Item className={contextMenuItemVariants()}>
-      <div className="flex gap-1 items-center">
+    <RadixContextMenu.Item onClick={onClick} className={contextMenuItemVariants()}>
+      <div className="flex gap-1 items-center w-full h-full">
         {icon}
         {children}
       </div>
