@@ -1,30 +1,63 @@
 import { useFavicon } from "@uidotdev/usehooks";
-import { useEffect, useRef, useState } from "react";
+import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
+import throttle from "lodash.throttle";
+import clsx from "clsx";
 
-export function Resizable() {
+type ResizableProps = {
+  minHeight?: number;
+  minWidth?: number;
+};
+
+export function Resizable({ children, minHeight, minWidth }: PropsWithChildren<ResizableProps>) {
   const resizeRef = useRef<HTMLDivElement | null>(null);
   const dragHandleRef = useRef<HTMLDivElement | null>(null);
-  const [originDimensions, setOriginDimensions] = useState({ width: 0, height: 0 });
-  const [startingMousePos, setStartingMousePos] = useState({ x: 0, y: 0 });
+  const [resizing, setResizing] = useState(false);
 
   const handleResize = (e: MouseEvent) => {
-    if (!resizeRef.current) return;
-    setOriginDimensions({
-      width: resizeRef.current.getBoundingClientRect().width,
-      height: resizeRef.current.getBoundingClientRect().height,
-    });
-    setStartingMousePos({ y: e.clientY, x: e.clientX });
-    resizeRef.current.style.width = e.clientX - resizeRef.current.getBoundingClientRect().left + 'px'
-    resizeRef.current.style.height= e.clientY - resizeRef.current.getBoundingClientRect().top + 'px'
+    if (calculateResize(e, "horizontal") > (minWidth || 0))
+      resizeRef.current!.style.width = e.clientX - getResizeElem().getBoundingClientRect().left + "px";
+    if (calculateResize(e, "vertical") > (minHeight || 0))
+      resizeRef.current!.style.height = e.clientY - getResizeElem().getBoundingClientRect().top + "px";
+  };
+
+  const getCanResize = (e: MouseEvent) => {
+    const horizonalResize = calculateResize(e, "horizontal");
+    const verticalResize = calculateResize(e, "vertical");
+    const canResizeHorizontal =
+      horizonalResize < getResizeElem().parentElement!.getBoundingClientRect().width &&
+      horizonalResize > (minWidth || 0 + 50);
+    const canResizeVertical =
+      verticalResize < getResizeElem().parentElement!.getBoundingClientRect().height &&
+      verticalResize > (minHeight || 0 + 50);
+
+    return { vertical: canResizeVertical, horizontal: canResizeHorizontal };
+  };
+
+  const getResizeElem = () => {
+    if (!resizeRef.current) throw new Error("No resize element defined");
+    return resizeRef.current;
+  };
+
+  const calculateResize = (e: MouseEvent, direction: "horizontal" | "vertical") => {
+    switch (direction) {
+      case "horizontal": {
+        return e.clientX - getResizeElem().getBoundingClientRect().left;
+      }
+      case "vertical": {
+        return e.clientY - getResizeElem().getBoundingClientRect().top;
+      }
+    }
   };
 
   const onResizeStart = () => {
-    window.addEventListener("mousemove", handleResize);
+    setResizing(true);
+    window.addEventListener("mousemove", throttledResize);
     window.addEventListener("mouseup", onResizeEnd);
   };
 
   const onResizeEnd = () => {
-    window.removeEventListener("mousemove", handleResize);
+    setResizing(false);
+    window.removeEventListener("mousemove", throttledResize);
     window.removeEventListener("mouseup", onResizeEnd);
   };
 
@@ -34,18 +67,26 @@ export function Resizable() {
     };
   }, []);
 
+  const throttledResize = useCallback(throttle(handleResize, 5), []);
+
   return (
-    <div ref={resizeRef} className="relative w-[200px] min-h-[200px] border">
-      <span>{JSON.stringify(startingMousePos)}</span>
+    <div
+      ref={resizeRef}
+      className={clsx("relative w-full h-full pointer-events-none", resizing && "outline outline-blue-200")}
+    >
       <div
         ref={dragHandleRef}
         onMouseDown={(e) => {
-          e.preventDefault()
+          e.preventDefault();
           if (!resizeRef.current) return;
           onResizeStart();
         }}
-        className="absolute bottom-[-5px] right-[-5px] h-6 w-6 rounded-full bg-blue-200"
+        className={clsx(
+          "absolute pointer-events-auto bottom-[-5px] right-[-5px] h-4 w-4 z-50 rounded-full bg-blue-200",
+          resizing ? "cursor-nw-resize" : "cursor-pointer"
+        )}
       ></div>
+      <span className="pointer-events-auto">{children}</span>
     </div>
   );
 }

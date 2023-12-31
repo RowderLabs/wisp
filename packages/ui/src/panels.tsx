@@ -5,7 +5,7 @@ const panels = {
     renderContent: (args: ImageUploaderProps) => (
       <ImageUploader {...args}>
         {({ wrapperStyle, ...props }) => (
-          <div style={wrapperStyle} className="bg-slate-300 resize overflow-auto">
+          <div style={wrapperStyle} className="bg-slate-200 overflow-auto h-full">
             <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
           </div>
         )}

@@ -5,7 +5,7 @@ import { KeyboardEventHandler, useRef, useState } from "react";
 import useDoubleClick from "use-double-click";
 import clsx from "clsx";
 
-const textboxVariants = cva("bg-white border rounded-md p-2");
+const textboxVariants = cva("bg-white overflow-clip border rounded-md p-2 w-full h-full");
 const textboxTitleVariants = cva("text-slate-800 text-sm flex", {
   variants: {
     position: {
@@ -59,7 +59,7 @@ export function TextBox({ title, textBoxOptions }: TextBoxProps) {
         </div>
         <span>{editing}</span>
       </div>
-      <TextEditor features={{ typeahead: { lists: true } }} className="p-2 rounded-md w-[300px] h-[250px]" />
+      <TextEditor features={{ typeahead: { lists: true } }} className="rounded-md px-2 py-1 min-h-[150px] min-w=[150px]" />
     </div>
   );
 }
