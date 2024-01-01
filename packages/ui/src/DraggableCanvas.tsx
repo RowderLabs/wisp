@@ -4,6 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import React, { PropsWithChildren, forwardRef, useImperativeHandle } from "react";
 import { useState } from "react";
 import { useCommandSystem } from "./hooks/useCommandSystem";
+import { Resizable } from "./Resizable";
 
 type CanvasItem = {
   id: UniqueIdentifier;
@@ -76,7 +77,7 @@ export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvas
     >
       {canvasSystem.state.map((item) => (
         <DraggableItem key={item.id} offsetX={item.x} offsetY={item.y} id={item.id}>
-          {item.renderItem ? item.renderItem() : <div className="w-[50px] h-[50px] bg-red-500"></div>}
+            {item.renderItem ? item.renderItem() : <div className="w-[50px] h-[50px] bg-red-500a"></div>}
         </DraggableItem>
       ))}
     </DndContext>

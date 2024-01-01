@@ -60,9 +60,9 @@ function TreeViewItem({
       {visible && (
         <li
           onClick={() => itemIsCollection && handleExpand()}
-          className="rounded-md list-none cursor-pointer hover:bg-blue-100"
+          className="rounded-md px-2 py-1 list-none cursor-pointer hover:bg-blue-100"
         >
-          <div style={{ marginLeft: depth * indentation }} className="flex gap-1 items-center p-1">
+          <div style={{ marginLeft: depth * indentation }}>
             {renderItem({ ...node, expanded })}
           </div>
         </li>

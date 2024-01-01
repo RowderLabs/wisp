@@ -31,7 +31,7 @@ export function ImageUploader({
       {children({
         src,
         opts,
-        wrapperStyle: { ...wrapperStyle, position: "relative", minHeight: '150px', minWidth: '150px' },
+        wrapperStyle: { ...wrapperStyle, position: "relative", minHeight: "150px", minWidth: "150px" },
         handleUpload,
       })}
     </>
@@ -45,11 +45,9 @@ type UploaderProps = {
 };
 
 export const ImageUploadOverlay = ({ src, handleUpload, imageOpts }: UploaderProps) => {
-  return (
-    <div className="absolute top-0 left-0 w-full h-full text-slate-600">
-      {src ? (
-        <Image {...imageOpts} src={src} />
-      ) : (
+  if (!src)
+    return (
+      <div className="absolute top-0 left-0 w-full h-full text-slate-600">
         <div onClick={handleUpload} className={imageUploaderVariants()}>
           <div className="flex flex-col items-center gap-2">
             <span className="text-[32px]">
@@ -57,7 +55,8 @@ export const ImageUploadOverlay = ({ src, handleUpload, imageOpts }: UploaderPro
             </span>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+
+  return <Image {...imageOpts} src={src} />;
 };

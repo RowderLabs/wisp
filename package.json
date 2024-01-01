@@ -12,6 +12,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.0.4"
+    "@radix-ui/react-context-menu": "^2.1.4",
+    "@radix-ui/react-dialog": "^1.0.4",
+    "lodash.throttle": "^4.1.1",
+    "nanoid": "^5.0.4",
+    "valtio": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/lodash.throttle": "^4.1.9",
+    "react-icons": "^4.11.0"
   }
 }

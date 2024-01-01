@@ -1,11 +1,11 @@
 import { VariantProps, cva } from "class-variance-authority";
 
-export const imageVariants = cva("w-full h-full block rounded-md", {
+export const imageVariants = cva("w-full h-auto block rounded-md", {
   variants: {
     fit: { cover: "object-cover", contain: "object-contain" },
   },
   defaultVariants: {
-    fit: "cover",
+    fit: "contain",
   },
 });
 

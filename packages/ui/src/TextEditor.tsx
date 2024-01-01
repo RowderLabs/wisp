@@ -72,7 +72,8 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
       <div
         className={clsx(
           className,
-          "relative overflow-auto min-w-[300px] min-h-[150px] h-full leading-6 text-slate-700"
+          'overflow-auto h-[95%]',
+          "relative leading-6 text-slate-700"
         )}
       >
         {features.typeahead && featureEnabled(features.typeahead) && (
