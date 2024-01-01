@@ -77,9 +77,7 @@ export const DraggableCanvas = forwardRef<DraggableCanvasHandle, DraggableCanvas
     >
       {canvasSystem.state.map((item) => (
         <DraggableItem key={item.id} offsetX={item.x} offsetY={item.y} id={item.id}>
-          <Resizable minHeight={150} minWidth={150}>
             {item.renderItem ? item.renderItem() : <div className="w-[50px] h-[50px] bg-red-500a"></div>}
-          </Resizable>
         </DraggableItem>
       ))}
     </DndContext>

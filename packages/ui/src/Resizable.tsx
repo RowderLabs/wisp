@@ -6,17 +6,29 @@ import clsx from "clsx";
 type ResizableProps = {
   minHeight?: number;
   minWidth?: number;
+  restrictToX?: boolean;
+  restrictToY?: boolean;
 };
 
-export function Resizable({ children, minHeight, minWidth }: PropsWithChildren<ResizableProps>) {
+export function Resizable({
+  children,
+  minHeight,
+  minWidth,
+  restrictToX = false,
+  restrictToY = false,
+}: PropsWithChildren<ResizableProps>) {
   const resizeRef = useRef<HTMLDivElement | null>(null);
   const dragHandleRef = useRef<HTMLDivElement | null>(null);
   const [resizing, setResizing] = useState(false);
 
+  useEffect(() => {
+    if (restrictToX && restrictToY) throw new Error("You can only restrict to one axis");
+  }, []);
+
   const handleResize = (e: MouseEvent) => {
-    if (calculateResize(e, "horizontal") > (minWidth || 0))
+    if (calculateResize(e, "horizontal") > (minWidth || 0) && !restrictToY)
       resizeRef.current!.style.width = e.clientX - getResizeElem().getBoundingClientRect().left + "px";
-    if (calculateResize(e, "vertical") > (minHeight || 0))
+    if (calculateResize(e, "vertical") > (minHeight || 0) && !restrictToX)
       resizeRef.current!.style.height = e.clientY - getResizeElem().getBoundingClientRect().top + "px";
   };
 
