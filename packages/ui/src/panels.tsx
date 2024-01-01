@@ -4,7 +4,7 @@ import { TextBox, TextBoxProps } from "./Textbox";
 const panels = {
   image: {
     renderContent: (args: ImageUploaderProps) => (
-      <Resizable restrictToX={true} minWidth={200} minHeight={200}>
+      <Resizable.Root restrictToX={true} minWidth={200} minHeight={200}>
         <ImageUploader {...args}>
           {({ wrapperStyle, ...props }) => (
             <div style={wrapperStyle} className="bg-slate-200 h-full">
@@ -12,14 +12,16 @@ const panels = {
             </div>
           )}
         </ImageUploader>
-      </Resizable>
+        <Resizable.Handle position="bottom-right" />
+        <Resizable.Handle position="bottom-left" />
+      </Resizable.Root>
     ),
   },
   textbox: {
     renderContent: (args: TextBoxProps) => (
-      <Resizable minHeight={200} minWidth={200}>
+      <Resizable.Root minHeight={200} minWidth={200}>
         <TextBox {...args} />
-      </Resizable>
+      </Resizable.Root>
     ),
   },
 };
