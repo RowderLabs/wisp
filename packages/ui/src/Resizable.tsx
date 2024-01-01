@@ -8,6 +8,7 @@ type ResizableProps = {
   minWidth?: number;
   restrictToX?: boolean;
   restrictToY?: boolean;
+  showResize?: boolean;
 };
 
 export function Resizable({
@@ -16,6 +17,7 @@ export function Resizable({
   minWidth,
   restrictToX = false,
   restrictToY = false,
+  showResize = true
 }: PropsWithChildren<ResizableProps>) {
   const resizeRef = useRef<HTMLDivElement | null>(null);
   const dragHandleRef = useRef<HTMLDivElement | null>(null);
@@ -30,19 +32,6 @@ export function Resizable({
       resizeRef.current!.style.width = e.clientX - getResizeElem().getBoundingClientRect().left + "px";
     if (calculateResize(e, "vertical") > (minHeight || 0) && !restrictToX)
       resizeRef.current!.style.height = e.clientY - getResizeElem().getBoundingClientRect().top + "px";
-  };
-
-  const getCanResize = (e: MouseEvent) => {
-    const horizonalResize = calculateResize(e, "horizontal");
-    const verticalResize = calculateResize(e, "vertical");
-    const canResizeHorizontal =
-      horizonalResize < getResizeElem().parentElement!.getBoundingClientRect().width &&
-      horizonalResize > (minWidth || 0 + 50);
-    const canResizeVertical =
-      verticalResize < getResizeElem().parentElement!.getBoundingClientRect().height &&
-      verticalResize > (minHeight || 0 + 50);
-
-    return { vertical: canResizeVertical, horizontal: canResizeHorizontal };
   };
 
   const getResizeElem = () => {
@@ -90,7 +79,6 @@ export function Resizable({
         ref={dragHandleRef}
         onMouseDown={(e) => {
           e.preventDefault();
-          if (!resizeRef.current) return;
           onResizeStart();
         }}
         className={clsx(
