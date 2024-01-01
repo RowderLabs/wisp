@@ -31,7 +31,7 @@ const Separator = () => {
 const contextMenuItemVariants = cva(
   clsx(
     //item format
-    "flex max-h-fit min-h-10 text-xs overflow-clip rounded-sm px-2 py-1 hover:bg-blue-100 focus:bg-blue-100"
+    "flex max-h-fit min-h-10 text-sm overflow-clip rounded-sm px-2 py-1 hover:bg-blue-100 focus:bg-blue-100"
   )
 );
 
