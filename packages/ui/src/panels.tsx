@@ -1,5 +1,6 @@
 import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUploader";
 import { Resizable } from "./Resizable";
+import { ResizableRe } from "./ResizableRe";
 import { TextBox, TextBoxProps } from "./Textbox";
 const panels = {
   image: {
@@ -19,9 +20,13 @@ const panels = {
   },
   textbox: {
     renderContent: (args: TextBoxProps) => (
-      <Resizable.Root minHeight={200} minWidth={200}>
+      <ResizableRe.Root>
+        <ResizableRe.Handle position="top-left" />
+        <ResizableRe.Handle position="top-right" />
+        <ResizableRe.Handle position="bottom-left" />
+        <ResizableRe.Handle position="bottom-right" />
         <TextBox {...args} />
-      </Resizable.Root>
+      </ResizableRe.Root>
     ),
   },
 };
