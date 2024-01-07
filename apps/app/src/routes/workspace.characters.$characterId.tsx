@@ -1,6 +1,7 @@
 import { FileRoute } from "@tanstack/react-router";
-import { Transform, useTransform } from "@wisp/ui";
+import { Transform, useResizable, useTransform, useTranslate } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
+
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
     context.rspc.queryClient.ensureQueryData({
@@ -17,11 +18,7 @@ function WorkspaceCharacterSheetPage() {
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
         <Transform.Root onTranformEnd={(e) => console.log(e.x)} initial={{ width: 150, height: 300 }}>
-          <Transform.Resize>
-            <Transform.Translate>
-              <Box />
-            </Transform.Translate>
-          </Transform.Resize>
+          <Box />
         </Transform.Root>
       </div>
       {character && <CharacterSummary name={character?.fullName} />}
@@ -31,11 +28,15 @@ function WorkspaceCharacterSheetPage() {
 
 function Box() {
   const { status, transformRef, x, y, ...transformStyles } = useTransform();
+  const { isResizing } = useResizable();
+
   return (
-    <div ref={transformRef} style={{ ...transformStyles, left: x, top: y }} className="bg-blue-200 border-blue-400 absolute">
+    <div
+      ref={transformRef}
+      style={{ ...transformStyles, left: x, top: y, outline: isResizing ? "2px solid blue" : "" }}
+      className="bg-blue-200 border-blue-400 absolute"
+    >
       <Transform.ResizeHandle position="bottom-right" />
-      <Transform.TranslateHandle/>
-      <p>{JSON.stringify(status)}</p>
     </div>
   );
 }

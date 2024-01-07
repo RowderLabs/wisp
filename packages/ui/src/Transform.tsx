@@ -2,7 +2,7 @@ import { DndContext, DragMoveEvent, useDraggable, DragEndEvent, useDndMonitor } 
 import { useIsFirstRender } from "@uidotdev/usehooks";
 import { cva } from "class-variance-authority";
 import { nanoid } from "nanoid";
-import React, { Dispatch, PropsWithChildren, createContext, useContext, useEffect, useReducer, useRef } from "react";
+import React, { Dispatch, PropsWithChildren, createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 
 export type Maybe<T extends unknown> = T extends object
   ? {
@@ -95,6 +95,8 @@ function transformReducer(state: TransformState, action: TransformAction): Trans
   }
 }
 
+
+
 function Root({ children, onTranformEnd, onTransformStart, onTransform, initial }: PropsWithChildren<TransformProps>) {
   const transformRef = useRef<HTMLDivElement | null>(null);
   const isFirstRender = useIsFirstRender();
@@ -131,8 +133,11 @@ function Root({ children, onTranformEnd, onTransformStart, onTransform, initial 
   );
 }
 
-function Translate({children}: PropsWithChildren) {
+export function useTranslate() {
   const { x, y, dispatch, status } = useTransformContext();
+
+
+  const isTranslating = status.type === 'TRANSLATE'
 
   useDndMonitor({
     onDragStart: ({ active }) => {
@@ -145,8 +150,7 @@ function Translate({children}: PropsWithChildren) {
       dispatch({ type: "SET_Y", payload: y! + delta.y });
     },
   });
-
-  return children
+  return {isTranslating}
 }
 
 function TranslateHandle() {
@@ -167,10 +171,12 @@ function TranslateHandle() {
     ></div>
   );
 }
-function Resize({ children }: PropsWithChildren) {
+export function useResizable() {
   const { width, height, dispatch, status } = useTransformContext();
   const dragStartWidth = useRef<Maybe<number>>();
   const dragStartHeight = useRef<Maybe<number>>();
+
+  const isResizing = useMemo(() => status.type === 'RESIZE', [status])
 
   const resizeBottomRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
     dispatch({ type: "SET_WIDTH", payload: dragStartWidth.current! + delta.x });
@@ -192,9 +198,9 @@ function Resize({ children }: PropsWithChildren) {
       if (status.type !== "RESIZE") return;
       resizeBottomRight({ delta });
     },
-  });
+  }); 
 
-  return children;
+  return {isResizing}
 }
 
 type ResizableHandleProps = {
@@ -229,4 +235,4 @@ function ResizeHandle({ position }: ResizableHandleProps) {
   return <div {...listeners} {...attributes} ref={setNodeRef} className={resizableHandleVariants({ position })}></div>;
 }
 
-export const Transform = { Root, Resize, Translate, ResizeHandle, TranslateHandle };
+export const Transform = { Root, ResizeHandle, TranslateHandle };
