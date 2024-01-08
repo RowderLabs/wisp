@@ -2,7 +2,17 @@ import { DndContext, DragMoveEvent, useDraggable, DragEndEvent, useDndMonitor } 
 import { useIsFirstRender } from "@uidotdev/usehooks";
 import { cva } from "class-variance-authority";
 import { nanoid } from "nanoid";
-import React, { Dispatch, PropsWithChildren, createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import type {Modifier} from '@dnd-kit/core';
+import React, {
+  Dispatch,
+  PropsWithChildren,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 
 export type Maybe<T extends unknown> = T extends object
   ? {
@@ -95,8 +105,6 @@ function transformReducer(state: TransformState, action: TransformAction): Trans
   }
 }
 
-
-
 function Root({ children, onTranformEnd, onTransformStart, onTransform, initial }: PropsWithChildren<TransformProps>) {
   const transformRef = useRef<HTMLDivElement | null>(null);
   const isFirstRender = useIsFirstRender();
@@ -136,8 +144,7 @@ function Root({ children, onTranformEnd, onTransformStart, onTransform, initial 
 export function useTranslate() {
   const { x, y, dispatch, status } = useTransformContext();
 
-
-  const isTranslating = status.type === 'TRANSLATE'
+  const isTranslating = status.type === "TRANSLATE";
 
   useDndMonitor({
     onDragStart: ({ active }) => {
@@ -150,12 +157,12 @@ export function useTranslate() {
       dispatch({ type: "SET_Y", payload: y! + delta.y });
     },
   });
-  return {isTranslating}
+  return { isTranslating };
 }
 
 function TranslateHandle() {
   const { listeners, attributes, setNodeRef } = useDraggable({
-    id: nanoid(3),
+    id: 2,
     data: {
       transform: {
         type: "translate",
@@ -167,20 +174,29 @@ function TranslateHandle() {
       {...listeners}
       {...attributes}
       ref={setNodeRef}
-      className={resizableHandleVariants({ position: "top-left" })}
+      className={resizableHandleVariants({ position: "top-right" })}
     ></div>
   );
 }
 export function useResizable() {
-  const { width, height, dispatch, status } = useTransformContext();
+  const { width, height, dispatch, status, x, y } = useTransformContext();
   const dragStartWidth = useRef<Maybe<number>>();
   const dragStartHeight = useRef<Maybe<number>>();
+  const dragStartX = useRef<Maybe<number>>()
+  const dragStartY = useRef<Maybe<number>>()
 
-  const isResizing = useMemo(() => status.type === 'RESIZE', [status])
+  const isResizing = useMemo(() => status.type === "RESIZE", [status]);
 
   const resizeBottomRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
     dispatch({ type: "SET_WIDTH", payload: dragStartWidth.current! + delta.x });
     dispatch({ type: "SET_HEIGHT", payload: dragStartHeight.current! + delta.y });
+  };
+
+  const resizeBottomLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    dispatch({ type: "SET_WIDTH", payload: dragStartWidth.current! - delta.x });
+    dispatch({ type: "SET_HEIGHT", payload: dragStartHeight.current! - delta.y });
+    dispatch({type: 'SET_X', payload: dragStartX.current! + delta.x})
+    dispatch({type: 'SET_Y', payload: dragStartY.current! + delta.y})
   };
 
   const setStartingDimensions = () => {
@@ -188,19 +204,25 @@ export function useResizable() {
     dragStartHeight.current = height;
   };
 
+  const setStartingPosition = () => {
+    dragStartX.current = x
+    dragStartY.current = y
+  }
+
   useDndMonitor({
     onDragStart: ({ active }) => {
       if (!active.data.current || active.data.current.transform.type !== "resize") return;
       dispatch({ type: "START_TRANSFORM", payload: "RESIZE" });
       setStartingDimensions();
+      setStartingPosition()
     },
     onDragMove: ({ delta }) => {
       if (status.type !== "RESIZE") return;
-      resizeBottomRight({ delta });
+      resizeBottomLeft({ delta });
     },
-  }); 
+  });
 
-  return {isResizing}
+  return { isResizing };
 }
 
 type ResizableHandleProps = {
@@ -224,7 +246,7 @@ const resizableHandleVariants = cva("absolute pointer-events-auto h-4 w-4 z-50 r
 
 function ResizeHandle({ position }: ResizableHandleProps) {
   const { listeners, attributes, setNodeRef } = useDraggable({
-    id: nanoid(3),
+    id: 1,
     data: {
       transform: {
         type: "resize",

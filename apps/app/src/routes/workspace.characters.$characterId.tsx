@@ -1,6 +1,8 @@
 import { FileRoute } from "@tanstack/react-router";
 import { Transform, useResizable, useTransform, useTranslate } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -29,14 +31,30 @@ function WorkspaceCharacterSheetPage() {
 function Box() {
   const { status, transformRef, x, y, ...transformStyles } = useTransform();
   const { isResizing } = useResizable();
+  useTranslate();
+
+  const { listeners, attributes, transform } = useDraggable({
+    id: 2,
+    data: {
+      transform: {
+        type: "translate",
+      },
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+  };
 
   return (
     <div
+      {...attributes}
       ref={transformRef}
-      style={{ ...transformStyles, left: x, top: y, outline: isResizing ? "2px solid blue" : "" }}
+      style={{ ...style, ...transformStyles, left: x, top: y, outline: isResizing ? "2px solid blue" : "" }}
       className="bg-blue-200 border-blue-400 absolute"
     >
-      <Transform.ResizeHandle position="bottom-right" />
+      <div className="bg-slate-300 h-10" {...listeners}></div>
+      <Transform.ResizeHandle position="top-left" />
     </div>
   );
 }
