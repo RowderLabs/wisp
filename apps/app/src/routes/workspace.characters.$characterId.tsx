@@ -3,6 +3,7 @@ import { Transform, useResizable, useTransform, useTranslate } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { restrictToParentElement } from "@dnd-kit/modifiers";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -29,13 +30,14 @@ function WorkspaceCharacterSheetPage() {
 }
 
 function Box() {
-  const { status, transformRef, x, y, ...transformStyles } = useTransform();
-  const { isResizing } = useResizable();
+  const { transformRef, transformStyles } = useTransform();
+  const { isResizing, handlePosition } = useResizable({ minWidth: 150, maxWidth: 600, minHeight: 150, maxHeight: 600 });
   useTranslate();
 
-  const { listeners, attributes, transform } = useDraggable({
+  const { listeners, attributes, transform, setNodeRef } = useDraggable({
     id: 2,
     data: {
+      modifiers: [restrictToParentElement],
       transform: {
         type: "translate",
       },
@@ -49,12 +51,18 @@ function Box() {
   return (
     <div
       {...attributes}
-      ref={transformRef}
-      style={{ ...style, ...transformStyles, left: x, top: y, outline: isResizing ? "2px solid blue" : "" }}
+      ref={(elem) => {
+        transformRef.current = elem;
+        setNodeRef(elem);
+      }}
+      style={{ ...style, ...transformStyles, outline: isResizing ? "2px solid blue" : "" }}
       className="bg-blue-200 border-blue-400 absolute"
     >
-      <div className="bg-slate-300 h-10" {...listeners}></div>
-      <Transform.ResizeHandle position="top-left" />
+      <div className="bg-slate-300 h-10" {...listeners}>
+        {handlePosition}
+      </div>
+      <Transform.ResizeHandle id={'top-left'} position="top-left" />
+      <Transform.ResizeHandle id={'top-right'} position="bottom-right" />
     </div>
   );
 }

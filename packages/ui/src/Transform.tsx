@@ -1,8 +1,16 @@
-import { DndContext, DragMoveEvent, useDraggable, DragEndEvent, useDndMonitor } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragMoveEvent,
+  useDraggable,
+  DragEndEvent,
+  useDndMonitor,
+  useSensor,
+  MouseSensor,
+} from "@dnd-kit/core";
 import { useIsFirstRender } from "@uidotdev/usehooks";
 import { cva } from "class-variance-authority";
 import { nanoid } from "nanoid";
-import type {Modifier} from '@dnd-kit/core';
+import type { ClientRect, Modifier, UniqueIdentifier } from "@dnd-kit/core";
 import React, {
   Dispatch,
   PropsWithChildren,
@@ -12,7 +20,9 @@ import React, {
   useMemo,
   useReducer,
   useRef,
+  useState,
 } from "react";
+import { restrictToParentElement } from "@dnd-kit/modifiers";
 
 export type Maybe<T extends unknown> = T extends object
   ? {
@@ -44,11 +54,19 @@ export const useTransformContext = () => {
   return context as TransformContextType;
 };
 
-export const useTransform = (): Pick<
-  TransformContextType,
-  "x" | "y" | "width" | "height" | "transformRef" | "status"
-> => {
-  return useTransformContext();
+export const useTransform = () => {
+  const { x, y, width, height, transformRef } = useTransformContext() as Pick<
+    TransformContextType,
+    "width" | "height" | "x" | "y" | "transformRef"
+  >;
+  const transformStyles: React.CSSProperties = {
+    left: x,
+    top: y,
+    width,
+    height,
+  };
+
+  return { transformStyles, transformRef };
 };
 
 type TransformProps = {
@@ -134,9 +152,23 @@ function Root({ children, onTranformEnd, onTransformStart, onTransform, initial 
     }
   }, [transformRef]);
 
+  const mouseSensor = useSensor(MouseSensor);
+  const [modifiers, setModifiers] = useState<Modifier[]>();
+
   return (
     <TransformContext.Provider value={{ dispatch, transformRef, ...transformState }}>
-      <DndContext onDragEnd={() => dispatch({ type: "END_TRANSFORM" })}>{children}</DndContext>
+      <DndContext
+        sensors={[mouseSensor]}
+        modifiers={modifiers}
+        onDragStart={({ active }) => {
+          if (active.data.current && active.data.current.modifiers) {
+            setModifiers(active.data.current.modifiers);
+          }
+        }}
+        onDragEnd={() => dispatch({ type: "END_TRANSFORM" })}
+      >
+        {children}
+      </DndContext>
     </TransformContext.Provider>
   );
 }
@@ -178,25 +210,59 @@ function TranslateHandle() {
     ></div>
   );
 }
-export function useResizable() {
+
+type UseResizableArgs = {
+  minWidth?: number;
+  maxWidth?: number;
+  minHeight?: number;
+  maxHeight?: number;
+};
+export function useResizable(
+  { minWidth, maxWidth, minHeight, maxHeight }: UseResizableArgs = {
+    minWidth: 50,
+    maxWidth: 300,
+    minHeight: 50,
+    maxHeight: 300,
+  }
+) {
   const { width, height, dispatch, status, x, y } = useTransformContext();
   const dragStartWidth = useRef<Maybe<number>>();
   const dragStartHeight = useRef<Maybe<number>>();
-  const dragStartX = useRef<Maybe<number>>()
-  const dragStartY = useRef<Maybe<number>>()
+  const dragStartX = useRef<Maybe<number>>();
+  const dragStartY = useRef<Maybe<number>>();
+  const [handlePosition, setHandlePosition] = useState<ResizableHandleProps["position"]>();
 
   const isResizing = useMemo(() => status.type === "RESIZE", [status]);
-
-  const resizeBottomRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
-    dispatch({ type: "SET_WIDTH", payload: dragStartWidth.current! + delta.x });
-    dispatch({ type: "SET_HEIGHT", payload: dragStartHeight.current! + delta.y });
+  const canScaleX = (projectedWidth: number) => {
+    return projectedWidth > minWidth! && projectedWidth < maxWidth!;
+  };
+  const canScaleY = (projectedHeight: number) => {
+    return projectedHeight > minHeight! && projectedHeight < maxHeight!;
   };
 
-  const resizeBottomLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
-    dispatch({ type: "SET_WIDTH", payload: dragStartWidth.current! - delta.x });
-    dispatch({ type: "SET_HEIGHT", payload: dragStartHeight.current! - delta.y });
-    dispatch({type: 'SET_X', payload: dragStartX.current! + delta.x})
-    dispatch({type: 'SET_Y', payload: dragStartY.current! + delta.y})
+  const resizeBottomRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    const projectedWidth = dragStartWidth.current! + delta.x;
+    const projectedHeight = dragStartHeight.current! + delta.y;
+    if (canScaleX(projectedWidth)) {
+      dispatch({ type: "SET_WIDTH", payload: projectedWidth });
+    }
+    if (canScaleY(projectedHeight)) {
+      dispatch({ type: "SET_HEIGHT", payload: projectedHeight });
+    }
+  };
+
+  const resizeTopLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    const projectedWidth = dragStartWidth.current! - delta.x;
+    const projectedHeight = dragStartHeight.current! - delta.y;
+    if (canScaleX(projectedWidth)) {
+      dispatch({ type: "SET_WIDTH", payload: projectedWidth });
+      dispatch({ type: "SET_X", payload: dragStartX.current! + delta.x });
+    }
+
+    if (canScaleY(projectedHeight)) {
+      dispatch({ type: "SET_HEIGHT", payload: projectedHeight });
+      dispatch({ type: "SET_Y", payload: dragStartY.current! + delta.y });
+    }
   };
 
   const setStartingDimensions = () => {
@@ -205,27 +271,30 @@ export function useResizable() {
   };
 
   const setStartingPosition = () => {
-    dragStartX.current = x
-    dragStartY.current = y
-  }
+    dragStartX.current = x;
+    dragStartY.current = y;
+  };
 
   useDndMonitor({
     onDragStart: ({ active }) => {
       if (!active.data.current || active.data.current.transform.type !== "resize") return;
       dispatch({ type: "START_TRANSFORM", payload: "RESIZE" });
+      setHandlePosition(active.data.current.transform.handlePosition)
       setStartingDimensions();
-      setStartingPosition()
+      setStartingPosition();
     },
     onDragMove: ({ delta }) => {
       if (status.type !== "RESIZE") return;
-      resizeBottomLeft({ delta });
+      if (handlePosition === "bottom-right") resizeBottomRight({ delta });
+      if (handlePosition === "top-left") resizeTopLeft({ delta });
     },
   });
 
-  return { isResizing };
+  return { isResizing, handlePosition };
 }
 
 type ResizableHandleProps = {
+  id: UniqueIdentifier
   position: "bottom-left" | "top-left" | "bottom-right" | "top-right";
 };
 
@@ -244,10 +313,19 @@ const resizableHandleVariants = cva("absolute pointer-events-auto h-4 w-4 z-50 r
   },
 });
 
-function ResizeHandle({ position }: ResizableHandleProps) {
+function ResizeHandle({ position, id }: ResizableHandleProps) {
+  const { transformRef } = useTransformContext();
+
+  const restrictToAncestor: Modifier = (e) => {
+    return restrictToParentElement({
+      ...e,
+      containerNodeRect: transformRef.current?.parentElement?.getBoundingClientRect() as ClientRect,
+    });
+  };
   const { listeners, attributes, setNodeRef } = useDraggable({
-    id: 1,
+    id,
     data: {
+      modifiers: [restrictToAncestor],
       transform: {
         type: "resize",
         handlePosition: position,
