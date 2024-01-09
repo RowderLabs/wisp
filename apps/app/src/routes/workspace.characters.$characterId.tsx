@@ -1,9 +1,17 @@
 import { FileRoute } from "@tanstack/react-router";
-import { Transform, useResizable, useTransform, useTranslate } from "@wisp/ui";
+import {
+  JotaiTransform,
+  Transform,
+  TransformScope,
+  useResizable,
+  useTransform,
+  useTranslate,
+} from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
+import { ScopeProvider } from "bunshi/react";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -20,9 +28,12 @@ function WorkspaceCharacterSheetPage() {
   return (
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
-        <Transform.Root onTranformEnd={(e) => console.log(e.x)} initial={{ width: 150, height: 300 }}>
-          <Box />
-        </Transform.Root>
+        <ScopeProvider scope={TransformScope} value={{x: 0, y: 0, width: 100, height: 500}}>
+          <JotaiTransform />
+        </ScopeProvider>
+        <ScopeProvider scope={TransformScope}>
+          <JotaiTransform />
+        </ScopeProvider>
       </div>
       {character && <CharacterSummary name={character?.fullName} />}
     </div>
@@ -61,8 +72,8 @@ function Box() {
       <div className="bg-slate-300 h-10" {...listeners}>
         {handlePosition}
       </div>
-      <Transform.ResizeHandle id={'top-left'} position="top-left" />
-      <Transform.ResizeHandle id={'top-right'} position="bottom-right" />
+      <Transform.ResizeHandle id={"top-left"} position="top-left" />
+      <Transform.ResizeHandle id={"top-right"} position="bottom-right" />
     </div>
   );
 }
