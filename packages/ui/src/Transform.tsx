@@ -293,9 +293,11 @@ export function useResizable(
   return { isResizing, handlePosition };
 }
 
+export type HandlePosition = "bottom-left" | "top-left" | "bottom-right" | "top-right"
+
 type ResizableHandleProps = {
   id: UniqueIdentifier
-  position: "bottom-left" | "top-left" | "bottom-right" | "top-right";
+  position: HandlePosition;
 };
 
 const resizableHandleVariants = cva("absolute pointer-events-auto h-4 w-4 z-50 rounded-full bg-blue-200", {

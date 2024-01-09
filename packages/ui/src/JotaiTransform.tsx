@@ -1,7 +1,7 @@
 import { atom, Provider, useAtom, useSetAtom, useAtomValue } from "jotai";
 import { useHydrateAtoms, useReducerAtom } from "jotai/utils";
 import { PropsWithChildren, useEffect, useMemo } from "react";
-import { Maybe } from "./Transform";
+import { HandlePosition, Maybe } from "./Transform";
 import { ComponentScope, createScope, molecule, ScopeProvider, useMolecule } from "bunshi/react";
 import { DragMoveEvent } from "@dnd-kit/core";
 
@@ -69,6 +69,8 @@ const TranslateMolecule = molecule((mol) => {
 //module for handling resize within transform context
 const ResizeMolecule = molecule((mol) => {
   const { readOnlyTransform, transformSetter } = mol(TransformMolecule);
+
+  //clamps width and height
   const clampedTransformScaleAtom = atom(
     null,
     (_get, set, { width, height }: Partial<{ width: number; height: number }>) => {
@@ -78,20 +80,16 @@ const ResizeMolecule = molecule((mol) => {
         set(transformSetter, { height });
     }
   );
-  const dragStartDimensionsAtom = atom<Maybe<{ width: number; height: number }>>({
-    width: undefined,
-    height: undefined,
-  });
-  const dragStartPositionAtom = atom<Maybe<{ x: number; y: number }>>({
-    x: undefined,
-    y: undefined,
-  });
+
+  //starting transform when drag begins
+  const dragStartTransformAtom = atom<Partial<Transform>>({});
+  const lastHandlePositionAtom = atom<Maybe<HandlePosition>>(undefined);
 
   return {
     readOnlyTransform,
+    lastHandlePositionAtom,
+    dragStartTransformAtom,
     clampedTransformScaleAtom,
-    dragStartPositionAtom,
-    dragStartDimensionsAtom,
   };
 });
 
@@ -109,28 +107,27 @@ export const JotaiTransform = ({
   );
 };
 
-
 export const useBunshiTranslate = () => {
-  const {translateAtom} = useMolecule(TranslateMolecule)
-  return useAtom(translateAtom)
-}
+  const { translateAtom } = useMolecule(TranslateMolecule);
+  return useAtom(translateAtom);
+};
 
 export const useBunshiResizable = () => {
   const {
     clampedTransformScaleAtom,
-    dragStartPositionAtom,
-    dragStartDimensionsAtom,
+    dragStartTransformAtom,
+    lastHandlePositionAtom,
     readOnlyTransform,
   } = useMolecule(ResizeMolecule);
 
   const transform = useAtomValue(readOnlyTransform);
   const setDimensions = useSetAtom(clampedTransformScaleAtom);
-  const [dragStartPos, setDragStartPos] = useAtom(dragStartPositionAtom);
-  const [dragStartDim, setDragStartDim] = useAtom(dragStartDimensionsAtom);
+  const [lastHandlePosition, setLastHandlePosition] = useAtom(lastHandlePositionAtom)
+  const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
 
   const resizeTopLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
-    const projectedWidth = dragStartDim.width! - delta.x;
-    const projectedHeight = dragStartDim.height! - delta.y;
+    const projectedWidth = dragStartTransform.width! - delta.x;
+    const projectedHeight = dragStartTransform.height! - delta.y;
     setDimensions({ width: 50 });
     setDimensions({ height: 100 });
   };

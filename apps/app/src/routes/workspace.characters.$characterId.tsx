@@ -2,7 +2,6 @@ import { FileRoute } from "@tanstack/react-router";
 import {
   JotaiTransform,
   Transform,
-  TransformScope,
   useBunshiResizable,
   useBunshiTranslate,
   useResizable,
@@ -13,8 +12,6 @@ import { CharacterSummary } from "../ui/CharacterSummary";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
-import { ScopeProvider } from "bunshi/react";
-import { useEffect } from "react";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -31,14 +28,9 @@ function WorkspaceCharacterSheetPage() {
   return (
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
-        <ScopeProvider scope={TransformScope} value={{ x: 0, y: 0, width: 100, height: 500 }}>
-          <JotaiTransform>
-            <JotaiBox />
-          </JotaiTransform>
-        </ScopeProvider>
-        <ScopeProvider scope={TransformScope} value={{ x: 10, y: 10, width: 10, height: 10 }}>
-          <JotaiTransform />
-        </ScopeProvider>
+        <JotaiTransform initial={{width: 50, height: 50, x: 50, y: 50}}>
+          <JotaiBox />
+        </JotaiTransform>
       </div>
       {character && <CharacterSummary name={character?.fullName} />}
     </div>
@@ -46,12 +38,9 @@ function WorkspaceCharacterSheetPage() {
 }
 
 function JotaiBox() {
-  const { resizeTopLeft } = useBunshiResizable();
+
   const [{ x, y }, translate] = useBunshiTranslate();
-  useEffect(() => {
-    resizeTopLeft({ delta: { x: 5, y: 5 } });
-    translate({ x: 10, y: 10 });
-  }, []);
+
   return (
     <div>
       <p>
