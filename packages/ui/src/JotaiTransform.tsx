@@ -1,9 +1,9 @@
-import { atom, Provider, useAtom, WritableAtom, ExtractAtomValue } from "jotai";
+import { atom, Provider, useAtom, useSetAtom, useAtomValue } from "jotai";
 import { useHydrateAtoms, useReducerAtom } from "jotai/utils";
 import { PropsWithChildren, useEffect, useMemo } from "react";
 import { Maybe } from "./Transform";
-import { number } from "zod";
 import { ComponentScope, createScope, molecule, ScopeProvider, useMolecule } from "bunshi/react";
+import { DragMoveEvent } from "@dnd-kit/core";
 
 type Transform = {
   x: number;
@@ -25,29 +25,74 @@ const checkConstraints = ({
   return val > min && val < max;
 };
 
+export const TransformScope = createScope<Maybe<Transform>>({
+  x: undefined,
+  y: undefined,
+  width: undefined,
+  height: undefined,
+});
 
-export const TransformScope = createScope<Maybe<Transform>>({ x: undefined, y: undefined, width: 50, height: 50 });
+//transform context creator
+const TransformMolecule = molecule((mol, scope) => {
+  const initial = scope(TransformScope);
+  const transformAtom = atom(initial);
+  const readOnlyTransform = atom((get) => get(transformAtom));
 
-const TransformMolecule = molecule((_, scope) => {
-  scope(TransformScope)
-  const transformAtom = atom<Maybe<Transform>>({ x: 0, y: 0, width: 0, height: 0 });
-  const sizeConstraintAtom = atom<Maybe<TransformContraints>>({ min: 0, max: 300 });
-  const transformWidthAtom = atom(
-    (get) => get(transformAtom).width,
-    (_get, set, width: number) => {
-      const { min, max } = _get(sizeConstraintAtom);
-      if (checkConstraints({val: width, min, max})) set(transformAtom, { ..._get(transformAtom), width });
+  const transformSetter = atom(null, (_get, set, { x, y, width, height }: Partial<Transform>) => {
+    set(transformAtom, {
+      ..._get(readOnlyTransform),
+      ...(height && { height }),
+      ...(width && { width }),
+      ...(x && { x }),
+      ...(y && { y }),
+    });
+  });
+  return { transformSetter, readOnlyTransform };
+});
+
+//module for handling translation within transform context
+const TranslateMolecule = molecule((mol) => {
+  const { transformSetter, readOnlyTransform } = mol(TransformMolecule);
+  const translateAtom = atom(
+    (get) => {
+      const { x, y } = get(readOnlyTransform);
+      return { x, y };
+    },
+    (_get, set, { x, y }: Partial<{ x: number; y: number }>) => {
+      set(transformSetter, { x, y });
     }
   );
 
-  const transformHeightAtom = atom(
-    (get) => get(transformAtom).width,
-    (_get, set, height: number) => {
-      const { min, max } = _get(sizeConstraintAtom);
-      if (checkConstraints({ val: height, min, max })) set(transformAtom, { ..._get(transformAtom), height });
+  return { translateAtom };
+});
+
+//module for handling resize within transform context
+const ResizeMolecule = molecule((mol) => {
+  const { readOnlyTransform, transformSetter } = mol(TransformMolecule);
+  const clampedTransformScaleAtom = atom(
+    null,
+    (_get, set, { width, height }: Partial<{ width: number; height: number }>) => {
+      if (width && checkConstraints({ val: width, min: 0, max: 500 }))
+        set(transformSetter, { width });
+      if (height && checkConstraints({ val: height, min: 0, max: 500 }))
+        set(transformSetter, { height });
     }
   );
-  return { transformAtom, transformWidthAtom, transformHeightAtom };
+  const dragStartDimensionsAtom = atom<Maybe<{ width: number; height: number }>>({
+    width: undefined,
+    height: undefined,
+  });
+  const dragStartPositionAtom = atom<Maybe<{ x: number; y: number }>>({
+    x: undefined,
+    y: undefined,
+  });
+
+  return {
+    readOnlyTransform,
+    clampedTransformScaleAtom,
+    dragStartPositionAtom,
+    dragStartDimensionsAtom,
+  };
 });
 
 type TransformProps = {
@@ -57,28 +102,38 @@ export const JotaiTransform = ({
   children,
   initial = { width: undefined, height: undefined, x: undefined, y: undefined },
 }: PropsWithChildren<TransformProps>) => {
-  return <Child />;
-};
-
-const Child = () => {
-  const { transformWidthAtom, transformAtom } = useMolecule(TransformMolecule);
-  const [t, _] = useAtom(transformAtom)
   return (
-    <div>
-      {JSON.stringify(t)}
-      <DeepChild />
-    </div>
+    <ScopeProvider scope={TransformScope} value={initial}>
+      {children}
+    </ScopeProvider>
   );
 };
 
-const DeepChild = () => {
-  const { transformWidthAtom, transformAtom } = useMolecule(TransformMolecule);
-  const [width, setWidth] = useAtom(transformWidthAtom);
 
-  return (
-    <div>
-      <p>{width}</p>
-      <button onClick={() => setWidth((width || 0) + 50)}>Set x</button>
-    </div>
-  );
+export const useBunshiTranslate = () => {
+  const {translateAtom} = useMolecule(TranslateMolecule)
+  return useAtom(translateAtom)
+}
+
+export const useBunshiResizable = () => {
+  const {
+    clampedTransformScaleAtom,
+    dragStartPositionAtom,
+    dragStartDimensionsAtom,
+    readOnlyTransform,
+  } = useMolecule(ResizeMolecule);
+
+  const transform = useAtomValue(readOnlyTransform);
+  const setDimensions = useSetAtom(clampedTransformScaleAtom);
+  const [dragStartPos, setDragStartPos] = useAtom(dragStartPositionAtom);
+  const [dragStartDim, setDragStartDim] = useAtom(dragStartDimensionsAtom);
+
+  const resizeTopLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    const projectedWidth = dragStartDim.width! - delta.x;
+    const projectedHeight = dragStartDim.height! - delta.y;
+    setDimensions({ width: 50 });
+    setDimensions({ height: 100 });
+  };
+
+  return { resizeTopLeft, transform };
 };

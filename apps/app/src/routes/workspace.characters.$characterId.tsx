@@ -3,6 +3,8 @@ import {
   JotaiTransform,
   Transform,
   TransformScope,
+  useBunshiResizable,
+  useBunshiTranslate,
   useResizable,
   useTransform,
   useTranslate,
@@ -12,6 +14,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { ScopeProvider } from "bunshi/react";
+import { useEffect } from "react";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -28,10 +31,12 @@ function WorkspaceCharacterSheetPage() {
   return (
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
-        <ScopeProvider scope={TransformScope} value={{x: 0, y: 0, width: 100, height: 500}}>
-          <JotaiTransform />
+        <ScopeProvider scope={TransformScope} value={{ x: 0, y: 0, width: 100, height: 500 }}>
+          <JotaiTransform>
+            <JotaiBox />
+          </JotaiTransform>
         </ScopeProvider>
-        <ScopeProvider scope={TransformScope}>
+        <ScopeProvider scope={TransformScope} value={{ x: 10, y: 10, width: 10, height: 10 }}>
           <JotaiTransform />
         </ScopeProvider>
       </div>
@@ -40,9 +45,31 @@ function WorkspaceCharacterSheetPage() {
   );
 }
 
+function JotaiBox() {
+  const { resizeTopLeft } = useBunshiResizable();
+  const [{ x, y }, translate] = useBunshiTranslate();
+  useEffect(() => {
+    resizeTopLeft({ delta: { x: 5, y: 5 } });
+    translate({ x: 10, y: 10 });
+  }, []);
+  return (
+    <div>
+      <p>
+        {x} {y}
+      </p>
+      <button onClick={() => translate({ x: x! + 50, y: y! - 20 })}>Translate</button>
+    </div>
+  );
+}
+
 function Box() {
   const { transformRef, transformStyles } = useTransform();
-  const { isResizing, handlePosition } = useResizable({ minWidth: 150, maxWidth: 600, minHeight: 150, maxHeight: 600 });
+  const { isResizing, handlePosition } = useResizable({
+    minWidth: 150,
+    maxWidth: 600,
+    minHeight: 150,
+    maxHeight: 600,
+  });
   useTranslate();
 
   const { listeners, attributes, transform, setNodeRef } = useDraggable({
