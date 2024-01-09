@@ -1,17 +1,10 @@
 import { FileRoute } from "@tanstack/react-router";
-import {
-  JotaiTransform,
-  Transform,
-  useBunshiResizable,
-  useBunshiTranslate,
-  useResizable,
-  useTransform,
-  useTranslate,
-} from "@wisp/ui";
+import { JotaiTransform, Transform, useResizable, useTransform, useTranslate } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
-import { useDraggable } from "@dnd-kit/core";
+import { DndContext, UniqueIdentifier, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
+import { useResize } from "@wisp/ui/src/hooks";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -28,9 +21,11 @@ function WorkspaceCharacterSheetPage() {
   return (
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
-        <JotaiTransform initial={{width: 50, height: 50, x: 50, y: 50}}>
-          <JotaiBox />
-        </JotaiTransform>
+        <DndContext>
+          <JotaiTransform initial={{ width: 150, height: 150, x: 300, y: 300}}>
+            <JotaiBox />
+          </JotaiTransform>
+        </DndContext>
       </div>
       {character && <CharacterSummary name={character?.fullName} />}
     </div>
@@ -38,17 +33,30 @@ function WorkspaceCharacterSheetPage() {
 }
 
 function JotaiBox() {
-
-  const [{ x, y }, translate] = useBunshiTranslate();
+  const { transform } = useResize();
 
   return (
-    <div>
-      <p>
-        {x} {y}
-      </p>
-      <button onClick={() => translate({ x: x! + 50, y: y! - 20 })}>Translate</button>
+    <div
+      style={{ left: transform.x, top: transform.y, ...transform }}
+      className="relative rounded-md bg-slate-300"
+    >
+      <JotaiResizeHandle id={'top-left'} position="top-left"/>
     </div>
   );
+}
+
+function JotaiResizeHandle({ position, id }: {position: string, id: UniqueIdentifier}) {
+  
+  const { listeners, attributes, setNodeRef } = useDraggable({
+    id,
+    data: {
+      transform: {
+        type: "resize",
+        handlePosition: position,
+      },
+    },
+  });
+  return <div {...listeners} {...attributes} ref={setNodeRef} className="absolute -inset-2 rounded-full bg-blue-300 w-6 h-6"></div>;
 }
 
 function Box() {
