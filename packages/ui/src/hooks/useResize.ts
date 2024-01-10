@@ -13,13 +13,18 @@ type ResizeContraints = {
   height: Partial<MinMaxConstraint>;
 };
 
-const checkResizeResizeConstraints = ({ val, min = 0, max = 9999 }: { val: number } & Partial<MinMaxConstraint>) => {
+const checkResizeResizeConstraints = ({
+  val,
+  min = 0,
+  max = 9999,
+}: { val: number } & Partial<MinMaxConstraint>) => {
   return val > min && val < max;
 };
 
 const ResizeMolecule = molecule((mol) => {
   const { transformAtom, optionalTransformAtom, transformIdAtom } = mol(TransformMolecule);
 
+  const resizingAtom = atom(false);
   //clamps width and height
   const resizeWithConstraintsAtom = atom(
     null,
@@ -32,12 +37,26 @@ const ResizeMolecule = molecule((mol) => {
         width,
         height,
         constraints,
-      }: WithRequired<Partial<Transform>, "width" | "height"> & { constraints?: UseResizeArgs["constraints"] }
+      }: WithRequired<Partial<Transform>, "width" | "height"> & {
+        constraints?: UseResizeArgs["constraints"];
+      }
     ): void => {
       constraints;
-      if (checkResizeResizeConstraints({ val: width, min: constraints?.width?.min, max: constraints?.width?.max }))
+      if (
+        checkResizeResizeConstraints({
+          val: width,
+          min: constraints?.width?.min,
+          max: constraints?.width?.max,
+        })
+      )
         set(optionalTransformAtom, { x, width });
-      if (checkResizeResizeConstraints({ val: height, min: constraints?.height?.min, max: constraints?.height?.max }))
+      if (
+        checkResizeResizeConstraints({
+          val: height,
+          min: constraints?.height?.min,
+          max: constraints?.height?.max,
+        })
+      )
         set(optionalTransformAtom, { y, height });
     }
   );
@@ -48,6 +67,7 @@ const ResizeMolecule = molecule((mol) => {
   return {
     transformAtom,
     transformIdAtom,
+    resizingAtom,
     resizeWithConstraintsAtom,
     lastHandlePositionAtom,
     dragStartTransformAtom,
@@ -68,15 +88,22 @@ type UseResizeArgs = {
 };
 
 export const useResize = ({ constraints }: UseResizeArgs) => {
-  const { transformAtom, transformIdAtom, resizeWithConstraintsAtom, dragStartTransformAtom, lastHandlePositionAtom } =
-    useMolecule(ResizeMolecule);
+  const {
+    transformAtom,
+    transformIdAtom,
+    resizeWithConstraintsAtom,
+    dragStartTransformAtom,
+    lastHandlePositionAtom,
+    resizingAtom,
+  } = useMolecule(ResizeMolecule);
   const transform = useAtomValue(transformAtom);
 
   invariant(
-    !(JSON.stringify(transform) === '{}'),
+    !(JSON.stringify(transform) === "{}"),
     "No transform found. Make sure you are wrapping useResize component with <Transform/>"
   );
   const transformId = useAtomValue(transformIdAtom);
+  const [resizing, setResizing] = useAtom(resizingAtom);
   const resizeWithConstraints = useSetAtom(resizeWithConstraintsAtom);
   const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
   const [lastHandlePosition, setLastHandlePosition] = useAtom(lastHandlePositionAtom);
@@ -89,10 +116,14 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
     },
     onDragMove: ({ delta, active }) => {
       if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
+      setResizing(true);
       if (lastHandlePosition === "top-right") resizeTopRight({ delta });
       if (lastHandlePosition === "top-left") resizeTopLeft({ delta });
       if (lastHandlePosition === "bottom-right") resizeBottomRight({ delta });
       if (lastHandlePosition === "bottom-left") resizeBottomLeft({ delta });
+    },
+    onDragEnd: () => {
+      if (resizing) setResizing(false);
     },
   });
 
@@ -132,4 +163,5 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
     });
   };
 
+  return {resizing}
 };

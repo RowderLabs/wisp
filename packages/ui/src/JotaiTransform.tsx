@@ -15,7 +15,7 @@ export type Transform = {
   height: number;
 };
 
-export const TransformScope = createScope<Partial<Transform> & { id: Maybe<UniqueIdentifier> }>({
+export const TransformScope = createScope<Partial<Transform> & { id: Maybe<string> }>({
   id: undefined,
   x: undefined,
   y: undefined,
@@ -27,7 +27,8 @@ export const TransformScope = createScope<Partial<Transform> & { id: Maybe<Uniqu
 export const TransformMolecule = molecule((_, scope) => {
   const initial = scope(TransformScope);
   const transformAtom = atom({ ...initial });
-  const transformIdAtom = atom<Maybe<UniqueIdentifier>>(initial.id);
+  const transformIdAtom = atom<Maybe<string>>(initial.id);
+  const transformingAtom = atom(false)
 
   const optionalTransformAtom = atom(null, (_get, set, { x, y, width, height }: Partial<Transform>) => {
     set(transformAtom, {
@@ -38,11 +39,11 @@ export const TransformMolecule = molecule((_, scope) => {
       ...(y && { y }),
     });
   });
-  return { optionalTransformAtom, transformAtom, transformIdAtom };
+  return { optionalTransformAtom, transformAtom, transformIdAtom, transformingAtom };
 });
 
 type TransformProps = {
-  id: UniqueIdentifier;
+  id: string;
   initial?: Partial<Transform>;
 };
 export const JotaiTransform = ({

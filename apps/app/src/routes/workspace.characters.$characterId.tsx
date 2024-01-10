@@ -4,6 +4,7 @@ import { CharacterSummary } from "../ui/CharacterSummary";
 import { DndContext } from "@dnd-kit/core";
 import { useResize, useTransform, useTranslate } from "@wisp/ui/src/hooks";
 import { PropsWithChildren } from "react";
+import clsx from "clsx";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -61,10 +62,10 @@ function WorkspaceCharacterSheetPage() {
 }
 
 function JotaiBox({ children }: PropsWithChildren) {
-  const { transformStyles } = useTransform();
+  const { transformStyles, transforming } = useTransform();
   const { handle, dragStyles } = useTranslate();
 
-  useResize({
+  const {resizing} = useResize({
     constraints: {
       width: {
         min: 150,
@@ -78,7 +79,7 @@ function JotaiBox({ children }: PropsWithChildren) {
   });
 
   return (
-    <div style={{ ...dragStyles, ...transformStyles }} className="absolute rounded-md ">
+    <div style={{ ...dragStyles, ...transformStyles }} className={clsx("absolute rounded-md ", resizing && 'outline outline-blue-300', transforming && 'z-[1000] shadow-md')}>
       {children}
       <JotaiTranslateHandle {...handle} />
       <JotaiResizeHandle position="top-right" />
