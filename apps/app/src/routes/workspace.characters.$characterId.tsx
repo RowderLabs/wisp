@@ -1,8 +1,8 @@
 import { FileRoute } from "@tanstack/react-router";
-import { JotaiResizeHandle, JotaiTransform } from "@wisp/ui";
+import { JotaiResizeHandle, JotaiTransform, JotaiTranslateHandle } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
 import { DndContext } from "@dnd-kit/core";
-import { useResize, useTransform } from "@wisp/ui/src/hooks";
+import { useResize, useTransform, useTranslate } from "@wisp/ui/src/hooks";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -31,7 +31,9 @@ function WorkspaceCharacterSheetPage() {
 }
 
 function JotaiBox() {
-  const { transform, transformId } = useTransform();
+  const { transformStyles } = useTransform();
+  const { handle, dragStyles } = useTranslate();
+
   useResize({
     constraints: {
       width: {
@@ -46,13 +48,8 @@ function JotaiBox() {
   });
 
   return (
-    <div
-      style={{ left: transform.x, top: transform.y, ...transform }}
-      className="relative rounded-md bg-slate-300 flex justify-center items-center"
-    >
-      <p>
-        {JSON.stringify(transformId)} {JSON.stringify(transform)}
-      </p>
+    <div style={{ ...dragStyles, ...transformStyles }} className="relative rounded-md bg-slate-300">
+      <JotaiTranslateHandle {...handle} />
       <JotaiResizeHandle position="top-right" />
       <JotaiResizeHandle position="bottom-right" />
       <JotaiResizeHandle position="bottom-left" />

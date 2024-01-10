@@ -9,6 +9,7 @@ type UseTransformArgs = { id: UniqueIdentifier };
 export function useTransform() {
   const { transformAtom, transformIdAtom } = useMolecule(TransformMolecule);
   const transformId = useAtomValue(transformIdAtom);
-
-  return { transform: useAtomValue(transformAtom), transformId: transformId as UniqueIdentifier };
+  const {x, y, width, height} = useAtomValue(transformAtom)
+  const transformStyles = {left: x, top: y, width, height}
+  return { transformStyles };
 }

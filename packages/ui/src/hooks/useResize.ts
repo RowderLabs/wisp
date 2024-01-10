@@ -4,6 +4,7 @@ import { TransformMolecule, Transform } from "../JotaiTransform";
 import { DragMoveEvent, useDndMonitor } from "@dnd-kit/core";
 import { HandlePosition, Maybe } from "../Transform";
 import { useMemo } from "react";
+import invariant from "tiny-invariant";
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
 type MinMaxConstraint = Partial<{ min: number; max: number }>;
@@ -12,13 +13,7 @@ type ResizeContraints = {
   height: Partial<MinMaxConstraint>;
 };
 
-
-const checkResizeResizeConstraints = ({
-  val,
-  min = 0,
-  max = 9999,
-}: { val: number } & Partial<MinMaxConstraint>) => {
-  console.log(`${val} ${min} ${max}`);
+const checkResizeResizeConstraints = ({ val, min = 0, max = 9999 }: { val: number } & Partial<MinMaxConstraint>) => {
   return val > min && val < max;
 };
 
@@ -75,8 +70,12 @@ type UseResizeArgs = {
 export const useResize = ({ constraints }: UseResizeArgs) => {
   const { transformAtom, transformIdAtom, resizeWithConstraintsAtom, dragStartTransformAtom, lastHandlePositionAtom } =
     useMolecule(ResizeMolecule);
-
   const transform = useAtomValue(transformAtom);
+
+  invariant(
+    !(JSON.stringify(transform) === '{}'),
+    "No transform found. Make sure you are wrapping useResize component with <Transform/>"
+  );
   const transformId = useAtomValue(transformIdAtom);
   const resizeWithConstraints = useSetAtom(resizeWithConstraintsAtom);
   const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
@@ -84,7 +83,7 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
 
   useDndMonitor({
     onDragStart: ({ active }) => {
-      //if (!active.data.current || active.data.current.transform.type !== "resize") return;
+      if (!active.data.current || active.data.current.transform.type !== "resize") return;
       setLastHandlePosition(active.data.current!.transform.handlePosition);
       setDragStartTransform(transform);
     },
@@ -112,7 +111,7 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
       width: dragStartTransform.width! - delta.x,
       height: dragStartTransform.height! + delta.y,
       x: dragStartTransform.x! + delta.x,
-      constraints
+      constraints,
     });
   };
 
@@ -120,7 +119,7 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
     resizeWithConstraints({
       width: dragStartTransform.width! + delta.x,
       height: dragStartTransform.height! + delta.y,
-      constraints
+      constraints,
     });
   };
 
@@ -129,9 +128,8 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
       width: dragStartTransform.width! + delta.x,
       height: dragStartTransform.height! - delta.y,
       y: dragStartTransform.y! + delta.y,
-      constraints
+      constraints,
     });
   };
 
-  return { lastHandlePosition };
 };

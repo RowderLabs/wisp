@@ -94,3 +94,13 @@ export function JotaiResizeHandle({ position }: ResizableHandleProps) {
   });
   return <div {...listeners} {...attributes} className={resizableHandleVariants({ position })}></div>;
 }
+
+
+type TranslateHandleProps = {
+  listeners?: DraggableSyntheticListeners
+  attributes?: DraggableAttributes
+}
+
+export function JotaiTranslateHandle({listeners, attributes}: TranslateHandleProps) {
+  return <div className="h-4 w-full bg-blue-300 rounded-md" {...listeners} {...attributes}></div>
+}
