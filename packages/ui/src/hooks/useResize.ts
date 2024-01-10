@@ -26,10 +26,8 @@ const ResizeMolecule = molecule((mol) => {
   const resizeWithConstraintsAtom = atom(
     null,
     (_get, set, { x, y, width, height }: WithRequired<Partial<Transform>, "width" | "height">) => {
-      if (checkConstraints({ val: width, min: 150, max: 600 }))
-        set(optionalTransformAtom, { x, width });
-      if (checkConstraints({ val: height, min: 150, max: 600 }))
-        set(optionalTransformAtom, { y, height });
+      if (checkConstraints({ val: width, min: 150, max: 600 })) set(optionalTransformAtom, { x, width });
+      if (checkConstraints({ val: height, min: 150, max: 600 })) set(optionalTransformAtom, { y, height });
     }
   );
   //starting transform when drag begins
@@ -45,16 +43,12 @@ const ResizeMolecule = molecule((mol) => {
 });
 
 export const useResize = () => {
-  const {
-    transformAtom,
-    resizeWithConstraintsAtom,
-    dragStartTransformAtom,
-    lastHandlePositionAtom,
-  } = useMolecule(ResizeMolecule);
+  const { transformAtom, resizeWithConstraintsAtom, dragStartTransformAtom, lastHandlePositionAtom } =
+    useMolecule(ResizeMolecule);
 
   const transform = useAtomValue(transformAtom);
-  const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
   const resizeWithConstraints = useSetAtom(resizeWithConstraintsAtom);
+  const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
   const [lastHandlePosition, setLastHandlePosition] = useAtom(lastHandlePositionAtom);
 
   useDndMonitor({
@@ -64,7 +58,10 @@ export const useResize = () => {
       setDragStartTransform(transform);
     },
     onDragMove: ({ delta }) => {
-      resizeTopLeft({ delta });
+      if (lastHandlePosition === "top-right") resizeTopRight({ delta });
+      if (lastHandlePosition === "top-left") resizeTopLeft({ delta });
+      if (lastHandlePosition === "bottom-right") resizeBottomRight({ delta });
+      if (lastHandlePosition === "bottom-left") resizeBottomLeft({ delta });
     },
   });
 
@@ -73,6 +70,29 @@ export const useResize = () => {
       width: dragStartTransform.width! - delta.x,
       height: dragStartTransform.height! - delta.y,
       x: dragStartTransform.x! + delta.x,
+      y: dragStartTransform.y! + delta.y,
+    });
+  };
+
+  const resizeBottomLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    resizeWithConstraints({
+      width: dragStartTransform.width! - delta.x,
+      height: dragStartTransform.height! + delta.y,
+      x: dragStartTransform.x! + delta.x,
+    });
+  };
+
+  const resizeBottomRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    resizeWithConstraints({
+      width: dragStartTransform.width! + delta.x,
+      height: dragStartTransform.height! + delta.y,
+    });
+  };
+
+  const resizeTopRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    resizeWithConstraints({
+      width: dragStartTransform.width! + delta.x,
+      height: dragStartTransform.height! - delta.y,
       y: dragStartTransform.y! + delta.y,
     });
   };
