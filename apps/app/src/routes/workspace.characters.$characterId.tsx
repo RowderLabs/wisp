@@ -5,6 +5,7 @@ import {
   JotaiResizeHandle,
   JotaiTransform,
   JotaiTranslateHandle,
+  TransformHandles,
 } from "@wisp/ui";
 import { DndContext } from "@dnd-kit/core";
 import { useResize, useTransform, useTranslate } from "@wisp/ui/src/hooks";
@@ -27,19 +28,7 @@ function WorkspaceCharacterSheetPage() {
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
         <DndContext>
-    
           <JotaiTransform id={"box2"} initial={{ width: 150, height: 150, x: 300, y: 300 }}>
-            <JotaiBox>
-              <ImageUploader>
-                {({ wrapperStyle, ...props }) => (
-                  <div style={wrapperStyle} className="bg-slate-200 h-full">
-                    <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
-                  </div>
-                )}
-              </ImageUploader>
-            </JotaiBox>
-          </JotaiTransform>
-          <JotaiTransform onTransformEnd={(t) => console.log(t)} id={"box3"} initial={{ width: 150, height: 150, x: 300, y: 300 }}>
             <JotaiBox>
               <ImageUploader>
                 {({ wrapperStyle, ...props }) => (
@@ -74,21 +63,15 @@ function JotaiBox({ children }: PropsWithChildren) {
   });
 
   return (
-    <div
-      style={{ ...dragStyles, ...transformStyles }}
-      className={clsx(
-        "absolute rounded-md ",
-        resizing && "outline outline-blue-300",
-        transforming && "z-[1000] shadow-md"
-      )}
-    >
-      {transformId}
+    <div style={{ ...dragStyles, ...transformStyles }} className={clsx("absolute rounded-md ")}>
       {children}
-      <JotaiTranslateHandle {...handle} />
-      <JotaiResizeHandle position="top-right" />
-      <JotaiResizeHandle position="bottom-right" />
-      <JotaiResizeHandle position="bottom-left" />
-      <JotaiResizeHandle position="top-left" />
+      <TransformHandles>
+        <JotaiTranslateHandle {...handle}/>
+        <JotaiResizeHandle position="top-right" />
+        <JotaiResizeHandle position="bottom-right" />
+        <JotaiResizeHandle position="bottom-left" />
+        <JotaiResizeHandle position="top-left" />
+      </TransformHandles>
     </div>
   );
 }

@@ -92,20 +92,17 @@ type ResizableHandleProps = {
 };
 
 const resizableHandleVariants = cva(
-  "absolute pointer-events-auto h-[14px] w-[14px] z-50 rounded-full bg-slate-300",
+  "absolute pointer-events-auto h-[20px] w-[20px] z-50",
   {
     variants: {
       position: {
-        "bottom-left": "-bottom-1 -left-1",
-        "bottom-right": "-bottom-1 -right-1",
-        "top-left": "-top-1 -left-1",
-        "top-right": "-top-1 -right-1",
-      },
-      cursor: {
-        resize: "cursor-nw-resize",
-        default: "cursor-pointer",
-      },
+        "bottom-left": "bottom-0.5 left-0.5 cursor-sw-resize",
+        "bottom-right": "bottom-0.5 right-0.5 cursor-se-resize",
+        "top-left": "top-0.5 left-0.5 cursor-nw-resize",
+        "top-right": "top-0.5 right-0.5 cursor-ne-resize",
+      }
     },
+
   }
 );
 
@@ -116,7 +113,7 @@ export function JotaiResizeHandle({ position }: ResizableHandleProps) {
     transformId,
     `No transform id for resize handle with position: ${position}. Make sure that your handles are only placed inside a <Transform/>`
   );
-  const { listeners, attributes } = useDraggable({
+  const { listeners, attributes, isDragging } = useDraggable({
     id: `${transformId}-resize-${position}`,
     data: {
       transform: {
@@ -126,7 +123,7 @@ export function JotaiResizeHandle({ position }: ResizableHandleProps) {
     },
   });
   return (
-    <div {...listeners} {...attributes} className={resizableHandleVariants({ position })}></div>
+    <div {...listeners} {...attributes} className={resizableHandleVariants({ position})}></div>
   );
 }
 
@@ -138,11 +135,20 @@ type TranslateHandleProps = {
 export function JotaiTranslateHandle({ listeners, attributes }: TranslateHandleProps) {
   return (
     <div
-      className="absolute -top-12 text-lg rounded-full w-full p-2 border "
+      className="absolute pointer-events-auto -top-12 text-lg rounded-full w-full p-2 border "
       {...listeners}
       {...attributes}
     >
       <HiOutlineArrowsPointingOut />
     </div>
   );
+}
+
+
+export function TransformHandles({children}: PropsWithChildren) {
+  return (
+    <div className="absolute pointer-events-none w-full h-full z-0 transform scale-105 top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
+      {children}
+    </div>
+  )
 }
