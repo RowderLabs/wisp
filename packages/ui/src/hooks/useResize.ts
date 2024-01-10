@@ -20,7 +20,7 @@ const checkConstraints = ({
 };
 
 const ResizeMolecule = molecule((mol) => {
-  const { transformAtom, optionalTransformAtom } = mol(TransformMolecule);
+  const { transformAtom, optionalTransformAtom, transformIdAtom } = mol(TransformMolecule);
 
   //clamps width and height
   const resizeWithConstraintsAtom = atom(
@@ -36,6 +36,7 @@ const ResizeMolecule = molecule((mol) => {
 
   return {
     transformAtom,
+    transformIdAtom,
     resizeWithConstraintsAtom,
     lastHandlePositionAtom,
     dragStartTransformAtom,
@@ -43,21 +44,25 @@ const ResizeMolecule = molecule((mol) => {
 });
 
 export const useResize = () => {
-  const { transformAtom, resizeWithConstraintsAtom, dragStartTransformAtom, lastHandlePositionAtom } =
+  const { transformAtom, transformIdAtom, resizeWithConstraintsAtom, dragStartTransformAtom, lastHandlePositionAtom } =
     useMolecule(ResizeMolecule);
 
   const transform = useAtomValue(transformAtom);
+  const transformId = useAtomValue(transformIdAtom)
   const resizeWithConstraints = useSetAtom(resizeWithConstraintsAtom);
   const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
   const [lastHandlePosition, setLastHandlePosition] = useAtom(lastHandlePositionAtom);
 
   useDndMonitor({
     onDragStart: ({ active }) => {
-      if (!active.data.current || active.data.current.transform.type !== "resize") return;
-      setLastHandlePosition(active.data.current.transform.handlePosition);
+      console.log(active.data.current)
+      //if (!active.data.current || active.data.current.transform.type !== "resize") return;
+      setLastHandlePosition(active.data.current!.transform.handlePosition);
       setDragStartTransform(transform);
     },
-    onDragMove: ({ delta }) => {
+    onDragMove: ({ delta, active }) => {
+
+      //if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
       if (lastHandlePosition === "top-right") resizeTopRight({ delta });
       if (lastHandlePosition === "top-left") resizeTopLeft({ delta });
       if (lastHandlePosition === "bottom-right") resizeBottomRight({ delta });
@@ -97,5 +102,5 @@ export const useResize = () => {
     });
   };
 
-  return { transform, lastHandlePosition };
+  return { lastHandlePosition };
 };
