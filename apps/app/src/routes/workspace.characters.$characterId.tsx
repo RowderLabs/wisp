@@ -1,8 +1,9 @@
 import { FileRoute } from "@tanstack/react-router";
-import { JotaiResizeHandle, JotaiTransform, JotaiTranslateHandle } from "@wisp/ui";
+import { ImageUploadOverlay, ImageUploader, JotaiResizeHandle, JotaiTransform, JotaiTranslateHandle } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
 import { DndContext } from "@dnd-kit/core";
 import { useResize, useTransform, useTranslate } from "@wisp/ui/src/hooks";
+import { PropsWithChildren } from "react";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -20,17 +21,46 @@ function WorkspaceCharacterSheetPage() {
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
         <DndContext>
-          <JotaiTransform id={"box"} initial={{ width: 150, height: 150, x: 300, y: 300 }}>
-            <JotaiBox />
+          <JotaiTransform id={"box1"} initial={{ width: 150, height: 150, x: 300, y: 300 }}>
+            <JotaiBox>
+              <ImageUploader>
+                {({ wrapperStyle, ...props }) => (
+                  <div style={wrapperStyle} className="bg-slate-200 h-full">
+                    <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+                  </div>
+                )}
+              </ImageUploader>
+            </JotaiBox>
+          </JotaiTransform>
+          <JotaiTransform id={"box2"} initial={{ width: 150, height: 150, x: 300, y: 300 }}>
+            <JotaiBox>
+              <ImageUploader>
+                {({ wrapperStyle, ...props }) => (
+                  <div style={wrapperStyle} className="bg-slate-200 h-full">
+                    <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+                  </div>
+                )}
+              </ImageUploader>
+            </JotaiBox>
+          </JotaiTransform>
+          <JotaiTransform id={"box3"} initial={{ width: 150, height: 150, x: 300, y: 300 }}>
+            <JotaiBox>
+              <ImageUploader>
+                {({ wrapperStyle, ...props }) => (
+                  <div style={wrapperStyle} className="bg-slate-200 h-full">
+                    <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+                  </div>
+                )}
+              </ImageUploader>
+            </JotaiBox>
           </JotaiTransform>
         </DndContext>
       </div>
-      {character && <CharacterSummary name={character?.fullName} />}
     </div>
   );
 }
 
-function JotaiBox() {
+function JotaiBox({ children }: PropsWithChildren) {
   const { transformStyles } = useTransform();
   const { handle, dragStyles } = useTranslate();
 
@@ -38,17 +68,18 @@ function JotaiBox() {
     constraints: {
       width: {
         min: 150,
-        max: 300,
+        max: 800,
       },
       height: {
         min: 150,
-        max: 600,
+        max: 800,
       },
     },
   });
 
   return (
-    <div style={{ ...dragStyles, ...transformStyles }} className="relative rounded-md bg-slate-300">
+    <div style={{ ...dragStyles, ...transformStyles }} className="absolute rounded-md ">
+      {children}
       <JotaiTranslateHandle {...handle} />
       <JotaiResizeHandle position="top-right" />
       <JotaiResizeHandle position="bottom-right" />

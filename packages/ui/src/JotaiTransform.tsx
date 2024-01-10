@@ -1,10 +1,11 @@
 import { atom, useAtomValue } from "jotai";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 import { Maybe } from "./Transform";
 import { createScope, molecule, ScopeProvider, useMolecule } from "bunshi/react";
 import { DraggableAttributes, DraggableSyntheticListeners, UniqueIdentifier, useDraggable } from "@dnd-kit/core";
 import { cva } from "class-variance-authority";
-import { useTransform } from "./hooks";
+import { HiOutlineArrowsPointingOut } from "react-icons/hi2";
+
 import invariant from "tiny-invariant";
 
 export type Transform = {
@@ -50,7 +51,7 @@ export const JotaiTransform = ({
   initial = { width: undefined, height: undefined, x: undefined, y: undefined },
 }: PropsWithChildren<TransformProps>) => {
   return (
-    <ScopeProvider scope={TransformScope} value={{...initial, id}}>
+    <ScopeProvider scope={TransformScope} value={{ ...initial, id }}>
       {children}
     </ScopeProvider>
   );
@@ -61,13 +62,13 @@ type ResizableHandleProps = {
   position: HandlePosition;
 };
 
-const resizableHandleVariants = cva("absolute pointer-events-auto h-4 w-4 z-50 rounded-full bg-blue-200", {
+const resizableHandleVariants = cva("absolute pointer-events-auto h-[14px] w-[14px] z-50 rounded-full bg-slate-300", {
   variants: {
     position: {
-      "bottom-left": "bottom-[-8px] left-[-8px]",
-      "bottom-right": "bottom-[-8px] right-[-8px]",
-      "top-left": "top-[-8px] left-[-8px]",
-      "top-right": "top-[-8px] right-[-8px]",
+      "bottom-left": "-bottom-1 -left-1",
+      "bottom-right": "-bottom-1 -right-1",
+      "top-left": "-top-1 -left-1",
+      "top-right": "-top-1 -right-1",
     },
     cursor: {
       resize: "cursor-nw-resize",
@@ -95,12 +96,15 @@ export function JotaiResizeHandle({ position }: ResizableHandleProps) {
   return <div {...listeners} {...attributes} className={resizableHandleVariants({ position })}></div>;
 }
 
-
 type TranslateHandleProps = {
-  listeners?: DraggableSyntheticListeners
-  attributes?: DraggableAttributes
-}
+  listeners?: DraggableSyntheticListeners;
+  attributes?: DraggableAttributes;
+};
 
-export function JotaiTranslateHandle({listeners, attributes}: TranslateHandleProps) {
-  return <div className="h-4 w-full bg-blue-300 rounded-md" {...listeners} {...attributes}></div>
+export function JotaiTranslateHandle({ listeners, attributes }: TranslateHandleProps) {
+  return (
+    <div className="absolute -top-12 text-lg rounded-full w-full p-2 border " {...listeners} {...attributes}>
+      <HiOutlineArrowsPointingOut />
+    </div>
+  );
 }
