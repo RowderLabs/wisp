@@ -1,21 +1,24 @@
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { molecule, useMolecule } from "bunshi/react";
+import { createScope, molecule, useMolecule } from "bunshi/react";
 import { TransformMolecule, Transform } from "../JotaiTransform";
 import { DragMoveEvent, useDndMonitor } from "@dnd-kit/core";
 import { HandlePosition, Maybe } from "../Transform";
-
-type TransformContraints = {
-  min: number;
-  max: number;
-};
+import { useMemo } from "react";
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+type MinMaxConstraint = Partial<{ min: number; max: number }>;
+type ResizeContraints = {
+  width: Partial<MinMaxConstraint>;
+  height: Partial<MinMaxConstraint>;
+};
 
-const checkConstraints = ({
+
+const checkResizeResizeConstraints = ({
   val,
   min = 0,
-  max = Number.MAX_SAFE_INTEGER,
-}: { val: number } & Partial<TransformContraints>) => {
+  max = 9999,
+}: { val: number } & Partial<MinMaxConstraint>) => {
+  console.log(`${val} ${min} ${max}`);
   return val > min && val < max;
 };
 
@@ -25,9 +28,22 @@ const ResizeMolecule = molecule((mol) => {
   //clamps width and height
   const resizeWithConstraintsAtom = atom(
     null,
-    (_get, set, { x, y, width, height }: WithRequired<Partial<Transform>, "width" | "height">) => {
-      if (checkConstraints({ val: width, min: 150, max: 600 })) set(optionalTransformAtom, { x, width });
-      if (checkConstraints({ val: height, min: 150, max: 600 })) set(optionalTransformAtom, { y, height });
+    (
+      _get,
+      set,
+      {
+        x,
+        y,
+        width,
+        height,
+        constraints,
+      }: WithRequired<Partial<Transform>, "width" | "height"> & { constraints?: UseResizeArgs["constraints"] }
+    ): void => {
+      constraints;
+      if (checkResizeResizeConstraints({ val: width, min: constraints?.width?.min, max: constraints?.width?.max }))
+        set(optionalTransformAtom, { x, width });
+      if (checkResizeResizeConstraints({ val: height, min: constraints?.height?.min, max: constraints?.height?.max }))
+        set(optionalTransformAtom, { y, height });
     }
   );
   //starting transform when drag begins
@@ -43,26 +59,37 @@ const ResizeMolecule = molecule((mol) => {
   };
 });
 
-export const useResize = () => {
+type UseResizeArgs = {
+  constraints?: Partial<{
+    width: Partial<{
+      min: number;
+      max: number;
+    }>;
+    height: Partial<{
+      min: number;
+      max: number;
+    }>;
+  }>;
+};
+
+export const useResize = ({ constraints }: UseResizeArgs) => {
   const { transformAtom, transformIdAtom, resizeWithConstraintsAtom, dragStartTransformAtom, lastHandlePositionAtom } =
     useMolecule(ResizeMolecule);
 
   const transform = useAtomValue(transformAtom);
-  const transformId = useAtomValue(transformIdAtom)
+  const transformId = useAtomValue(transformIdAtom);
   const resizeWithConstraints = useSetAtom(resizeWithConstraintsAtom);
   const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
   const [lastHandlePosition, setLastHandlePosition] = useAtom(lastHandlePositionAtom);
 
   useDndMonitor({
     onDragStart: ({ active }) => {
-      console.log(active.data.current)
       //if (!active.data.current || active.data.current.transform.type !== "resize") return;
       setLastHandlePosition(active.data.current!.transform.handlePosition);
       setDragStartTransform(transform);
     },
     onDragMove: ({ delta, active }) => {
-
-      //if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
+      if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
       if (lastHandlePosition === "top-right") resizeTopRight({ delta });
       if (lastHandlePosition === "top-left") resizeTopLeft({ delta });
       if (lastHandlePosition === "bottom-right") resizeBottomRight({ delta });
@@ -76,6 +103,7 @@ export const useResize = () => {
       height: dragStartTransform.height! - delta.y,
       x: dragStartTransform.x! + delta.x,
       y: dragStartTransform.y! + delta.y,
+      constraints,
     });
   };
 
@@ -84,6 +112,7 @@ export const useResize = () => {
       width: dragStartTransform.width! - delta.x,
       height: dragStartTransform.height! + delta.y,
       x: dragStartTransform.x! + delta.x,
+      constraints
     });
   };
 
@@ -91,6 +120,7 @@ export const useResize = () => {
     resizeWithConstraints({
       width: dragStartTransform.width! + delta.x,
       height: dragStartTransform.height! + delta.y,
+      constraints
     });
   };
 
@@ -99,6 +129,7 @@ export const useResize = () => {
       width: dragStartTransform.width! + delta.x,
       height: dragStartTransform.height! - delta.y,
       y: dragStartTransform.y! + delta.y,
+      constraints
     });
   };
 

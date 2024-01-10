@@ -1,7 +1,7 @@
 import { FileRoute } from "@tanstack/react-router";
 import { JotaiResizeHandle, JotaiTransform } from "@wisp/ui";
 import { CharacterSummary } from "../ui/CharacterSummary";
-import { DndContext, UniqueIdentifier, useDraggable } from "@dnd-kit/core";
+import { DndContext } from "@dnd-kit/core";
 import { useResize, useTransform } from "@wisp/ui/src/hooks";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
@@ -32,7 +32,18 @@ function WorkspaceCharacterSheetPage() {
 
 function JotaiBox() {
   const { transform, transformId } = useTransform();
-  const { lastHandlePosition } = useResize();
+  useResize({
+    constraints: {
+      width: {
+        min: 150,
+        max: 300,
+      },
+      height: {
+        min: 150,
+        max: 600,
+      },
+    },
+  });
 
   return (
     <div
