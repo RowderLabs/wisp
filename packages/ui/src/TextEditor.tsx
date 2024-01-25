@@ -52,9 +52,9 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
     namespace: "MyEditor",
     theme: editorTheme || {
       heading: {
-        h1: "text-2xl",
-        h2: "text-xl",
-        h3: "text-xl",
+        h1: "text-2xl my-2",
+        h2: "text-xl my-1",
+        h3: "text-lg my-1",
       },
       list: {
         listitem: "list-disc ml-4",
@@ -73,7 +73,7 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
         className={clsx(
           className,
           'overflow-auto h-[95%]',
-          "relative leading-6 text-slate-700"
+          "relative leading-7 text-slate-700"
         )}
       >
         {features.typeahead && featureEnabled(features.typeahead) && (

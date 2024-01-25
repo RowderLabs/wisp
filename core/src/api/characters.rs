@@ -11,6 +11,9 @@ use rspc::Error;
 use serde::Deserialize;
 use serde::Serialize;
 
+const PATH_DELIMITER: &'static str = "/";
+const ROOT_DELIMITER: &'static str = "root";
+
 #[derive(Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 struct CreateCharacter {
@@ -35,8 +38,8 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
     for character in characters {
         let locations = character
             .path
-            .trim_start_matches("/")
-            .split("/")
+            .trim_start_matches(PATH_DELIMITER)
+            .split(PATH_DELIMITER)
             .collect_vec();
 
         //add location to root node
@@ -67,8 +70,8 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
         }
     }
     let root = FileTreeItem {
-        id: "root".to_string(),
-        name: "root".to_string(),
+        id: ROOT_DELIMITER.to_owned(),
+        name: ROOT_DELIMITER.to_owned(),
         children: in_root.into_iter().collect_vec(),
         is_collection: true,
     };
