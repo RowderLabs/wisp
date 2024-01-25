@@ -16,6 +16,7 @@ export type Maybe<T extends unknown> = T extends object
   : T | undefined;
 
 import invariant from "tiny-invariant";
+import { TransformType } from "./hooks";
 
 export type Transform = {
   x: number;
@@ -64,12 +65,13 @@ export const TransformMolecule = molecule((_, scope) => {
 });
 
 interface TransformEvent extends Maybe<Transform> {
+  type: TransformType;
   transformId: string;
 }
 interface TransformEndEvent extends TransformEvent {}
 interface TransformStartEvent extends TransformEvent {}
 
-type TransformProps = {
+export type TransformProps = {
   id: string;
   onTransformStart?: (event: TransformStartEvent) => void;
   onTransformEnd?: (event: TransformEndEvent) => void;
@@ -89,7 +91,7 @@ export const Transform = ({
   );
 };
 
-type HandlePosition = "bottom-left" | "top-left" | "bottom-right" | "top-right";
+export type HandlePosition = "bottom-left" | "top-left" | "bottom-right" | "top-right";
 type ResizableHandleProps = {
   position: HandlePosition;
 };

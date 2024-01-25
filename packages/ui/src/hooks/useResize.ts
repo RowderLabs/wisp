@@ -1,9 +1,8 @@
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { createScope, molecule, useMolecule } from "bunshi/react";
+import { molecule, useMolecule } from "bunshi/react";
 import { TransformMolecule, Transform } from "../Transform";
 import { DragMoveEvent, useDndMonitor } from "@dnd-kit/core";
 import { HandlePosition, Maybe } from "../Transform";
-import { useMemo } from "react";
 import invariant from "tiny-invariant";
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
@@ -13,16 +12,12 @@ type ResizeContraints = {
   height: Partial<MinMaxConstraint>;
 };
 
-const checkResizeResizeConstraints = ({
-  val,
-  min = 0,
-  max = 9999,
-}: { val: number } & Partial<MinMaxConstraint>) => {
+const checkResizeResizeConstraints = ({ val, min = 0, max = 9999 }: { val: number } & Partial<MinMaxConstraint>) => {
   return val > min && val < max;
 };
 
 const ResizeMolecule = molecule((mol) => {
-  const { transformAtom, optionalTransformAtom, transformIdAtom } = mol(TransformMolecule);
+  const { transformAtom, optionalTransformAtom, transformIdAtom, onTransformEnd } = mol(TransformMolecule);
 
   const resizingAtom = atom(false);
   //clamps width and height
@@ -71,6 +66,7 @@ const ResizeMolecule = molecule((mol) => {
     resizeWithConstraintsAtom,
     lastHandlePositionAtom,
     dragStartTransformAtom,
+    onTransformEnd,
   };
 });
 
@@ -95,6 +91,7 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
     dragStartTransformAtom,
     lastHandlePositionAtom,
     resizingAtom,
+    onTransformEnd,
   } = useMolecule(ResizeMolecule);
   const transform = useAtomValue(transformAtom);
 
@@ -122,8 +119,17 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
       if (lastHandlePosition === "bottom-right") resizeBottomRight({ delta });
       if (lastHandlePosition === "bottom-left") resizeBottomLeft({ delta });
     },
-    onDragEnd: () => {
+    onDragEnd: ({active}) => {
+      if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
       if (resizing) setResizing(false);
+      invariant(transformId, "no transform id");
+      if (onTransformEnd) {
+        onTransformEnd({
+          transformId,
+          type: "RESIZE",
+          ...(transform as Required<Transform>),
+        });
+      }
     },
   });
 
@@ -163,5 +169,5 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
     });
   };
 
-  return {resizing}
+  return { resizing };
 };

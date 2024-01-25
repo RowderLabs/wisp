@@ -1,14 +1,7 @@
 import { FileRoute } from "@tanstack/react-router";
 import {
-  ResizeHandle,
-  TranslateHandle,
-  TransformHandles,
-  createPanel,
-  Transform,
+  DraggableCanvas,
 } from "@wisp/ui";
-import { DndContext } from "@dnd-kit/core";
-import { useTransform } from "@wisp/ui/src/hooks";
-import { PropsWithChildren } from "react";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -25,28 +18,10 @@ function WorkspaceCharacterSheetPage() {
   return (
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
-        <DndContext>
-          <Transform key={"hello"} id={"hello" as string} initial={{ x: 0, y: 0, width: 150, height: 150 }}>
-            <CanvasItem>{createPanel("textbox", { title: "hello" }).content}</CanvasItem>
-          </Transform>
-        </DndContext>
+        <DraggableCanvas/>
       </div>
     </div>
   );
 }
 
-function CanvasItem({ children }: PropsWithChildren) {
-  const { style, translateHandle, translateRef } = useTransform();
-  return (
-    <div ref={translateRef} style={{ ...style }} className="absolute rounded-md">
-      {children}
-      <TransformHandles>
-        <TranslateHandle {...translateHandle}/>
-        <ResizeHandle position="top-right" />
-        <ResizeHandle position="bottom-right" />
-        <ResizeHandle position="bottom-left" />
-        <ResizeHandle position="top-left" />
-      </TransformHandles>
-    </div>
-  );
-}
+
