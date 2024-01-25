@@ -1,7 +1,5 @@
-import { forwardRef, useMemo } from "react";
-import { TreeData, TreeViewApiHandle, TreeViewNode as TreeViewNodeType } from "./hooks/useTreeView";
-import { HiChevronRight, HiChevronDown } from "react-icons/hi";
-import { HiDocumentText } from "react-icons/hi";
+import { useMemo } from "react";
+import { TreeData, TreeViewNode as TreeViewNodeType } from "./hooks/useTreeView";
 import { buildTree } from "./util/treeView";
 
 const ROOT_ID = "root";

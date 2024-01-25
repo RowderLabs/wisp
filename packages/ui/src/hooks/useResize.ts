@@ -7,10 +7,7 @@ import invariant from "tiny-invariant";
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
 type MinMaxConstraint = Partial<{ min: number; max: number }>;
-type ResizeContraints = {
-  width: Partial<MinMaxConstraint>;
-  height: Partial<MinMaxConstraint>;
-};
+
 
 const checkResizeResizeConstraints = ({ val, min = 0, max = 9999 }: { val: number } & Partial<MinMaxConstraint>) => {
   return val > min && val < max;

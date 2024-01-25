@@ -118,7 +118,7 @@ export function ResizeHandle({ position }: ResizableHandleProps) {
     transformId,
     `No transform id for resize handle with position: ${position}. Make sure that your handles are only placed inside a <Transform/>`
   );
-  const { listeners, attributes, isDragging } = useDraggable({
+  const { listeners, attributes } = useDraggable({
     id: `${transformId}-resize-${position}`,
     data: {
       transform: {

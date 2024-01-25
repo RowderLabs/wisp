@@ -1,6 +1,4 @@
 import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUploader";
-import { Resizable } from "./Resizable";
-import { ResizableRe } from "./ResizableRe";
 import { TextBox, TextBoxProps } from "./Textbox";
 const panels = {
   image: {
@@ -26,11 +24,11 @@ type PanelDefinition = {
 };
 
 //UTILITY TO GET REQUIRED FIELDS
-type RequiredFieldKeys<T> = {
+/*type RequiredFieldKeys<T> = {
   [K in keyof T]-?: {} extends Pick<T, K> ? never : K;
-}[keyof T];
+}[keyof T];*/
 
-type RequiredFields<T> = Pick<T, RequiredFieldKeys<T>>;
+//type RequiredFields<T> = Pick<T, RequiredFieldKeys<T>>;
 type RenderProps<TKey extends keyof PanelDefinition> = Parameters<PanelDefinition[TKey]["renderContent"]>[0];
 
 export const createPanel = <TKey extends PanelKey>(pType: TKey, reqProps: RenderProps<TKey>) => {

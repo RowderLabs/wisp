@@ -13,7 +13,7 @@ export const Route = new FileRoute("/workspace/characters/$characterId").createR
 });
 
 function WorkspaceCharacterSheetPage() {
-  const character = Route.useLoaderData();
+
 
   return (
     <div className="flex w-full">

@@ -2,7 +2,7 @@ import { HiPhoto } from "react-icons/hi2";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useUploadableImage } from "./hooks/useUploadableImage";
 import { Image, imageVariants } from "./Image";
-import React, { PropsWithChildren } from "react";
+import React from "react";
 
 const imageUploaderVariants = cva(
   "opacity-0 hover:opacity-100 transition-opacity duration-150 ease w-full h-full rounded-md flex justify-center border-2 border-slate-500 border-dashed items-center cursor-pointer"

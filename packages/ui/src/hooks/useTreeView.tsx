@@ -1,6 +1,4 @@
-import { useMemo, useState } from "react";
-import { deleteNodeInner, buildTree } from "../util/treeView";
-import { UniqueIdentifier } from "@dnd-kit/core";
+import { useState } from "react";
 
 export type TreeViewNodeInner = {
   id: string;
@@ -27,7 +25,7 @@ type UseTreeViewProps = {
 }
 
 export function useTreeView({onDelete}: UseTreeViewProps): [TreeData, TreeViewApiHandle] {
-  const [treeData, setTreeData] = useState<Record<string, TreeViewNode>>({});
+  const [treeData, _setTreeData] = useState<Record<string, TreeViewNode>>({});
   const [viewState, setViewState] = useState<Map<string, boolean | undefined>>(
     new Map([["root", true]])
   );

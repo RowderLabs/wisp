@@ -1,6 +1,5 @@
 import { VariantProps, cva } from "class-variance-authority";
 import TextEditor from "./TextEditor";
-import { EditableInline } from "./EditableInline";
 import { KeyboardEventHandler, useRef, useState } from "react";
 import useDoubleClick from "use-double-click";
 import clsx from "clsx";

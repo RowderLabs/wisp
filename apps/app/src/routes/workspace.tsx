@@ -11,7 +11,6 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi";
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
-import { useState } from "react";
 
 export const Route = new FileRoute("/workspace").createRoute({
   component: WorkspacePage,

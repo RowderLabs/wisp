@@ -20,7 +20,7 @@ export function findParentOf(
 }
 
 export function findChildrenOf(treeData: Record<string, TreeViewNode>, id: string): string[] {
-  return treeData[id].children.reduce<string[]>((acc, curr) => {
+  return treeData[id].children.reduce<string[]>((_, curr) => {
     return [curr, ...findChildrenOf(treeData, curr)];
   }, []);
 }

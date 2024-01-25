@@ -1,12 +1,4 @@
-import { useEffect, useRef } from "react";
-import { FamilyTreeNodeData, TreeNode } from "../rspc/bindings";
-import { rspc } from "../rspc/router";
-import * as d3 from "d3";
-import pfp from "../assets/pfp.png";
-import { createChildPath } from "../paths";
-
-
-export default function FamilyTree() {
+/*export default function FamilyTree() {
 
     const treeContainerRef = useRef<SVGSVGElement>(null);
     const treeRef = useRef<SVGGElement>(null);
@@ -84,4 +76,4 @@ export default function FamilyTree() {
             </svg>
         </div>
     )
-}
+}*/

@@ -1,5 +1,5 @@
 import { DraggableSyntheticListeners, DraggableAttributes, UniqueIdentifier } from "@dnd-kit/core";
-import { CSS, Transform } from "@dnd-kit/utilities";
+import { Transform } from "@dnd-kit/utilities";
 import React from "react";
 import {motion} from 'framer-motion'
 import type { PropsWithChildren } from "react";
@@ -27,11 +27,8 @@ type DndItemProps = {
 
 export const DndItem = React.memo(
   React.forwardRef<HTMLDivElement, PropsWithChildren<DndItemProps>>(
-    ({ listeners, transition, transform, className, children, id, isDragging, attributes }, ref) => {
-      const style = {
-        transform: transform ? CSS.Translate.toString(transform) : undefined,
-        transition: transition ? transition : undefined,
-      };
+    ({ listeners, transform, className, children, id, isDragging, attributes }, ref) => {
+
       return (
         <motion.div
           className={className}

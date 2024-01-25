@@ -4,6 +4,6 @@ export type PanelProps = {
 };
 
 
-export function Panel({ content, id }: PanelProps) {
+export function Panel({ content }: PanelProps) {
   return <>{content}</>;
 }
