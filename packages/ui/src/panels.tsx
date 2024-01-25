@@ -5,29 +5,17 @@ import { TextBox, TextBoxProps } from "./Textbox";
 const panels = {
   image: {
     renderContent: (args: ImageUploaderProps) => (
-      <Resizable.Root restrictToX={true} minWidth={200} minHeight={200}>
-        <ImageUploader {...args}>
-          {({ wrapperStyle, ...props }) => (
-            <div style={wrapperStyle} className="bg-slate-200 h-full">
-              <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
-            </div>
-          )}
-        </ImageUploader>
-        <Resizable.Handle position="bottom-right" />
-        <Resizable.Handle position="bottom-left" />
-      </Resizable.Root>
+      <ImageUploader {...args}>
+        {({ wrapperStyle, ...props }) => (
+          <div style={wrapperStyle} className="bg-slate-200 h-full">
+            <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
+          </div>
+        )}
+      </ImageUploader>
     ),
   },
   textbox: {
-    renderContent: (args: TextBoxProps) => (
-      <ResizableRe.Root>
-        <ResizableRe.Handle position="top-left" />
-        <ResizableRe.Handle position="top-right" />
-        <ResizableRe.Handle position="bottom-left" />
-        <ResizableRe.Handle position="bottom-right" />
-        <TextBox {...args} />
-      </ResizableRe.Root>
-    ),
+    renderContent: (args: TextBoxProps) => <TextBox {...args} />,
   },
 };
 type PanelKey = keyof typeof panels;

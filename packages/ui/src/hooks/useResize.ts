@@ -1,6 +1,6 @@
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { createScope, molecule, useMolecule } from "bunshi/react";
-import { TransformMolecule, Transform } from "../JotaiTransform";
+import { TransformMolecule, Transform } from "../Transform";
 import { DragMoveEvent, useDndMonitor } from "@dnd-kit/core";
 import { HandlePosition, Maybe } from "../Transform";
 import { useMemo } from "react";

@@ -1,6 +1,6 @@
 import { useDndMonitor, useDraggable } from "@dnd-kit/core";
 import { molecule } from "bunshi/react";
-import { TransformMolecule } from "../JotaiTransform";
+import { TransformMolecule } from "../Transform";
 import { useMolecule } from "bunshi/react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { CSS } from "@dnd-kit/utilities";
@@ -35,8 +35,8 @@ export function useTranslate() {
   });
 
   return {
-    handle: { listeners, attributes, setActivatorNodeRef },
+    translateHandle: { listeners, attributes, setActivatorNodeRef },
     translateRef: setNodeRef,
-    dragStyles: {transform: CSS.Transform.toString(dragTransform)},
+    translateStyles: {transform: CSS.Transform.toString(dragTransform)},
   };
 }

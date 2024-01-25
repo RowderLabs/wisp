@@ -1,9 +1,10 @@
 import { UniqueIdentifier, useDndMonitor } from "@dnd-kit/core";
 import { useMolecule } from "bunshi/react";
-import { TransformMolecule } from "../JotaiTransform";
+import { TransformMolecule } from "../Transform";
 import { useAtom, useAtomValue } from "jotai";
-import { useEffect } from "react";
 import invariant from "tiny-invariant";
+import { useResize } from "./useResize";
+import { useTranslate } from "./useTranslate";
 
 type UseTransformArgs = { id: UniqueIdentifier };
 
@@ -14,6 +15,21 @@ export function useTransform() {
   const { x, y, width, height } = useAtomValue(transformAtom);
   const transformStyles = { left: x, top: y, width, height };
   const [transforming, setTransforming] = useAtom(transformingAtom);
+
+  useResize({
+    constraints: {
+      width: {
+        min: 150,
+        max: 800,
+      },
+      height: {
+        min: 150,
+        max: 800,
+      },
+    },
+  });
+
+  const { translateHandle, translateStyles, translateRef } = useTranslate();
 
   useDndMonitor({
     onDragStart: ({ active }) => {
@@ -29,5 +45,5 @@ export function useTransform() {
       setTransforming(false);
     },
   });
-  return { transforming, transformStyles, transformId };
+  return { style: { ...translateStyles, ...transformStyles }, translateHandle, transformId, translateRef };
 }

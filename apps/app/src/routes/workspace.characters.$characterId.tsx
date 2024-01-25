@@ -1,16 +1,14 @@
 import { FileRoute } from "@tanstack/react-router";
 import {
-  ImageUploadOverlay,
-  ImageUploader,
-  JotaiResizeHandle,
-  JotaiTransform,
-  JotaiTranslateHandle,
+  ResizeHandle,
+  TranslateHandle,
   TransformHandles,
+  createPanel,
+  Transform,
 } from "@wisp/ui";
 import { DndContext } from "@dnd-kit/core";
-import { useResize, useTransform, useTranslate } from "@wisp/ui/src/hooks";
+import { useTransform } from "@wisp/ui/src/hooks";
 import { PropsWithChildren } from "react";
-import clsx from "clsx";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -28,49 +26,26 @@ function WorkspaceCharacterSheetPage() {
     <div className="flex w-full px-4">
       <div className="basis-full relative" style={{ height: "800px" }}>
         <DndContext>
-          <JotaiTransform id={"box2"} initial={{ width: 150, height: 150, x: 300, y: 300 }}>
-            <JotaiBox>
-              <ImageUploader>
-                {({ wrapperStyle, ...props }) => (
-                  <div style={wrapperStyle} className="bg-slate-200 h-full">
-                    <ImageUploadOverlay imageOpts={props.opts?.image} {...props} />
-                  </div>
-                )}
-              </ImageUploader>
-            </JotaiBox>
-          </JotaiTransform>
+          <Transform key={"hello"} id={"hello" as string} initial={{ x: 0, y: 0, width: 150, height: 150 }}>
+            <CanvasItem>{createPanel("textbox", { title: "hello" }).content}</CanvasItem>
+          </Transform>
         </DndContext>
       </div>
     </div>
   );
 }
 
-function JotaiBox({ children }: PropsWithChildren) {
-  const { transformStyles, transforming, transformId } = useTransform();
-  const { handle, dragStyles } = useTranslate();
-
-  const { resizing } = useResize({
-    constraints: {
-      width: {
-        min: 150,
-        max: 800,
-      },
-      height: {
-        min: 150,
-        max: 800,
-      },
-    },
-  });
-
+function CanvasItem({ children }: PropsWithChildren) {
+  const { style, translateHandle, translateRef } = useTransform();
   return (
-    <div style={{ ...dragStyles, ...transformStyles }} className={clsx("absolute rounded-md ")}>
+    <div ref={translateRef} style={{ ...style }} className="absolute rounded-md">
       {children}
       <TransformHandles>
-        <JotaiTranslateHandle {...handle}/>
-        <JotaiResizeHandle position="top-right" />
-        <JotaiResizeHandle position="bottom-right" />
-        <JotaiResizeHandle position="bottom-left" />
-        <JotaiResizeHandle position="top-left" />
+        <TranslateHandle {...translateHandle}/>
+        <ResizeHandle position="top-right" />
+        <ResizeHandle position="bottom-right" />
+        <ResizeHandle position="bottom-left" />
+        <ResizeHandle position="top-left" />
       </TransformHandles>
     </div>
   );
