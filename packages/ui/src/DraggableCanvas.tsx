@@ -10,7 +10,7 @@ export function DraggableCanvas() {
     { id: "second", x: 0, y: 0, width: 150, height: 150 },
   ]);
   return (
-    <div className="w-full h-full border border-red-300">
+    <div className="w-full h-full">
       <DndContext>
         {items.map((item) => (
           <DraggableCanvasItem
@@ -39,7 +39,6 @@ export function DraggableCanvas() {
             {createPanel("textbox", { title: "hello" }).content}
           </DraggableCanvasItem>
         ))}
-        <div className="border border-blue-400">{JSON.stringify(items)}</div>
       </DndContext>
     </div>
   );

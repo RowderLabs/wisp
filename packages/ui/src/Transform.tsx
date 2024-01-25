@@ -140,7 +140,7 @@ type TranslateHandleProps = {
 export function TranslateHandle({ listeners, attributes }: TranslateHandleProps) {
   return (
     <div
-      className="absolute pointer-events-auto -top-12 text-lg rounded-full w-full p-2 border "
+      className="absolute pointer-events-auto -top-8 text-lg rounded-full w-8 h-8 flex justify-center items-center left-[50%] -translate-x-[50%] p-1 border"
       {...listeners}
       {...attributes}
     >

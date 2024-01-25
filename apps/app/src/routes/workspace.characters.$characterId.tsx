@@ -16,8 +16,8 @@ function WorkspaceCharacterSheetPage() {
   const character = Route.useLoaderData();
 
   return (
-    <div className="flex w-full px-4">
-      <div className="basis-full relative" style={{ height: "800px" }}>
+    <div className="flex w-full">
+      <div className="basis-full relative" style={{height: 800, overflowY: 'auto'}}>
         <DraggableCanvas/>
       </div>
     </div>

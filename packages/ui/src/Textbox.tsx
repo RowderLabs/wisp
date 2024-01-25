@@ -59,7 +59,7 @@ export function TextBox({ title, textBoxOptions }: TextBoxProps) {
         </div>
         <span>{editing}</span>
       </div>
-      <TextEditor features={{ typeahead: { lists: true } }} className="rounded-md px-2 py-1 min-h-[150px] min-w=[150px]" />
+      <TextEditor features={{ typeahead: { lists: true, headings: true } }} className="rounded-md px-2 py-1 min-h-[150px] min-w=[150px]" />
     </div>
   );
 }
