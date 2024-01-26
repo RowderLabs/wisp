@@ -27,8 +27,8 @@ export function useTransformContext() {
     },
   });
 
-  const { translateHandle, translateStyles, translateRef } = useTranslate();
+  const { dragHandle, translateStyles, dragRef } = useTranslate();
 
   
-  return { style: { ...translateStyles, ...transformStyles }, translateHandle, transformId, translateRef };
+  return { style: { ...translateStyles, ...transformStyles }, dragHandle, transformId, dragRef };
 }

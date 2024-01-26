@@ -68,8 +68,8 @@ interface TransformEvent extends Maybe<Transform> {
   type: TransformType;
   transformId: string;
 }
-interface TransformEndEvent extends TransformEvent {}
-interface TransformStartEvent extends TransformEvent {}
+export interface TransformEndEvent extends TransformEvent {}
+export interface TransformStartEvent extends TransformEvent {}
 
 export type TransformProps = {
   id: string;
@@ -118,7 +118,7 @@ export function ResizeHandle({ position }: ResizableHandleProps) {
     transformId,
     `No transform id for resize handle with position: ${position}. Make sure that your handles are only placed inside a <Transform/>`
   );
-  const { listeners, attributes } = useDraggable({
+  const { listeners, attributes, setNodeRef } = useDraggable({
     id: `${transformId}-resize-${position}`,
     data: {
       transform: {
@@ -128,7 +128,7 @@ export function ResizeHandle({ position }: ResizableHandleProps) {
     },
   });
   return (
-    <div {...listeners} {...attributes} className={resizableHandleVariants({ position})}></div>
+    <div {...listeners} {...attributes} ref={setNodeRef} className={resizableHandleVariants({ position})}></div>
   );
 }
 

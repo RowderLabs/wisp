@@ -1,56 +1,103 @@
-import { DndContext } from "@dnd-kit/core";
+import { DndContext, Modifier, MouseSensor, useSensor } from "@dnd-kit/core";
+import { atom, useAtom } from "jotai";
 import { useTransformContext } from "./hooks";
-import { PropsWithChildren, useState } from "react";
-import { TransformHandles, TranslateHandle, ResizeHandle, Transform, TransformProps } from "./Transform";
+import { snapCenterToCursor } from "@dnd-kit/modifiers";
+import { PropsWithChildren } from "react";
+import {
+  TransformHandles,
+  TranslateHandle,
+  ResizeHandle,
+  Transform,
+  TransformProps,
+  TransformEndEvent,
+} from "./Transform";
+import { molecule, useMolecule } from "bunshi/react";
 import { createPanel } from "./panels";
 
-export function DraggableCanvas() {
-  const [items, setItems] = useState<(Transform & { id: string })[]>([
+type CanvasItem = {
+  id: string;
+} & Transform;
+
+const CanvasMolecule = molecule((_, scope) => {
+  const $canvasItems = atom<CanvasItem[]>([
     { id: "first", x: 0, y: 0, width: 150, height: 150 },
     { id: "second", x: 0, y: 0, width: 150, height: 150 },
+    { id: "third", x: 0, y: 0, width: 400, height: 150 },
   ]);
+
+  return { $canvasItems };
+});
+
+const useDraggableCanvas = () => {
+  const { $canvasItems } = useMolecule(CanvasMolecule);
+  const [canvasItems, setCanvasItems] = useAtom($canvasItems);
+
+  const updateCanvas = (e: TransformEndEvent) => {
+    setCanvasItems((items) => {
+      return items.reduce<CanvasItem[]>((acc, curr) => {
+        curr.id === e.transformId
+          ? acc.push({
+              x: e.x || curr?.x,
+              y: e.y || curr?.y,
+              width: e.width || curr?.width,
+              height: e.height || curr?.height,
+              id: e.transformId,
+            })
+          : acc.push(curr);
+
+        return acc;
+      }, []);
+    });
+  };
+
+  return {
+    canvasItems,
+    updateCanvas,
+  };
+};
+
+export function DraggableCanvas() {
+  const { canvasItems, updateCanvas } = useDraggableCanvas();
+
+  const mouseSensor = useSensor(MouseSensor);
+
   return (
     <div className="w-full h-full">
-      <DndContext>
-        {items.map((item) => (
+      <DndContext sensors={[mouseSensor]} modifiers={[snapToGrid]}>
+        {canvasItems.map((item) => (
           <DraggableCanvasItem
             key={item.id}
             id={item.id}
             initial={{ x: item.x, y: item.y, width: item.width, height: item.height }}
-            onTransformStart={(e) => {
-              console.log(e)
-            }}
-            onTransformEnd={(e) => {
-              console.log(e);
-              setItems((old) => {
-                return [
-                  ...old.filter((item) => item.id !== e.transformId),
-                  {
-                    x: e.x || item?.x,
-                    y: e.y || item?.y,
-                    width: e.width || item?.width,
-                    height: e.height || item?.height,
-                    id: e.transformId,
-                  },
-                ] as (Transform & { id: string })[];
-              });
-            }}
+            onTransformEnd={updateCanvas}
           >
             {createPanel("textbox", { title: "hello" }).content}
           </DraggableCanvasItem>
         ))}
       </DndContext>
+      <div>
+        {JSON.stringify(canvasItems)}
+      </div>
     </div>
   );
 }
 
+const snapToGrid: Modifier = (args) => {
+  const { transform } = args;
+  return {
+    ...transform,
+    x: Math.ceil(transform.x / 10) * 10,
+    y: Math.ceil(transform.y / 10) * 10,
+  };
+};
+
 function CanvasItem({ children }: PropsWithChildren) {
-  const { style, translateHandle, translateRef } = useTransformContext();
+  const { style, dragHandle, dragRef } = useTransformContext();
   return (
-    <div ref={translateRef} style={{ ...style }} className="absolute rounded-md">
+    <div ref={dragRef} style={{ ...style }} className="absolute rounded-md">
       {children}
       <TransformHandles>
-        <TranslateHandle {...translateHandle} />
+        <TranslateHandle {...dragHandle} />
         <ResizeHandle position="top-right" />
         <ResizeHandle position="bottom-right" />
         <ResizeHandle position="bottom-left" />

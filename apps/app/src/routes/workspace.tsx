@@ -1,7 +1,6 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ImageUploader, ImageUploadOverlay, ContextMenu } from "@wisp/ui";
+import { TreeView, ContextMenu } from "@wisp/ui";
 import { TreeData, TreeViewNode, useTreeView } from "@wisp/ui/src/hooks";
-import { Banner } from "../ui/Banner";
 import { rspc } from "../rspc/router";
 import {
   HiFolder,

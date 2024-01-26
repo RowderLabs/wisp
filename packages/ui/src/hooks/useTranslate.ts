@@ -46,8 +46,8 @@ export function useTranslate() {
   });
 
   return {
-    translateHandle: { listeners, attributes, setActivatorNodeRef },
-    translateRef: setNodeRef,
+    dragHandle: { listeners, attributes, setActivatorNodeRef },
+    dragRef: setNodeRef,
     translateStyles: { transform: CSS.Transform.toString(dragTransform) },
   };
 }
