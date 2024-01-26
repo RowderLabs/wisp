@@ -5,7 +5,7 @@ import { DragMoveEvent, useDndMonitor } from "@dnd-kit/core";
 import { HandlePosition, Maybe } from "../Transform";
 import invariant from "tiny-invariant";
 
-type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
 type MinMaxConstraint = Partial<{ min: number; max: number }>;
 
 

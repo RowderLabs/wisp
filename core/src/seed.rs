@@ -1,4 +1,7 @@
-use crate::{api::characters::{construct_path, generate_id}, prisma};
+use crate::{
+    api::characters::{construct_path, generate_id},
+    prisma,
+};
 
 pub async fn seed(prisma: &prisma::PrismaClient) {
     //reset db
@@ -41,6 +44,13 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
             false,
             vec![],
         )
+        .exec()
+        .await
+        .unwrap();
+
+    let panel = prisma
+        .panel()
+        .create(150, 200, 150, 300, "hello world".into(), vec![])
         .exec()
         .await
         .unwrap();
