@@ -25,39 +25,10 @@ export type TextBoxProps = {
   };
 };
 
-export function TextBox({ title, textBoxOptions }: TextBoxProps) {
-  const titleRef = useRef<HTMLDivElement | null>(null);
-  
+export function TextBox({}: TextBoxProps) {
 
-  useDoubleClick({
-    ref: titleRef,
-    onDoubleClick: () => {
-      setEditing(true);
-    },
-    latency: 250,
-  });
-  const [editing, setEditing] = useState(false);
-  const handleSubmit: KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.code === "Enter") {
-      setEditing(false);
-      titleRef.current?.blur()
-    }
-  };
   return (
     <div className={textboxVariants()}>
-      <div className={textboxTitleVariants({ ...textBoxOptions?.title })}>
-        <div
-          role="textbox"
-          className={clsx(editing ? "select-text" : "select-none", 'focus:outline-none')}
-          ref={titleRef}
-          tabIndex={0}
-          onKeyDown={handleSubmit}
-          contentEditable={editing}
-        >
-          {title}
-        </div>
-        <span>{editing}</span>
-      </div>
       <TextEditor features={{ typeahead: { lists: true, headings: true } }} className="rounded-md px-2 py-1 min-h-[150px] min-w=[150px]" />
     </div>
   );

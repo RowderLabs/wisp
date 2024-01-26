@@ -9,7 +9,6 @@ body {
 }
 
 .editor-input {
-  height: 100%;
   resize: none;
   font-size: 15px;
   caret-color: rgb(5, 5, 5);
