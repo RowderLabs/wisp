@@ -38,6 +38,7 @@
     "react-dom": "^18.2.0",
     "react-merge-refs": "^2.0.2",
     "tailwind-merge": "^1.14.0",
+    "unplugin-fonts": "^1.1.1",
     "use-double-click": "^1.0.5"
   },
   "devDependencies": {

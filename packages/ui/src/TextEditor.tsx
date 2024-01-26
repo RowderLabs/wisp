@@ -72,7 +72,7 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
       <div
         className={clsx(
           className,
-          'overflow-auto h-[95%]',
+          'overflow-y-auto h-[95%]',
           "relative leading-7 text-slate-700"
         )}
       >

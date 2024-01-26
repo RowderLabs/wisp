@@ -1,7 +1,6 @@
 import { FileRoute } from "@tanstack/react-router";
-import {
-  DraggableCanvas,
-} from "@wisp/ui";
+import { DraggableCanvas } from "@wisp/ui";
+import { Banner } from "../ui/Banner";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -13,15 +12,12 @@ export const Route = new FileRoute("/workspace/characters/$characterId").createR
 });
 
 function WorkspaceCharacterSheetPage() {
-
-
   return (
-    <div className="flex w-full">
-      <div className="basis-full relative" style={{height: 800, overflowY: 'auto'}}>
-        <DraggableCanvas/>
+    <div className="w-full" style={{ height: '100vh', overflowY: "auto", }}>
+      <Banner className="bg-slate-300"></Banner>
+      <div className="basis-full relative">
+        <DraggableCanvas />
       </div>
     </div>
   );
 }
-
-

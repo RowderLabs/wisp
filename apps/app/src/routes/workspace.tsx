@@ -42,15 +42,8 @@ function WorkspacePage() {
         )}
       </div>
       <div className="basis-full">
-        <ImageUploader>
-          {({ wrapperStyle, ...props }) => (
-            <Banner style={wrapperStyle} className="bg-slate-300">
-              <ImageUploadOverlay {...props} />
-            </Banner>
-          )}
-        </ImageUploader>
         {/** Character SHeet*/}
-        <div className="flex px-4">
+        <div className="flex">
           <Outlet />
         </div>
       </div>
