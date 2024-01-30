@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import { rspc, client, queryClient } from "./rspc/router";
+import { rspc, client, queryClient } from "@wisp/client";
 import { Router, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 

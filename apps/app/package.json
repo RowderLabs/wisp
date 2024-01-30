@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@wisp/ui": "workspace:*",
+    "@wisp/client": "workspace:*",
     "@rspc/client": "^0.1.3",
     "@rspc/react": "^0.1.3",
     "@rspc/tauri": "^0.1.3",
