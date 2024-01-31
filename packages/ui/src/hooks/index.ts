@@ -1,4 +1,5 @@
 export * from './useTreeView'
 export * from './useCommandSystem'
 export * from './useResize'
+export * from './useTranslate'
 export * from './useTransformContext'

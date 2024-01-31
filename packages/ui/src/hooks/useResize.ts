@@ -113,8 +113,8 @@ export function useResize({ constraints }: UseResizeArgs) {
       setDragStartTransform(transform);
     },
     onDragMove: ({ delta, active }) => {
-      invariant(dragStartTransform);
       if(!DndValidation.idStartsWith(active.id, `${transformId}-resize`)) return;
+      invariant(dragStartTransform, "Could not calculate dragStartTransform in useResize");
       if (lastHandlePosition === "top-right")
         resizeTopRight({ delta, dragStartTransform, constraints });
       if (lastHandlePosition === "top-left")

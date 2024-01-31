@@ -3,7 +3,7 @@ import { atom } from "jotai";
 import { PropsWithChildren, useState } from "react";
 import { Transform } from "./Transform";
 import { molecule } from "bunshi/react";
-import { useResize, useTransformContext } from "./hooks";
+import { useResize, useTransformContext, useTranslate } from "./hooks";
 import { useRenderCount } from "@uidotdev/usehooks";
 
 type CanvasItem = {
@@ -79,14 +79,19 @@ function CanvasItem({
 
 function Inner() {
   const { transform } = useTransformContext();
+  const {dragHandle, dragRef, translateStyles} = useTranslate()
   return (
     <div
+      {...dragHandle.listeners}
+      {...dragHandle.attributes}
+      ref={dragRef}
       className="w-48 h-48 bg-blue-400 absolute"
       style={{
         left: transform.x,
         top: transform.y,
         width: transform.width,
         height: transform.height,
+        ...translateStyles
       }}
     >
       <Transform.Resize
