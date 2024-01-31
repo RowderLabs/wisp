@@ -1,34 +1,17 @@
-import { useMolecule } from "bunshi/react";
-import { TransformMolecule } from "../Transform";
-import { useAtomValue } from "jotai";
-import { useResize } from "./useResize";
-import { useTranslate } from "./useTranslate";
+import { TransformScope } from "../Transform";
+import invariant from 'tiny-invariant'
+import { useMolecule, molecule } from "bunshi/react";
 
+const TransformMolecule = molecule((_, scope) => {
+    const init = scope(TransformScope)
+    invariant(init, "No transform context specified")
+    const {id, onTransform, transform} = init;
 
-export type TransformType = 'RESIZE' | 'TRANSLATE'
+    return {id, transform, onTransform}
 
+})
 export function useTransformContext() {
-  const { transformAtom, transformIdAtom } =
-    useMolecule(TransformMolecule);
-  const transformId = useAtomValue(transformIdAtom);
-  const { x, y, width, height } = useAtomValue(transformAtom);
-  const transformStyles = { left: x, top: y, width, height };
+    const {id, transform} = useMolecule(TransformMolecule)
 
-  useResize({
-    constraints: {
-      width: {
-        min: 150,
-        max: 800,
-      },
-      height: {
-        min: 150,
-        max: 800,
-      },
-    },
-  });
-
-  const { dragHandle, translateStyles, dragRef } = useTranslate();
-
-  
-  return { style: { ...translateStyles, ...transformStyles }, dragHandle, transformId, dragRef };
+    return {id, transform}
 }

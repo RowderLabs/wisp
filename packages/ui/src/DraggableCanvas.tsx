@@ -1,18 +1,10 @@
 import { DndContext, Modifier, MouseSensor, useSensor } from "@dnd-kit/core";
-import { atom, useAtom } from "jotai";
-import { useTransformContext } from "./hooks";
-import { snapCenterToCursor } from "@dnd-kit/modifiers";
-import { PropsWithChildren } from "react";
-import {
-  TransformHandles,
-  TranslateHandle,
-  ResizeHandle,
-  Transform,
-  TransformProps,
-  TransformEndEvent,
-} from "./Transform";
-import { molecule, useMolecule } from "bunshi/react";
-import { createPanel } from "./panels";
+import { atom } from "jotai";
+import { PropsWithChildren, useState } from "react";
+import { Transform } from "./Transform";
+import { molecule } from "bunshi/react";
+import { useResize, useTransformContext } from "./hooks";
+import { useRenderCount } from "@uidotdev/usehooks";
 
 type CanvasItem = {
   id: string;
@@ -27,57 +19,37 @@ const CanvasMolecule = molecule((_, scope) => {
 
   return { $canvasItems };
 });
-
-const useDraggableCanvas = () => {
-  const { $canvasItems } = useMolecule(CanvasMolecule);
-  const [canvasItems, setCanvasItems] = useAtom($canvasItems);
-
-  const updateCanvas = (e: TransformEndEvent) => {
-    setCanvasItems((items) => {
-      return items.reduce<CanvasItem[]>((acc, curr) => {
-        curr.id === e.transformId
-          ? acc.push({
-              x: e.x || curr?.x,
-              y: e.y || curr?.y,
-              width: e.width || curr?.width,
-              height: e.height || curr?.height,
-              id: e.transformId,
-            })
-          : acc.push(curr);
-
-        return acc;
-      }, []);
-    });
-  };
-
-  return {
-    canvasItems,
-    updateCanvas,
-  };
-};
-
+const initItems = [{ id: "1", x: 0, y: 0, width: 150, height: 150 }] as (Transform & {
+  id: string;
+})[];
 export function DraggableCanvas() {
-  const { canvasItems, updateCanvas } = useDraggableCanvas();
-
   const mouseSensor = useSensor(MouseSensor);
+  const [id, setId] = useState("hello");
+  const [items, setItems] = useState(initItems);
 
   return (
     <div className="w-full h-full">
-      <DndContext sensors={[mouseSensor]} modifiers={[snapToGrid]}>
-        {canvasItems.map((item) => (
-          <DraggableCanvasItem
-            key={item.id}
-            id={item.id}
-            initial={{ x: item.x, y: item.y, width: item.width, height: item.height }}
-            onTransformEnd={updateCanvas}
-          >
-            {createPanel("textbox", { title: "hello" }).content}
-          </DraggableCanvasItem>
-        ))}
+      <DndContext sensors={[mouseSensor]}>
+        <CanvasItem
+          id={id}
+          transform={{ ...items[0] }}
+          onTransform={(event) => {
+            console.log(event)
+            setItems([
+              {
+                id: event.id,
+                x: event.x || items[0].x,
+                y: event.y || items[0].y,
+                width: event.width || items[0].width,
+                height: event.height || items[0].height,
+              },
+            ]);
+          }}
+        >
+          <Inner />
+        </CanvasItem>
+        <button onClick={() => setId("New id")}>Set Id</button>
       </DndContext>
-      <div>
-        {JSON.stringify(canvasItems)}
-      </div>
     </div>
   );
 }
@@ -91,26 +63,42 @@ const snapToGrid: Modifier = (args) => {
   };
 };
 
-function CanvasItem({ children }: PropsWithChildren) {
-  const { style, dragHandle, dragRef } = useTransformContext();
+function CanvasItem({
+  children,
+  id,
+  transform,
+  onTransform,
+}: PropsWithChildren<{ id: string; transform: Transform; onTransform: (args: any) => void }>) {
+  const renderCount = useRenderCount();
   return (
-    <div ref={dragRef} style={{ ...style }} className="absolute rounded-md">
+    <Transform.Context id={id} transform={transform} onTransform={onTransform}>
       {children}
-      <TransformHandles>
-        <TranslateHandle {...dragHandle} />
-        <ResizeHandle position="top-right" />
-        <ResizeHandle position="bottom-right" />
-        <ResizeHandle position="bottom-left" />
-        <ResizeHandle position="top-left" />
-      </TransformHandles>
-    </div>
+      {renderCount}
+    </Transform.Context>
   );
 }
 
-function DraggableCanvasItem({ children, ...props }: PropsWithChildren<TransformProps>) {
+function Inner() {
+  const { transform } = useTransformContext();
   return (
-    <Transform {...props}>
-      <CanvasItem>{children}</CanvasItem>
-    </Transform>
+    <div
+      className="w-48 h-48 bg-blue-400 relative"
+      style={{
+        left: transform.x,
+        top: transform.y,
+        width: transform.width,
+        height: transform.height,
+      }}
+    >
+      <Transform.Resize
+        activeHandles={{
+          "bottom-left": true,
+          "bottom-right": true,
+          "top-left": true,
+          "top-right": true,
+        }}
+        constraints={{ width: { min: 150 }, height: { min: 150 } }}
+      />
+    </div>
   );
 }

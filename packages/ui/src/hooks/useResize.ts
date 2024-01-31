@@ -1,106 +1,88 @@
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { molecule, useMolecule } from "bunshi/react";
-import { TransformMolecule, Transform } from "../Transform";
 import { DragMoveEvent, useDndMonitor } from "@dnd-kit/core";
-import { HandlePosition, Maybe } from "../Transform";
+import { useTransformContext } from "./useTransformContext";
+import React from "react";
+import { Transform, TransformScope } from "../Transform";
 import invariant from "tiny-invariant";
+import { molecule, useMolecule } from "bunshi/react";
 
-type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+type ResizeEvent = Pick<DragMoveEvent, "delta"> & {
+  dragStartTransform: Transform;
+  constraints?: ResizeConstraints;
+};
 type MinMaxConstraint = Partial<{ min: number; max: number }>;
-
-
-const checkResizeResizeConstraints = ({ val, min = 0, max = 9999 }: { val: number } & Partial<MinMaxConstraint>) => {
-  return val > min && val < max;
+export type ResizeConstraints = {
+  width: MinMaxConstraint;
+  height: MinMaxConstraint;
 };
 
-const ResizeMolecule = molecule((mol) => {
-  const { transformAtom, optionalTransformAtom, transformIdAtom, onTransformEnd } = mol(TransformMolecule);
+const ResizeMolecule = molecule((_, scope) => {
+  const transformCtx = scope(TransformScope);
+  invariant(transformCtx?.id);
 
-  const resizingAtom = atom(false);
-  //clamps width and height
-  const resizeWithConstraintsAtom = atom(
-    null,
-    (
-      _get,
-      set,
-      {
-        x,
-        y,
-        width,
-        height,
-        constraints,
-      }: WithRequired<Partial<Transform>, "width" | "height"> & {
-        constraints?: UseResizeArgs["constraints"];
-      }
-    ): void => {
-      constraints;
-      if (
-        checkResizeResizeConstraints({
-          val: width,
-          min: constraints?.width?.min,
-          max: constraints?.width?.max,
-        })
-      )
-        set(optionalTransformAtom, { x, width });
-      if (
-        checkResizeResizeConstraints({
-          val: height,
-          min: constraints?.height?.min,
-          max: constraints?.height?.max,
-        })
-      )
-        set(optionalTransformAtom, { y, height });
-    }
-  );
-  //starting transform when drag begins
-  const dragStartTransformAtom = atom<Partial<Transform>>({});
-  const lastHandlePositionAtom = atom<Maybe<HandlePosition>>(undefined);
-
-  return {
-    transformAtom,
-    transformIdAtom,
-    resizingAtom,
-    resizeWithConstraintsAtom,
-    lastHandlePositionAtom,
-    dragStartTransformAtom,
-    onTransformEnd,
+  const resizeWithConstraints = ({
+    x,
+    y,
+    width,
+    height,
+    constraints,
+  }: Transform & { constraints?: ResizeConstraints }) => {
+    if (!transformCtx?.onTransform) return;
+    transformCtx.onTransform({ x, y, width, height, id: transformCtx.id, type: "RESIZE" });
   };
+  const resizeTopLeft = ({ dragStartTransform, delta, constraints }: ResizeEvent) => {
+    resizeWithConstraints({
+      width: dragStartTransform.width! - delta.x,
+      height: dragStartTransform.height! - delta.y,
+      x: dragStartTransform.x! + delta.x,
+      y: dragStartTransform.y! + delta.y,
+      constraints,
+    });
+  };
+
+  const resizeBottomLeft = ({ delta, dragStartTransform, constraints }: ResizeEvent) => {
+    resizeWithConstraints({
+      width: dragStartTransform.width! - delta.x,
+      height: dragStartTransform.height! + delta.y,
+      x: dragStartTransform.x! + delta.x,
+      y: dragStartTransform.y,
+      constraints,
+    });
+  };
+
+  const resizeBottomRight = ({ delta, dragStartTransform, constraints }: ResizeEvent) => {
+    resizeWithConstraints({
+      width: dragStartTransform.width! + delta.x,
+      height: dragStartTransform.height! + delta.y,
+      x: dragStartTransform.x,
+      y: dragStartTransform.y,
+      constraints,
+    });
+  };
+
+  const resizeTopRight = ({ delta, dragStartTransform, constraints }: ResizeEvent) => {
+    resizeWithConstraints({
+      width: dragStartTransform.width! + delta.x,
+      height: dragStartTransform.height! - delta.y,
+      x: dragStartTransform.x,
+      y: dragStartTransform.y! + delta.y,
+      constraints,
+    });
+  };
+
+  return { resizeTopLeft, resizeTopRight, resizeBottomLeft, resizeBottomRight };
 });
 
 type UseResizeArgs = {
-  constraints?: Partial<{
-    width: Partial<{
-      min: number;
-      max: number;
-    }>;
-    height: Partial<{
-      min: number;
-      max: number;
-    }>;
-  }>;
+  constraints?: ResizeConstraints;
 };
-
-export const useResize = ({ constraints }: UseResizeArgs) => {
-  const {
-    transformAtom,
-    transformIdAtom,
-    resizeWithConstraintsAtom,
-    dragStartTransformAtom,
-    lastHandlePositionAtom,
-    resizingAtom,
-    onTransformEnd,
-  } = useMolecule(ResizeMolecule);
-  const transform = useAtomValue(transformAtom);
-
-  invariant(
-    !(JSON.stringify(transform) === "{}"),
-    "No transform found. Make sure you are wrapping useResize component with <Transform/>"
+export function useResize({ constraints }: UseResizeArgs) {
+  const { id: transformId, transform } = useTransformContext();
+  const { resizeTopLeft, resizeTopRight, resizeBottomLeft, resizeBottomRight } =
+    useMolecule(ResizeMolecule);
+  const [lastHandlePosition, setLastHandlePosition] = React.useState(undefined);
+  const [dragStartTransform, setDragStartTransform] = React.useState<Transform | undefined>(
+    undefined
   );
-  const transformId = useAtomValue(transformIdAtom);
-  const [resizing, setResizing] = useAtom(resizingAtom);
-  const resizeWithConstraints = useSetAtom(resizeWithConstraintsAtom);
-  const [dragStartTransform, setDragStartTransform] = useAtom(dragStartTransformAtom);
-  const [lastHandlePosition, setLastHandlePosition] = useAtom(lastHandlePositionAtom);
 
   useDndMonitor({
     onDragStart: ({ active }) => {
@@ -109,62 +91,16 @@ export const useResize = ({ constraints }: UseResizeArgs) => {
       setDragStartTransform(transform);
     },
     onDragMove: ({ delta, active }) => {
+      invariant(dragStartTransform);
       if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
-      setResizing(true);
-      if (lastHandlePosition === "top-right") resizeTopRight({ delta });
-      if (lastHandlePosition === "top-left") resizeTopLeft({ delta });
-      if (lastHandlePosition === "bottom-right") resizeBottomRight({ delta });
-      if (lastHandlePosition === "bottom-left") resizeBottomLeft({ delta });
-    },
-    onDragEnd: ({active}) => {
-      if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
-      if (resizing) setResizing(false);
-      invariant(transformId, "no transform id");
-      if (onTransformEnd) {
-        onTransformEnd({
-          transformId,
-          type: "RESIZE",
-          ...(transform as Required<Transform>),
-        });
-      }
+      if (lastHandlePosition === "top-right")
+        resizeTopRight({ delta, dragStartTransform, constraints });
+      if (lastHandlePosition === "top-left")
+        resizeTopLeft({ delta, dragStartTransform, constraints });
+      if (lastHandlePosition === "bottom-right")
+        resizeBottomRight({ delta, dragStartTransform, constraints });
+      if (lastHandlePosition === "bottom-left")
+        resizeBottomLeft({ delta, dragStartTransform, constraints });
     },
   });
-
-  const resizeTopLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
-    resizeWithConstraints({
-      width: dragStartTransform.width! - delta.x,
-      height: dragStartTransform.height! - delta.y,
-      x: dragStartTransform.x! + delta.x,
-      y: dragStartTransform.y! + delta.y,
-      constraints,
-    });
-  };
-
-  const resizeBottomLeft = ({ delta }: Pick<DragMoveEvent, "delta">) => {
-    resizeWithConstraints({
-      width: dragStartTransform.width! - delta.x,
-      height: dragStartTransform.height! + delta.y,
-      x: dragStartTransform.x! + delta.x,
-      constraints,
-    });
-  };
-
-  const resizeBottomRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
-    resizeWithConstraints({
-      width: dragStartTransform.width! + delta.x,
-      height: dragStartTransform.height! + delta.y,
-      constraints,
-    });
-  };
-
-  const resizeTopRight = ({ delta }: Pick<DragMoveEvent, "delta">) => {
-    resizeWithConstraints({
-      width: dragStartTransform.width! + delta.x,
-      height: dragStartTransform.height! - delta.y,
-      y: dragStartTransform.y! + delta.y,
-      constraints,
-    });
-  };
-
-  return { resizing };
-};
+}
