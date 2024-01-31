@@ -1,22 +1,30 @@
-import { useDndMonitor, useDraggable } from "@dnd-kit/core";
-import { molecule } from "bunshi/react";
-import { TransformMolecule } from "../Transform";
-import { useMolecule } from "bunshi/react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { DragMoveEvent, useDndMonitor, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { molecule, useMolecule } from "bunshi/react";
+import { TransformScope } from "../Transform";
 import invariant from "tiny-invariant";
 
-const TranslateMolecule = molecule((mol) => {
-  const { optionalTransformAtom, transformIdAtom, transformAtom, onTransformEnd } = mol(TransformMolecule);
+const TranslateMolecule = molecule((_, scope) => {
+  const transformCtx = scope(TransformScope);
+  invariant(transformCtx, "Failed to get transform context in useTranslate");
 
-  return { optionalTransformAtom, transformIdAtom, transformAtom, onTransformEnd };
+  const { id: transformId, transform } = transformCtx;
+  const translate = ({ delta }: Pick<DragMoveEvent, "delta">) => {
+    if (!transformCtx.onTransform) return;
+    transformCtx.onTransform({
+      id: transformId,
+      ...transform,
+      x: transform.x + delta.x,
+      y: transform.y + delta.y,
+      type: "TRANSLATE",
+    });
+  };
+
+  return { translate, transformId };
 });
-export function useTranslate() {
-  const { transformAtom, optionalTransformAtom, transformIdAtom, onTransformEnd } = useMolecule(TranslateMolecule);
-  const transformId = useAtomValue(transformIdAtom);
-  const { x, y, width, height } = useAtomValue(transformAtom);
-  const setTransform = useSetAtom(optionalTransformAtom);
 
+export function useTranslate() {
+  const { transformId, translate } = useMolecule(TranslateMolecule);
   const {
     attributes,
     setNodeRef,
@@ -31,17 +39,7 @@ export function useTranslate() {
     },
     onDragEnd: ({ delta, active }) => {
       if (!active.id.toString().startsWith(`${transformId}-translate`)) return;
-      setTransform({ x: (x || 0) + delta.x, y: (y || 0) + delta.y });
-      invariant(transformId, "no ");
-      if (onTransformEnd)
-        onTransformEnd({
-          x: (x || 0) + delta.x,
-          y: (y || 0) + delta.y,
-          width,
-          height,
-          type: "TRANSLATE",
-          transformId,
-        });
+      translate({ delta });
     },
   });
 

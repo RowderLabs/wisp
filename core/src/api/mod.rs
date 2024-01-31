@@ -21,7 +21,7 @@ struct QueryReturnType {
 pub fn new() -> RouterBuilder<Ctx> {
     Router::new()
         .config(Config::new().export_ts_bindings(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../apps/app/src/rspc/bindings.ts"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../packages/client/src/bindings.ts"),
         ))
         .merge("characters.", characters::characters_router())
         .merge("panels.", panels::panels_router())
