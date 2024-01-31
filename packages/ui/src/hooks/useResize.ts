@@ -19,6 +19,27 @@ const ResizeMolecule = molecule((_, scope) => {
   const transformCtx = scope(TransformScope);
   invariant(transformCtx?.id);
 
+  /**
+   * 
+   * @param transformWithContraints 
+   * An updated transform that resize will be attempted on. More details
+   * with this RFC https://github.com/microsoft/tsdoc/issues/19
+   * @example
+   * ```
+   * resizeWithConstraints({
+      width: 100,
+      height: 200,
+      x: 0,
+      y: 0,
+      constraints: {
+        width: {max: 150},
+        height: {max: 195}
+      },
+    });
+    ```
+    This will apply the new width 100 but not the new height 200 because
+    it exceeds the height constraint.
+   */
   const resizeWithConstraints = ({
     x,
     y,
