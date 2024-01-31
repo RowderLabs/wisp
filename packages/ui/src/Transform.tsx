@@ -1,22 +1,14 @@
-import { atom, useAtomValue } from "jotai";
-import { PropsWithChildren } from "react";
-import { createScope, molecule, ScopeProvider, useMolecule } from "bunshi/react";
-import {
-  DraggableAttributes,
-  DraggableSyntheticListeners,
-  useDraggable,
-} from "@dnd-kit/core";
+import { ScopeProvider, createScope } from "bunshi/react";
+import React, { PropsWithChildren } from "react";
+import { ResizeConstraints, useResize, useTransformContext } from "./hooks";
 import { cva } from "class-variance-authority";
-import { HiOutlineArrowsPointingOut } from "react-icons/hi2";
+import { useDraggable } from "@dnd-kit/core";
 
 export type Maybe<T extends unknown> = T extends object
   ? {
       [K in keyof T]: T[K] | undefined;
     }
   : T | undefined;
-
-import invariant from "tiny-invariant";
-import { TransformType } from "./hooks";
 
 export type Transform = {
   x: number;
@@ -25,99 +17,61 @@ export type Transform = {
   height: number;
 };
 
-type TransformScope = Partial<Transform> & { id: Maybe<string> } & Pick<
-    TransformProps,
-    "onTransformStart" | "onTransformEnd" | "id"
-  >;
-export const TransformScope = createScope<TransformScope | undefined>(undefined);
-
-//transform context creator
-export const TransformMolecule = molecule((_, scope) => {
-  const initial = scope(TransformScope);
-  const transformAtom = atom({ ...initial });
-  invariant(
-    initial?.id,
-    "No transformId specified. You need this to identify what you are dragging."
-  );
-  const transformIdAtom = atom<Maybe<string>>(initial.id);
-  const transformingAtom = atom(false);
-
-  const optionalTransformAtom = atom(
-    null,
-    (_get, set, { x, y, width, height }: Partial<Transform>) => {
-      set(transformAtom, {
-        ..._get(transformAtom),
-        ...(height && { height }),
-        ...(width && { width }),
-        ...(x && { x }),
-        ...(y && { y }),
-      });
-    }
-  );
-  return {
-    optionalTransformAtom,
-    transformAtom,
-    transformIdAtom,
-    transformingAtom,
-    onTransformEnd: initial.onTransformEnd,
-    onTransformStart: initial.onTransformStart,
-  };
-});
-
-interface TransformEvent extends Maybe<Transform> {
-  type: TransformType;
-  transformId: string;
-}
-export interface TransformEndEvent extends TransformEvent {}
-export interface TransformStartEvent extends TransformEvent {}
-
-export type TransformProps = {
+interface TransformEvent extends Transform {
+  type: "RESIZE" | "TRANSLATE";
   id: string;
-  onTransformStart?: (event: TransformStartEvent) => void;
-  onTransformEnd?: (event: TransformEndEvent) => void;
-  initial?: Partial<Transform>;
+}
+
+type TransformScopeType = {
+  id: string;
+  transform: Transform;
+  onTransform: (event: TransformEvent) => void;
 };
-export const Transform = ({
-  children,
-  onTransformEnd,
-  onTransformStart,
-  id,
-  initial = { width: undefined, height: undefined, x: undefined, y: undefined },
-}: PropsWithChildren<TransformProps>) => {
+
+export type TransformProps = TransformScopeType & {};
+
+export const TransformScope = createScope<TransformScopeType | undefined>(undefined);
+
+const Context: React.FC<PropsWithChildren<TransformProps>> = ({ children, ...props }) => {
   return (
-    <ScopeProvider scope={TransformScope} value={{ ...initial, id, onTransformEnd, onTransformStart }}>
+    <ScopeProvider scope={TransformScope} value={props}>
       {children}
     </ScopeProvider>
   );
 };
 
 export type HandlePosition = "bottom-left" | "top-left" | "bottom-right" | "top-right";
-type ResizableHandleProps = {
-  position: HandlePosition;
+type ResizeProps = {
+  constraints: ResizeConstraints;
+  activeHandles: Record<HandlePosition, boolean>;
 };
 
-const resizableHandleVariants = cva(
-  "absolute pointer-events-auto h-[20px] w-[20px] z-50",
-  {
-    variants: {
-      position: {
-        "bottom-left": "bottom-0.5 left-0.5 cursor-sw-resize",
-        "bottom-right": "bottom-0.5 right-0.5 cursor-se-resize",
-        "top-left": "top-0.5 left-0.5 cursor-nw-resize",
-        "top-right": "top-0.5 right-0.5 cursor-ne-resize",
-      }
-    },
+export function Resize({ constraints, activeHandles }: ResizeProps) {
+  useResize({ constraints });
 
-  }
-);
-
-export function ResizeHandle({ position }: ResizableHandleProps) {
-  const { transformIdAtom } = useMolecule(TransformMolecule);
-  const transformId = useAtomValue(transformIdAtom);
-  invariant(
-    transformId,
-    `No transform id for resize handle with position: ${position}. Make sure that your handles are only placed inside a <Transform/>`
+  return (
+    <>
+      {activeHandles["bottom-right"] && <ResizeHandle position="bottom-right" />}
+      {activeHandles["bottom-left"] && <ResizeHandle position="bottom-left" />}
+      {activeHandles["top-left"] && <ResizeHandle position="top-left" />}
+      {activeHandles["top-right"] && <ResizeHandle position="top-right" />}
+    </>
   );
+}
+
+const resizableHandleVariants = cva("absolute pointer-events-auto h-[20px] w-[20px] z-50", {
+  variants: {
+    position: {
+      "bottom-left": "bottom-0.5 left-0.5 cursor-sw-resize",
+      "bottom-right": "bottom-0.5 right-0.5 cursor-se-resize",
+      "top-left": "top-0.5 left-0.5 cursor-nw-resize",
+      "top-right": "top-0.5 right-0.5 cursor-ne-resize",
+    },
+  },
+});
+export function ResizeHandle({ position }: { position: HandlePosition }) {
+  const { id: transformId } = useTransformContext();
+
   const { listeners, attributes, setNodeRef } = useDraggable({
     id: `${transformId}-resize-${position}`,
     data: {
@@ -128,32 +82,13 @@ export function ResizeHandle({ position }: ResizableHandleProps) {
     },
   });
   return (
-    <div {...listeners} {...attributes} ref={setNodeRef} className={resizableHandleVariants({ position})}></div>
-  );
-}
-
-type TranslateHandleProps = {
-  listeners?: DraggableSyntheticListeners;
-  attributes?: DraggableAttributes;
-};
-
-export function TranslateHandle({ listeners, attributes }: TranslateHandleProps) {
-  return (
     <div
-      className="absolute pointer-events-auto -top-8 text-lg rounded-full w-8 h-8 flex justify-center items-center left-[50%] -translate-x-[50%] p-1 border"
+      ref={setNodeRef}
       {...listeners}
       {...attributes}
-    >
-      <HiOutlineArrowsPointingOut />
-    </div>
+      className={resizableHandleVariants({ position })}
+    ></div>
   );
 }
 
-
-export function TransformHandles({children}: PropsWithChildren) {
-  return (
-    <div className="absolute pointer-events-none w-full h-full z-0 transform scale-105 top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
-      {children}
-    </div>
-  )
-}
+export const Transform = { Context, Resize };
