@@ -3,7 +3,7 @@ import { useTransformContext } from "./useTransformContext";
 import React from "react";
 import { Transform, TransformScope } from "../Transform";
 import invariant from "tiny-invariant";
-import { DndValidation} from "../util/dnd";
+import { DndValidation } from "../util/dnd";
 import { molecule, useMolecule } from "bunshi/react";
 
 type ResizeEvent = Pick<DragMoveEvent, "delta"> & {
@@ -19,6 +19,10 @@ export type ResizeConstraints = {
 const ResizeMolecule = molecule((_, scope) => {
   const transformCtx = scope(TransformScope);
   invariant(transformCtx?.id);
+
+  const checkConstraint = (value: number, constraint?: MinMaxConstraint) => {
+    return value > (constraint?.min || 0) && value < (constraint?.max || 9999);
+  };
 
   /**
    * 
@@ -49,7 +53,14 @@ const ResizeMolecule = molecule((_, scope) => {
     constraints,
   }: Transform & { constraints?: ResizeConstraints }) => {
     if (!transformCtx?.onTransform) return;
-    transformCtx.onTransform({ x, y, width, height, id: transformCtx.id, type: "RESIZE" });
+    transformCtx.onTransform({
+      x: checkConstraint(width, constraints?.width) ? x : transformCtx.transform.x,
+      y: checkConstraint(height, constraints?.height) ? y : transformCtx.transform.y,
+      width: checkConstraint(width, constraints?.width) ? width : transformCtx.transform.width,
+      height: checkConstraint(height, constraints?.height) ? height : transformCtx.transform.height,
+      id: transformCtx.id,
+      type: "RESIZE",
+    });
   };
   const resizeTopLeft = ({ dragStartTransform, delta, constraints }: ResizeEvent) => {
     resizeWithConstraints({
@@ -99,12 +110,9 @@ type UseResizeArgs = {
 };
 export function useResize({ constraints }: UseResizeArgs) {
   const { id: transformId, transform } = useTransformContext();
-  const { resizeTopLeft, resizeTopRight, resizeBottomLeft, resizeBottomRight } =
-    useMolecule(ResizeMolecule);
+  const { resizeTopLeft, resizeTopRight, resizeBottomLeft, resizeBottomRight } = useMolecule(ResizeMolecule);
   const [lastHandlePosition, setLastHandlePosition] = React.useState(undefined);
-  const [dragStartTransform, setDragStartTransform] = React.useState<Transform | undefined>(
-    undefined
-  );
+  const [dragStartTransform, setDragStartTransform] = React.useState<Transform | undefined>(undefined);
 
   useDndMonitor({
     onDragStart: ({ active }) => {
@@ -113,16 +121,12 @@ export function useResize({ constraints }: UseResizeArgs) {
       setDragStartTransform(transform);
     },
     onDragMove: ({ delta, active }) => {
-      if(!DndValidation.idStartsWith(active.id, `${transformId}-resize`)) return;
+      if (!DndValidation.idStartsWith(active.id, `${transformId}-resize`)) return;
       invariant(dragStartTransform, "Could not calculate dragStartTransform in useResize");
-      if (lastHandlePosition === "top-right")
-        resizeTopRight({ delta, dragStartTransform, constraints });
-      if (lastHandlePosition === "top-left")
-        resizeTopLeft({ delta, dragStartTransform, constraints });
-      if (lastHandlePosition === "bottom-right")
-        resizeBottomRight({ delta, dragStartTransform, constraints });
-      if (lastHandlePosition === "bottom-left")
-        resizeBottomLeft({ delta, dragStartTransform, constraints });
+      if (lastHandlePosition === "top-right") resizeTopRight({ delta, dragStartTransform, constraints });
+      if (lastHandlePosition === "top-left") resizeTopLeft({ delta, dragStartTransform, constraints });
+      if (lastHandlePosition === "bottom-right") resizeBottomRight({ delta, dragStartTransform, constraints });
+      if (lastHandlePosition === "bottom-left") resizeBottomLeft({ delta, dragStartTransform, constraints });
     },
   });
 }
