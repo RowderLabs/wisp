@@ -3,6 +3,7 @@ import { useTransformContext } from "./useTransformContext";
 import React from "react";
 import { Transform, TransformScope } from "../Transform";
 import invariant from "tiny-invariant";
+import { DndValidation} from "../util/dnd";
 import { molecule, useMolecule } from "bunshi/react";
 
 type ResizeEvent = Pick<DragMoveEvent, "delta"> & {
@@ -113,7 +114,7 @@ export function useResize({ constraints }: UseResizeArgs) {
     },
     onDragMove: ({ delta, active }) => {
       invariant(dragStartTransform);
-      if (!active.id.toString().startsWith(`${transformId}-resize`)) return;
+      if (!DndValidation.idStartsWith(active.id, `${transformId}-resize`))
       if (lastHandlePosition === "top-right")
         resizeTopRight({ delta, dragStartTransform, constraints });
       if (lastHandlePosition === "top-left")
