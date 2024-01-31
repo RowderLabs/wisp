@@ -34,7 +34,6 @@ export function DraggableCanvas() {
           id={id}
           transform={{ ...items[0] }}
           onTransform={(event) => {
-            console.log(event)
             setItems([
               {
                 id: event.id,
@@ -82,7 +81,7 @@ function Inner() {
   const { transform } = useTransformContext();
   return (
     <div
-      className="w-48 h-48 bg-blue-400 relative"
+      className="w-48 h-48 bg-blue-400 absolute"
       style={{
         left: transform.x,
         top: transform.y,
