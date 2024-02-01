@@ -21,6 +21,7 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
         .query("find", |t| {
             t(|ctx: Ctx, _: ()| async move {
                 //takes no arguments
+                println!("{}", "Getting panels...");
                 ctx.client
                     .panel()
                     .find_many(vec![]) //list of filters (empty for now because not filtering)
@@ -31,6 +32,7 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
         })
         .mutation("transform", |t| {
             t(|ctx: Ctx, update: PanelTransformUpdatePayload| async move {
+                println!("{}", "executing panel transfrom");
                 ctx.client
                     .panel()
                     .update_unchecked(panel::id::equals(update.id), update.transform.to_params())

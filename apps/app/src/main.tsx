@@ -2,6 +2,8 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { rspc, client, queryClient } from "@wisp/client";
 import { Router, RouterProvider } from "@tanstack/react-router";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
 import React from "react";
 
@@ -24,9 +26,12 @@ declare module "@tanstack/react-router" {
 }
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+
     <rspc.Provider client={client} queryClient={queryClient}>
-      <RouterProvider router={router} />
+      <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools/>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
     </rspc.Provider>
-  </React.StrictMode>
+
 );
