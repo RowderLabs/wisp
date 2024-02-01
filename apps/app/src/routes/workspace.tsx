@@ -1,5 +1,5 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu } from "@wisp/ui";
+import { TreeView, ContextMenu, useDialogs } from "@wisp/ui";
 import { TreeData, TreeViewNode, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
 import {
@@ -24,6 +24,7 @@ function WorkspacePage() {
   });
   const [_, treeApi] = useTreeView({ onDelete: (id: string) => deleteCharacter(id) });
   const { data: tree } = rspc.useQuery(["characters.build_tree"]);
+  const { dialogs, removeDialog, registerDialog, show} = useDialogs();
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
@@ -41,6 +42,12 @@ function WorkspacePage() {
         )}
       </div>
       <div className="basis-full">
+        <div className="flex gap-4">
+          <button onClick={() => registerDialog({ id: "my-poppup" })}>add</button>
+          <button onClick={() => removeDialog({ id: "my-poppup" })}>remove</button>
+          <button onClick={() => show({ id: "my-poppup" })}>toggle</button>
+        </div>
+        <div className="border border-red-500">{JSON.stringify(dialogs)}</div>
         {/** Character SHeet*/}
         <div className="flex">
           <Outlet />
