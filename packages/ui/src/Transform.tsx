@@ -17,7 +17,7 @@ export type Transform = {
   height: number;
 };
 
-interface TransformEvent extends Transform {
+export interface TransformEvent extends Transform {
   type: "RESIZE" | "TRANSLATE";
   id: string;
 }

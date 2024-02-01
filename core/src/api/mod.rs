@@ -6,6 +6,7 @@ use serde::Deserialize;
 use std::{path::PathBuf, sync::Arc};
 
 pub mod characters;
+pub mod panels;
 
 pub struct Ctx {
     pub client: Arc<prisma::PrismaClient>,
@@ -23,4 +24,5 @@ pub fn new() -> RouterBuilder<Ctx> {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../packages/client/src/bindings.ts"),
         ))
         .merge("characters.", characters::characters_router())
+        .merge("panels.", panels::panels_router())
 }

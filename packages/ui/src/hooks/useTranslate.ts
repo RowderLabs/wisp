@@ -30,6 +30,7 @@ export function useTranslate() {
     setNodeRef,
     setActivatorNodeRef,
     listeners,
+    isDragging,
     transform: dragTransform,
   } = useDraggable({ id: `${transformId}-translate`, data: { transform: { type: "translate" } } });
 
@@ -46,6 +47,7 @@ export function useTranslate() {
   return {
     dragHandle: { listeners, attributes, setActivatorNodeRef },
     dragRef: setNodeRef,
-    translateStyles: { transform: CSS.Transform.toString(dragTransform) },
+    isDragging,
+    translateStyles: { transform: isDragging ? CSS.Transform.toString(dragTransform) : undefined },
   };
 }
