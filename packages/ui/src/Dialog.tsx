@@ -4,9 +4,11 @@ import React, { PropsWithChildren } from "react";
 import { DialogProviderScope } from "./molecules/dialog";
 
 
-export type DialogProps = {
+export interface DialogProps extends RadixDialog.DialogProps {
   trigger: React.ReactNode;
-} & RadixDialog.DialogProps;
+};
+
+export type DialogPropKeys = keyof RadixDialog.DialogProps | keyof DialogProps
 
 export function Dialog({ trigger, children, open, onOpenChange, ...radixProps }: DialogProps) {
   return (
@@ -15,7 +17,7 @@ export function Dialog({ trigger, children, open, onOpenChange, ...radixProps }:
       <RadixDialog.Portal>
         <RadixDialog.Overlay className="fixed pointer-events-none bg-black/25 inset-0" />
         <RadixDialog.Content>
-          <div className="fixed top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-white rounded-md shadow-xl">
+          <div className="fixed top-1/2 left-1/2 -translate-y-1/2 p-4 -translate-x-1/2 min-w-[200px] min-h-[250px] bg-white rounded-md shadow-md">
             {children}
           </div>
         </RadixDialog.Content>

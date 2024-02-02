@@ -45,10 +45,9 @@ function WorkspacePage() {
         <button
           className="rounded-md p-1 bg-blue-500 text-white"
           onClick={() => {
-            manager.createDialog(CustomModal, {
-              id: 'rowder',
-              name: 'rowder'
-            });
+            const test = manager.createDialog(CustomModal, {id: 'rowder', name: 'Rowder'});
+
+            console.log(test)
           }}
         >
           add

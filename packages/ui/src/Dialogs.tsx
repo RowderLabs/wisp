@@ -15,6 +15,7 @@ export function Dialogs() {
         <Dialog
           {...dialogs[id].props}
           open={dialogs[id].active}
+          key={id}
           onOpenChange={() => unregisterDialog(id)}
         />
       );

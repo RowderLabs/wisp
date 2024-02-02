@@ -3,7 +3,7 @@ import React from "react";
 import { DialogMolecule, FirstParam } from "../molecules/dialog";
 import { useDialogsContext } from "./useDialogsContext";
 import { useSetAtom } from "jotai";
-import { DialogProps } from "../Dialog";
+import { Dialog, DialogPropKeys, DialogProps } from "../Dialog";
 
 export const useDialogManager = () => {
     const { $dialogsState, $registerDialog, _safeModifyDialogs } =
@@ -11,12 +11,14 @@ export const useDialogManager = () => {
   
     const { unregisterDialog } = useDialogsContext();
     const _registerDialog = useSetAtom($registerDialog);
+
+    type ValidProps<TProps, TValid> = TProps extends TValid ? {} : TProps;
   
     //TODO: move component arg back to here.
     const safeRegister = React.useCallback(
-      <C extends React.FC<any>, P extends Omit<React.ComponentPropsWithoutRef<C>, keyof DialogProps>>(
+      <C extends React.FC<any>>(
         component: C,
-        args: P & { id: string }
+        args: Omit<React.ComponentPropsWithoutRef<C>, DialogPropKeys> & {id: string}
       ) => {
         _safeModifyDialogs<typeof _registerDialog, FirstParam<typeof _registerDialog>>(
           _registerDialog,
