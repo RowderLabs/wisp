@@ -1,5 +1,5 @@
 import { Outlet, rootRouteWithContext } from "@tanstack/react-router";
-import { client, queryClient } from "../rspc/router";
+import { client, queryClient } from "@wisp/client";
 import { DialogProvider, Dialogs } from "@wisp/ui";
 
 export const Route = rootRouteWithContext<{

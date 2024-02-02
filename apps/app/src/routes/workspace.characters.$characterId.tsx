@@ -1,12 +1,12 @@
 import { FileRoute } from "@tanstack/react-router";
 import { DraggableCanvas, TransformEvent } from "@wisp/ui";
 import React, { useEffect, useState } from "react";
-import { Banner } from "../ui/Banner";
+import { Banner } from "@wisp/ui";
 import { rspc } from "@wisp/client";
 import { useDebounce } from "@uidotdev/usehooks";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
-  loader: ({ context, params }) =>
+  loader: ({ context }) =>
     context.rspc.queryClient.ensureQueryData({
       queryKey: ["panels.find"],
       queryFn: () => context.rspc.client.query(["panels.find"]),

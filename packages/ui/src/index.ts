@@ -1,5 +1,5 @@
+export * from './Banner'
 export * from './Button'
-export * from './SortableGrid'
 export * from './TreeView'
 export * from './ImageUploader'
 export * from './Panel'
