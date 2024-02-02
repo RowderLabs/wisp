@@ -1,9 +1,10 @@
 import * as RadixDialog from "@radix-ui/react-dialog";
+import { dialog } from "@tauri-apps/api";
 import { ScopeProvider, createScope, molecule, useMolecule } from "bunshi/react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import React, { PropsWithChildren, useEffect } from "react";
 
-type ModalProps = {
+export type ModalProps = {
   trigger: React.ReactNode;
 } & RadixDialog.DialogProps;
 
@@ -27,6 +28,8 @@ const DialogProviderScope = createScope(undefined);
 
 type DialogState = {
   active: boolean;
+  component: React.FC<any>
+  props: any;
 };
 /*
 {
@@ -36,7 +39,7 @@ type DialogState = {
 
 */
 const UNKNOWN_FAILURE_CAUSE = "the manager failed for an unknown reason" as const;
-
+type FirstParam<T extends (...args: any) => any> = Parameters<T>[0];
 type DialogErrorEnum = "REGISTER_ERROR" | "UNREGISTER_ERROR" | "ACTION_ERROR";
 type DialogManagerErrorMessage =
   | `Attempted to ${string}, but ${string}`
@@ -72,15 +75,12 @@ const DialogMolecule = molecule((_, scope) => {
     return `[${type}]: ${message} [${new Date().toISOString()}]`;
   };
 
-  const safeModifyDialogs = <
-    TFunc extends (...args: any) => any,
-    UParams extends Parameters<TFunc>
-  >(
+  const safeModifyDialogs = <TFunc extends (arg: any) => any, UParam extends FirstParam<TFunc>>(
     callback: TFunc,
-    ...params: UParams
+    param: UParam
   ) => {
     try {
-      callback(...(params as any[]));
+      callback(param);
     } catch (err) {
       if (err instanceof DialogManagerError) {
         console.error(formatLogMessage(err.type, err.message));
@@ -88,10 +88,11 @@ const DialogMolecule = molecule((_, scope) => {
     }
   };
 
-  const $registerDialog = atom(null, (get, set, update: { id: string }) => {
+  const $registerDialog = atom(null, (get, set, update: { id: string, component: React.FC<any>, props: any }) => {
     const dialogs = get($dialogs);
+    const subject = dialogs[update.id];
     //todo: add warning
-    if (dialogs[update.id]) {
+    if (subject) {
       throw new DialogManagerError(
         createManagerErrorMessage({
           action: `register dialog ${update.id}`,
@@ -100,11 +101,12 @@ const DialogMolecule = molecule((_, scope) => {
         "REGISTER_ERROR"
       );
     }
-    set($dialogs, { ...get($dialogs), [`${update.id}`]: { active: true } });
+    console.log(update.component)
+    set($dialogs, { ...get($dialogs), [`${update.id}`]: { active: true , component: update.component, props: update.props} });
   });
 
   const $dialogsState = atom((get) => get($dialogs));
-  const $unregisterDialog = atom(null, (get, set, update: { id: string }) => {
+  const $unregisterDialog = atom(null, (get, set, update: { id: string}) => {
     const dialogs = { ...get($dialogs) };
     const subject = dialogs[update.id];
     //todo: throw error here
@@ -121,67 +123,60 @@ const DialogMolecule = molecule((_, scope) => {
     set($dialogs, dialogs);
   });
 
-  const $toggleDialog = atom(null, (get, set, update: { id: string; visibility?: boolean }) => {
-    const dialogs = { ...get($dialogs) };
-    const subject = dialogs[update.id];
-
-    if (!subject) {
-      throw new DialogManagerError(
-        createManagerErrorMessage({
-          action: `toggle dialog ${update.id}'s visibility`,
-          errorCause: `dialog ${update.id} does not exist`,
-        }),
-        "UNREGISTER_ERROR"
-      );
-    }
-
-    if (update.visibility !== undefined) {
-      subject.active = update.visibility;
-      set($dialogs, dialogs);
-      return;
-    }
-
-    subject.active = !dialogs[update.id].active;
-    set($dialogs, dialogs);
-  });
-
-  return { $registerDialog, $unregisterDialog, $toggleDialog, $dialogsState, safeModifyDialogs };
+  return { $registerDialog, $unregisterDialog, $dialogsState, safeModifyDialogs };
 });
 
 export function DialogProvider({ children }: PropsWithChildren) {
   return <ScopeProvider scope={DialogProviderScope}>{children}</ScopeProvider>;
 }
+type UseDialogProps = {
+  id: string;
+};
 
-export const useDialogs = () => {
-  const { $dialogsState, $registerDialog, $unregisterDialog, $toggleDialog, safeModifyDialogs } =
+export function useDialogsContext() {
+  const { $dialogsState } = useMolecule(DialogMolecule);
+  const dialogs = useAtomValue($dialogsState);
+
+  //todo: close all dialogs
+  return { dialogs };
+}
+
+export const useDialog = <
+  T extends React.FC<any>,
+  P extends Omit<React.ComponentPropsWithoutRef<T>, keyof ModalProps>
+>(
+  component: T,
+) => {
+  const { $dialogsState, $registerDialog, $unregisterDialog, safeModifyDialogs } =
     useMolecule(DialogMolecule);
 
-  const dialogs = useAtomValue($dialogsState);
+  const { dialogs } = useDialogsContext();
   const _registerDialog = useSetAtom($registerDialog);
   const _unregisterDialog = useSetAtom($unregisterDialog);
-  const _toggleDialog = useSetAtom($toggleDialog);
 
+  //TODO: move component arg back to here.
   const safeRegister = React.useCallback(
-    (...params: Parameters<typeof _unregisterDialog>) =>
-      safeModifyDialogs(_registerDialog, ...params),
-    []
+    (args: P & {id: string}) => {
+      safeModifyDialogs<typeof _registerDialog, FirstParam<typeof _registerDialog>>(
+        _registerDialog,
+        {id: args.id, component, props: {...args}}
+      );
+    },
+    [component]
   );
 
   const safeUnregister = React.useCallback(
-    (...params: Parameters<typeof _unregisterDialog>) =>
-      safeModifyDialogs(_unregisterDialog, ...params),
-    []
+    (id: string) => {
+      safeModifyDialogs(_unregisterDialog, {id});
+    },
+    [component]
   );
 
-  const safeToggle = React.useCallback(
-    (...params: Parameters<typeof _toggleDialog>) => safeModifyDialogs(_toggleDialog, ...params),
-    []
-  );
 
-  return {
-    dialogs,
-    registerDialog: safeRegister,
-    unregisterDialog: safeUnregister,
-    toggleDialog: safeToggle,
-  };
+  return [
+    {
+      createDialog: safeRegister,
+      removeDialog: safeUnregister,
+    },
+  ] as const;
 };
