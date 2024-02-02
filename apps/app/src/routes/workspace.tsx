@@ -1,6 +1,6 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
 import { TreeView, ContextMenu, Dialog, DialogProps } from "@wisp/ui";
-import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
+import { TreeData, TreeViewNode, useDialogManager, useDialogsContext, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
 import {
   HiFolder,
@@ -10,7 +10,6 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi";
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
-import React from "react";
 
 export const Route = new FileRoute("/workspace").createRoute({
   component: WorkspacePage,
@@ -26,6 +25,7 @@ function WorkspacePage() {
   const [_, treeApi] = useTreeView({ onDelete: (id: string) => deleteCharacter(id) });
   const { data: tree } = rspc.useQuery(["characters.build_tree"]);
   const [manager] = useDialogManager();
+  const {dialogs} = useDialogsContext()
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">

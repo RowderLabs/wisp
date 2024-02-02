@@ -3,7 +3,7 @@ import { DialogProps } from "./Dialog";
 import { useDialogsContext } from "./hooks/useDialogsContext";
 
 export function Dialogs() {
-  const { dialogs, unregisterDialog } = useDialogsContext();
+  const { dialogs, unregisterDialog, removeDialog } = useDialogsContext();
 
   const renderDialogs = React.useMemo(() => {
     return Object.keys(dialogs).map((id) => {
@@ -16,7 +16,7 @@ export function Dialogs() {
           {...dialogs[id].props}
           open={dialogs[id].active}
           key={id}
-          onOpenChange={() => unregisterDialog(id)}
+          onOpenChange={() => removeDialog(id)}
         />
       );
     });

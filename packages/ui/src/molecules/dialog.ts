@@ -77,12 +77,36 @@ export const DialogMolecule = molecule((_, scope) => {
       }
       set($dialogs, {
         ...get($dialogs),
-        [`${update.id}`]: { active: true, component: update.component, props: update.props },
+        [`${update.id}`]: { active: false, component: update.component, props: update.props },
       });
     }
   );
 
   const $dialogsState = atom((get) => get($dialogs));
+
+  /**
+   * This atom is used for toggling the visibility of a dialog (not to be confused with)
+   * unregister which removes the dialog from state. 
+   */
+  const $toggleDialog = atom(null, (get, set, update: { id: string }) => {
+    const dialogs = { ...get($dialogs) };
+    const subject = dialogs[update.id];
+    if (!subject) {
+      throw new DialogManagerError(
+        createManagerErrorMessage({
+          action: `unregister dialog ${update.id}`,
+          errorCause: `dialog ${update.id} does not exist`,
+        }),
+        "UNREGISTER_ERROR"
+      );
+    }
+    subject.active = !subject.active;
+    set($dialogs, dialogs);
+  });
+
+  /**
+   * This atom removes a dialog from the dialog state and subsequently the DOM.
+   */
   const $unregisterDialog = atom(null, (get, set, update: { id: string }) => {
     const dialogs = { ...get($dialogs) };
     const subject = dialogs[update.id];
@@ -96,9 +120,9 @@ export const DialogMolecule = molecule((_, scope) => {
         "UNREGISTER_ERROR"
       );
     }
-    subject.active = !subject.active
+    delete dialogs[update.id]
     set($dialogs, dialogs);
   });
 
-  return { $registerDialog, $unregisterDialog, $dialogsState, _safeModifyDialogs };
+  return { $registerDialog, $unregisterDialog, $dialogsState, _safeModifyDialogs, $toggleDialog };
 });
