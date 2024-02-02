@@ -1,6 +1,6 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu, useDialogManager, Dialog, DialogProps } from "@wisp/ui";
-import { TreeData, TreeViewNode, useTreeView } from "@wisp/ui/src/hooks";
+import { TreeView, ContextMenu, Dialog, DialogProps } from "@wisp/ui";
+import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
 import {
   HiFolder,

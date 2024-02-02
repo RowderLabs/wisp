@@ -1,12 +1,15 @@
 import React from "react";
-import { useDialogsContext } from "./Dialog";
+import { DialogProps } from "./Dialog";
+import { useDialogsContext } from "./hooks/useDialogsContext";
 
 export function Dialogs() {
   const { dialogs, unregisterDialog } = useDialogsContext();
 
   const renderDialogs = React.useMemo(() => {
     return Object.keys(dialogs).map((id) => {
-      const Dialog = dialogs[id].component;
+      const Dialog: React.FC<
+        any & { open: DialogProps["open"]; onOpenChange: DialogProps["onOpenChange"] }
+      > = dialogs[id].component;
 
       return (
         <Dialog
