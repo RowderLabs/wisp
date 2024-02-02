@@ -1,5 +1,5 @@
 import { createScope, molecule } from "bunshi/react";
-import { atom } from "jotai";
+import { atom } from "jotai/vanilla";
 
 export type FirstParam<T extends (...args: any) => any> = Parameters<T>[0];
 type DialogErrorEnum = "REGISTER_ERROR" | "UNREGISTER_ERROR" | "ACTION_ERROR";
