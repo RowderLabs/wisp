@@ -1,5 +1,5 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu } from "@wisp/ui";
+import { TreeView, ContextMenu, useDialogManager, Dialog, DialogProps } from "@wisp/ui";
 import { TreeData, TreeViewNode, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
 import {
@@ -24,6 +24,7 @@ function WorkspacePage() {
   });
   const [_, treeApi] = useTreeView({ onDelete: (id: string) => deleteCharacter(id) });
   const { data: tree } = rspc.useQuery(["characters.build_tree"]);
+  const [manager] = useDialogManager();
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
@@ -41,12 +42,37 @@ function WorkspacePage() {
         )}
       </div>
       <div className="basis-full">
+        <button
+          className="rounded-md p-1 bg-blue-500 text-white"
+          onClick={() => {
+            manager.createDialog(CustomModal, {
+              id: 'rowder',
+              name: 'rowder'
+            });
+          }}
+        >
+          add
+        </button>
         {/** Character SHeet*/}
         <div className="flex">
           <Outlet />
         </div>
       </div>
     </div>
+  );
+}
+
+function CustomModal({ name, open, onOpenChange }: { name: string } & DialogProps) {
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange} trigger={undefined}>
+      <h3>{name}</h3>
+      <p>
+        There are two kinds of atoms: a writable atom and a read-only atom. Primitive atoms are
+        always writable. Derived atoms are writable if the write is specified. The write of
+        primitive atoms is equivalent to the setState of React.useState.
+      </p>
+    </Dialog>
   );
 }
 

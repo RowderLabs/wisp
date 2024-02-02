@@ -1,19 +1,23 @@
-import { Outlet, rootRouteWithContext } from '@tanstack/react-router'
-import { client, queryClient } from '../rspc/router';
+import { Outlet, rootRouteWithContext } from "@tanstack/react-router";
+import { client, queryClient } from "../rspc/router";
+import { DialogProvider, Dialogs } from "@wisp/ui";
 
 export const Route = rootRouteWithContext<{
   rspc: {
-    client: typeof client,
-    queryClient: typeof queryClient
-  }
+    client: typeof client;
+    queryClient: typeof queryClient;
+  };
 }>()({
   component: RootComponent,
-})
+});
 
 function RootComponent() {
   return (
     <div>
-      <Outlet/>
+      <DialogProvider>
+        <Outlet />
+        <Dialogs/>
+      </DialogProvider>
     </div>
-  )
+  );
 }
