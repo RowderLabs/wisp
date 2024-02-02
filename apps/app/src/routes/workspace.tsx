@@ -24,7 +24,7 @@ function WorkspacePage() {
   });
   const [_, treeApi] = useTreeView({ onDelete: (id: string) => deleteCharacter(id) });
   const { data: tree } = rspc.useQuery(["characters.build_tree"]);
-  const { dialogs, removeDialog, registerDialog, show} = useDialogs();
+  const { dialogs, unregisterDialog, registerDialog, toggleDialog} = useDialogs();
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
@@ -44,8 +44,9 @@ function WorkspacePage() {
       <div className="basis-full">
         <div className="flex gap-4">
           <button onClick={() => registerDialog({ id: "my-poppup" })}>add</button>
-          <button onClick={() => removeDialog({ id: "my-poppup" })}>remove</button>
-          <button onClick={() => show({ id: "my-poppup" })}>toggle</button>
+          <button onClick={() => unregisterDialog({ id: "my-poppup" })}>remove</button>
+          <button onClick={() => toggleDialog({ id: "my-poppup" })}>toggle</button>
+          <button onClick={() => toggleDialog({ id: "my-poppup", visibility: false })}>close dialog</button>
         </div>
         <div className="border border-red-500">{JSON.stringify(dialogs)}</div>
         {/** Character SHeet*/}
