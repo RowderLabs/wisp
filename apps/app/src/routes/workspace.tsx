@@ -10,6 +10,7 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi";
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
+import React from "react";
 
 export const Route = new FileRoute("/workspace").createRoute({
   component: WorkspacePage,
@@ -42,36 +43,13 @@ function WorkspacePage() {
         )}
       </div>
       <div className="basis-full">
-        <button
-          className="rounded-md p-1 bg-blue-500 text-white"
-          onClick={() => {
-            const test = manager.createDialog(CustomModal, {id: 'rowder', name: 'Rowder'});
-
-            console.log(test)
-          }}
-        >
-          add
-        </button>
+        <button onClick={() => manager.createDialog(Dialog, { id: "create" })}>Hello</button>
         {/** Character SHeet*/}
         <div className="flex">
           <Outlet />
         </div>
       </div>
     </div>
-  );
-}
-
-function CustomModal({ name, open, onOpenChange }: { name: string } & DialogProps) {
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange} trigger={undefined}>
-      <h3>{name}</h3>
-      <p>
-        There are two kinds of atoms: a writable atom and a read-only atom. Primitive atoms are
-        always writable. Derived atoms are writable if the write is specified. The write of
-        primitive atoms is equivalent to the setState of React.useState.
-      </p>
-    </Dialog>
   );
 }
 
@@ -82,6 +60,8 @@ function CharacterItem({
   onDelete,
   id,
 }: Omit<TreeViewNode, "children"> & { expanded?: boolean; onDelete: (id: string) => void }) {
+  const [manager] = useDialogManager();
+
   return isCollection ? (
     <ContextMenu.Root
       trigger={
@@ -111,7 +91,12 @@ function CharacterItem({
         </div>
       }
     >
-      <ContextMenu.Item icon={<HiOutlinePencilSquare />}>Rename</ContextMenu.Item>
+      <ContextMenu.Item
+        onClick={() => manager.createDialog(Dialog, { id: "create-character" })}
+        icon={<HiOutlinePencilSquare />}
+      >
+        Rename
+      </ContextMenu.Item>
       <ContextMenu.Item onClick={() => onDelete(id)} icon={<HiOutlineTrash />}>
         Delete
       </ContextMenu.Item>

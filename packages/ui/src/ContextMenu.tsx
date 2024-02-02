@@ -13,7 +13,7 @@ const contextMenuVariants = cva(
 
 const Root = ({ trigger, children }: PropsWithChildren<ContextMenuProps>) => {
   return (
-    <RadixContextMenu.Root>
+     <RadixContextMenu.Root modal={false}>
       <RadixContextMenu.Trigger asChild>{trigger}</RadixContextMenu.Trigger>
       <RadixContextMenu.Portal>
         <RadixContextMenu.Content className={contextMenuVariants()}>

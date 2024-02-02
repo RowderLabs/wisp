@@ -96,7 +96,7 @@ export const DialogMolecule = molecule((_, scope) => {
         "UNREGISTER_ERROR"
       );
     }
-    delete dialogs[update.id];
+    subject.active = !subject.active
     set($dialogs, dialogs);
   });
 
