@@ -4,11 +4,11 @@ import { ScopeProvider, createScope, molecule, useMolecule } from "bunshi/react"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import React, { PropsWithChildren, useEffect } from "react";
 
-export type ModalProps = {
+export type DialogProps = {
   trigger: React.ReactNode;
 } & RadixDialog.DialogProps;
 
-export function Modal({ trigger, children, open, onOpenChange, ...radixProps }: ModalProps) {
+export function Dialog({ trigger, children, open, onOpenChange, ...radixProps }: DialogProps) {
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange} {...radixProps}>
       <RadixDialog.Trigger>{trigger}</RadixDialog.Trigger>
@@ -28,7 +28,7 @@ const DialogProviderScope = createScope(undefined);
 
 type DialogState = {
   active: boolean;
-  component: React.FC<any>
+  component: React.FC<any>;
   props: any;
 };
 /*
@@ -88,25 +88,31 @@ const DialogMolecule = molecule((_, scope) => {
     }
   };
 
-  const $registerDialog = atom(null, (get, set, update: { id: string, component: React.FC<any>, props: any }) => {
-    const dialogs = get($dialogs);
-    const subject = dialogs[update.id];
-    //todo: add warning
-    if (subject) {
-      throw new DialogManagerError(
-        createManagerErrorMessage({
-          action: `register dialog ${update.id}`,
-          errorCause: `dialog ${update.id} already exists.`,
-        }),
-        "REGISTER_ERROR"
-      );
+  const $registerDialog = atom(
+    null,
+    (get, set, update: { id: string; component: React.FC<any>; props: any }) => {
+      const dialogs = get($dialogs);
+      const subject = dialogs[update.id];
+      //todo: add warning
+      if (subject) {
+        throw new DialogManagerError(
+          createManagerErrorMessage({
+            action: `register dialog ${update.id}`,
+            errorCause: `dialog ${update.id} already exists.`,
+          }),
+          "REGISTER_ERROR"
+        );
+      }
+      console.log(update.component);
+      set($dialogs, {
+        ...get($dialogs),
+        [`${update.id}`]: { active: true, component: update.component, props: update.props },
+      });
     }
-    console.log(update.component)
-    set($dialogs, { ...get($dialogs), [`${update.id}`]: { active: true , component: update.component, props: update.props} });
-  });
+  );
 
   const $dialogsState = atom((get) => get($dialogs));
-  const $unregisterDialog = atom(null, (get, set, update: { id: string}) => {
+  const $unregisterDialog = atom(null, (get, set, update: { id: string }) => {
     const dialogs = { ...get($dialogs) };
     const subject = dialogs[update.id];
     //todo: throw error here
@@ -134,49 +140,44 @@ type UseDialogProps = {
 };
 
 export function useDialogsContext() {
-  const { $dialogsState } = useMolecule(DialogMolecule);
+  const { $dialogsState, $unregisterDialog, safeModifyDialogs } = useMolecule(DialogMolecule);
   const dialogs = useAtomValue($dialogsState);
 
+  const _unregisterDialog = useSetAtom($unregisterDialog);
+
+  const safeUnregister = React.useCallback((id: string) => {
+    safeModifyDialogs(_unregisterDialog, { id });
+  }, []);
+
   //todo: close all dialogs
-  return { dialogs };
+  return { dialogs, unregisterDialog: safeUnregister };
 }
 
-export const useDialog = <
-  T extends React.FC<any>,
-  P extends Omit<React.ComponentPropsWithoutRef<T>, keyof ModalProps>
->(
-  component: T,
-) => {
+export const useDialogManager = () => {
   const { $dialogsState, $registerDialog, $unregisterDialog, safeModifyDialogs } =
     useMolecule(DialogMolecule);
 
-  const { dialogs } = useDialogsContext();
+  const { unregisterDialog } = useDialogsContext();
   const _registerDialog = useSetAtom($registerDialog);
-  const _unregisterDialog = useSetAtom($unregisterDialog);
 
   //TODO: move component arg back to here.
   const safeRegister = React.useCallback(
-    (args: P & {id: string}) => {
+    <C extends React.FC<any>, P extends Omit<React.ComponentPropsWithoutRef<C>, keyof DialogProps>>(
+      component: C,
+      args: P & { id: string }
+    ) => {
       safeModifyDialogs<typeof _registerDialog, FirstParam<typeof _registerDialog>>(
         _registerDialog,
-        {id: args.id, component, props: {...args}}
+        { id: args.id, component, props: { ...args } }
       );
     },
-    [component]
+    []
   );
-
-  const safeUnregister = React.useCallback(
-    (id: string) => {
-      safeModifyDialogs(_unregisterDialog, {id});
-    },
-    [component]
-  );
-
 
   return [
     {
       createDialog: safeRegister,
-      removeDialog: safeUnregister,
+      removeDialog: unregisterDialog,
     },
   ] as const;
 };

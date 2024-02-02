@@ -1,5 +1,5 @@
 import { Menu, MenuItem } from "./Menu";
-import { Modal } from "./Modal";
+import { Dialog} from "./Dialog";
 import * as Tabs from "@radix-ui/react-tabs";
 import { useState } from "react";
 
@@ -17,7 +17,7 @@ export default function TraitMenu({trigger}: TraitMenuProps) {
   ]);
 
   return (
-    <Modal trigger={trigger}>
+    <Dialog trigger={trigger}>
       <Tabs.Root defaultValue={traitGroups[0].name} className="flex px-4 py-6 gap-4 h-full">
         <Tabs.List className="flex flex-col items-start h-full gap-2 basis-[200px] border-r-2 pr-4">
           {traitGroups.map((group) => (
@@ -63,6 +63,6 @@ export default function TraitMenu({trigger}: TraitMenuProps) {
           </Tabs.Content>
         ))}
       </Tabs.Root>
-    </Modal>
+    </Dialog>
   );
 }
