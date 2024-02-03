@@ -1,12 +1,14 @@
 import { DndContext, Modifier, MouseSensor, useSensor } from "@dnd-kit/core";
 import { atom } from "jotai";
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren } from "react";
 import { Transform, TransformEvent } from "./Transform";
 import { molecule } from "bunshi/react";
-import { useResize, useTransformContext, useTranslate } from "./hooks";
-import { useRenderCount } from "@uidotdev/usehooks";
+import { useTransformContext, useTranslate } from "./hooks";
 import React from "react";
 import { createPanel } from "./panels";
+import { Toolbar } from "./Toolbar";
+import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
+import { HiTable } from "react-icons/hi";
 
 type CanvasItem = {
   id: string;
@@ -35,10 +37,16 @@ type DraggableCanvasProps = {
 };
 
 function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) {
-  const renderCount = useRenderCount();
-  const mouseSensor = useSensor(MouseSensor, {activationConstraint: {delay: 100, tolerance: 5}});
+  const mouseSensor = useSensor(MouseSensor, { activationConstraint: { delay: 100, tolerance: 5 } });
   return (
     <div className="w-full h-full">
+      <div className="absolute top-0 left-2">
+        <Toolbar.Root orientation="vertical">
+          <Toolbar.IconButton icon={<HiMiniDocumentText />} />
+          <Toolbar.IconButton icon={<HiPhoto />} />
+          <Toolbar.IconButton icon={<HiTable />} />
+        </Toolbar.Root>
+      </div>
       <DndContext sensors={[mouseSensor]}>
         {items.map((item) => (
           <CanvasItem
@@ -47,10 +55,7 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <MemoInner>
-              {createPanel('textbox', {title: 'default'}).content}
-            </MemoInner>
-            {renderCount}
+            <MemoInner>{createPanel("textbox", { title: "default" }).content}</MemoInner>
           </CanvasItem>
         ))}
       </DndContext>
@@ -58,7 +63,7 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
   );
 }
 
-export const DraggableCanvas = React.memo(DraggableCanvasInner)
+export const DraggableCanvas = React.memo(DraggableCanvasInner);
 
 const snapToGrid: Modifier = (args) => {
   const { transform } = args;
@@ -76,8 +81,8 @@ function CanvasItem({
   onTransform,
 }: PropsWithChildren<{ id: string; transform: Transform; onTransform: (args: any) => void }>) {
   React.useEffect(() => {
-    console.count(JSON.stringify(transform))
-  }, [transform])
+    console.count(JSON.stringify(transform));
+  }, [transform]);
   return (
     <Transform.Context id={id} transform={transform} onTransform={onTransform}>
       {children}
@@ -85,7 +90,7 @@ function CanvasItem({
   );
 }
 
-function Inner({children}: PropsWithChildren) {
+function Inner({ children }: PropsWithChildren) {
   const { transform } = useTransformContext();
   const { dragHandle, dragRef, translateStyles } = useTranslate();
   return (
@@ -99,7 +104,7 @@ function Inner({children}: PropsWithChildren) {
         top: transform.y,
         width: transform.width,
         height: transform.height,
-        ...translateStyles
+        ...translateStyles,
       }}
     >
       <Transform.Resize
@@ -116,4 +121,4 @@ function Inner({children}: PropsWithChildren) {
   );
 }
 
-const MemoInner = React.memo(Inner)
+const MemoInner = React.memo(Inner);

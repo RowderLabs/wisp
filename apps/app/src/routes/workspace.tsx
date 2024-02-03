@@ -1,5 +1,5 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu, Dialog } from "@wisp/ui";
+import { TreeView, ContextMenu, Dialog, Toolbar } from "@wisp/ui";
 import { CreateCharacterDialog } from "../components/CreateCharacterDialog";
 import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
@@ -10,7 +10,7 @@ import {
   HiOutlineFolder,
   HiOutlineTrash,
 } from "react-icons/hi";
-import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
+import { HiBattery50, HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 
 export const Route = new FileRoute("/workspace").createRoute({
   component: WorkspacePage,
@@ -43,8 +43,10 @@ function WorkspacePage() {
         )}
       </div>
       <div className="basis-full">
-        <button onClick={() => manager.createDialog(Dialog, { id: "create" })}>Hello</button>
         {/** Character SHeet*/}
+        <Toolbar.Root>
+          <Toolbar.IconButton icon={<HiBattery50/>}/>
+        </Toolbar.Root>
         <div className="flex">
           <Outlet />
         </div>
