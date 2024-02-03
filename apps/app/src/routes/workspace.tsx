@@ -1,5 +1,5 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu, Dialog, DialogProps, Input, Label } from "@wisp/ui";
+import { TreeView, ContextMenu, Dialog, DialogProps, Input, Label, Button } from "@wisp/ui";
 import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
 import {
@@ -61,15 +61,14 @@ function CreateCharacterDialog({ open, onOpenChange, id }: DialogProps) {
       onOpenChange={onOpenChange}
       trigger={undefined}
     >
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mb-4">
         <div className="flex flex-col gap-1 justify-start">
           <Label htmlFor="name">Character Name</Label>
           <Input name="name" placeholder="enter a name for your character" />
         </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="name">Other</Label>
-          <Input name="other" placeholder="enter other info" />
-        </div>
+      </div>
+      <div>
+        <Button loading={true} className="w-full flex justify-center">Submit</Button>
       </div>
     </Dialog>
   );
