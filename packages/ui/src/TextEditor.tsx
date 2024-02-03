@@ -52,16 +52,16 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
     namespace: "MyEditor",
     theme: editorTheme || {
       heading: {
-        h1: "text-2xl my-2",
-        h2: "text-xl my-1",
-        h3: "text-lg my-1",
+        h1: "text-[24px] m-0  text-slate-600",
+        h2: "text-[18px] m-0  text-slate-800",
+        h3: "text-[16px] m-0  text-slate-800",
       },
       list: {
-        listitem: "list-disc ml-4",
+        listitem: "list-disc mx-[32px]",
         nested: {
           listitem: "!list-none before:display-none after:display-none",
         },
-        ul: "ml-2 list-inside",
+        ul: "list-inside m-0 p-0",
       },
     },
     onError,
@@ -69,13 +69,7 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
   };
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div
-        className={clsx(
-          className,
-          'overflow-y-auto h-[95%]',
-          "relative leading-7 text-slate-700"
-        )}
-      >
+      <div className={clsx(className, "overflow-y-auto h-[95%]", "relative leading-7 text-slate-700")}>
         {features.typeahead && featureEnabled(features.typeahead) && (
           <>
             <ComponentPickerPlugin features={features.typeahead} />

@@ -6,6 +6,7 @@ import { molecule } from "bunshi/react";
 import { useResize, useTransformContext, useTranslate } from "./hooks";
 import { useRenderCount } from "@uidotdev/usehooks";
 import React from "react";
+import { createPanel } from "./panels";
 
 type CanvasItem = {
   id: string;
@@ -35,10 +36,10 @@ type DraggableCanvasProps = {
 
 function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) {
   const renderCount = useRenderCount();
-  const mouseSensor = useSensor(MouseSensor);
+  const mouseSensor = useSensor(MouseSensor, {activationConstraint: {delay: 100, tolerance: 5}});
   return (
     <div className="w-full h-full">
-      <DndContext>
+      <DndContext sensors={[mouseSensor]}>
         {items.map((item) => (
           <CanvasItem
             id={item.id}
@@ -46,7 +47,9 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <MemoInner />
+            <MemoInner>
+              {createPanel('textbox', {title: 'default'}).content}
+            </MemoInner>
             {renderCount}
           </CanvasItem>
         ))}
@@ -82,7 +85,7 @@ function CanvasItem({
   );
 }
 
-function Inner() {
+function Inner({children}: PropsWithChildren) {
   const { transform } = useTransformContext();
   const { dragHandle, dragRef, translateStyles } = useTranslate();
   return (
@@ -90,7 +93,7 @@ function Inner() {
       ref={dragRef}
       {...dragHandle.listeners}
       {...dragHandle.attributes}
-      className="w-48 h-48 bg-blue-400 absolute"
+      className="rounded-md absolute"
       style={{
         left: transform.x,
         top: transform.y,
@@ -108,6 +111,7 @@ function Inner() {
         }}
         constraints={{ width: { min: 150 }, height: { min: 150 } }}
       />
+      {children}
     </div>
   );
 }

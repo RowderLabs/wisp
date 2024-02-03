@@ -8,10 +8,10 @@ interface ButtonProps
   loading?: boolean;
 }
 
-const buttonVariants = cva(["rounded-md text-sm px-4 py-1.5"], {
+const buttonVariants = cva(["rounded-md text-sm px-4 py-2", "transition-all duration-200"], {
   variants: {
     variant: {
-      outline: "bg-white text-slate-400 border border-slate-400 hover:bg-slate-400 hover:text-white",
+      outline: "bg-white text-slate-400 border border-slate-400 hover:bg-slate-400 hover:text-white hover:border-white",
       fill: "bg-slate-400 text-white hover:bg-opacity-80",
     },
   },

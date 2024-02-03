@@ -37,7 +37,7 @@ export function Dialog({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.15 } }}
               exit={{ opacity: 0, transition: { duration: 0.15} }}
-              className="fixed m-[1px] !pointer-events-none bg-black/10 inset-0 grid place-items-center"
+              className="fixed m-[1px] !pointer-events-none bg-black/20 inset-0 grid place-items-center"
             >
               <RadixDialog.Content onInteractOutside={radixProps.onInteractOutside} asChild>
                 <motion.div

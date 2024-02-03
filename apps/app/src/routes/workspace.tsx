@@ -62,13 +62,13 @@ function CreateCharacterDialog({ open, onOpenChange, id }: DialogProps) {
       trigger={undefined}
     >
       <div className="flex flex-col gap-2 mb-4">
-        <div className="flex flex-col gap-1 justify-start">
+        <div className="flex flex-col gap-2 justify-start">
           <Label htmlFor="name">Character Name</Label>
           <Input name="name" placeholder="enter a name for your character" />
         </div>
       </div>
       <div>
-        <Button loading={true} className="w-full flex justify-center">Submit</Button>
+        <Button variant="outline" className="w-full flex justify-center">Submit</Button>
       </div>
     </Dialog>
   );
