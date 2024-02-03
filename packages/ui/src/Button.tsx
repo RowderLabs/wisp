@@ -20,12 +20,12 @@ const buttonVariants = cva(["rounded-md text-sm px-4 py-2", "transition-all dura
   },
 });
 
-export const Button = React.forwardRef<HTMLInputElement, PropsWithChildren<ButtonProps>>(function (
+export const Button = React.forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(function (
   { children, loading, className, variant, ...rest },
   ref
 ) {
   return (
-    <button {...rest} className={clsx(buttonVariants({ variant }), className)}>
+    <button ref={ref} type="submit" {...rest} className={clsx(buttonVariants({ variant }), className)}>
       <div className="flex gap-2 items-center">
         <span>{children}</span>
         {loading && <span className="relative loader"></span>}

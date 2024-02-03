@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -90,6 +86,9 @@ importers:
       use-double-click:
         specifier: ^1.0.5
         version: 1.0.5(react-dom@18.2.0)(react@18.2.0)
+      zod:
+        specifier: ^3.22.4
+        version: 3.22.4
     devDependencies:
       '@tauri-apps/cli':
         specifier: ^1.4.0
@@ -270,6 +269,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.1
         version: 3.2.1(react@18.2.0)
+      '@hookform/resolvers':
+        specifier: ^3.3.4
+        version: 3.3.4(react-hook-form@7.50.0)
       '@lexical/list':
         specifier: ^0.12.2
         version: 0.12.2(lexical@0.12.2)
@@ -333,6 +335,9 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
+      react-hook-form:
+        specifier: ^7.50.0
+        version: 7.50.0(react@18.2.0)
       storybook:
         specifier: ^7.5.1
         version: 7.5.1
@@ -342,6 +347,9 @@ importers:
       use-double-click:
         specifier: ^1.0.5
         version: 1.0.5(react-dom@18.2.0)(react@18.2.0)
+      zod:
+        specifier: ^3.22.4
+        version: 3.22.4
     devDependencies:
       '@types/react-dom':
         specifier: ^18.2.7
@@ -2904,6 +2912,14 @@ packages:
       react: ^16.13.1 || ^17.0.2 || ^18.1.0
     dependencies:
       react: 18.2.0
+    dev: false
+
+  /@hookform/resolvers@3.3.4(react-hook-form@7.50.0):
+    resolution: {integrity: sha512-o5cgpGOuJYrd+iMKvkttOclgwRW86EsWJZZRC23prf0uU2i48Htq4PuT73AVb9ionFyZrwYEITuOFGF+BydEtQ==}
+    peerDependencies:
+      react-hook-form: ^7.0.0
+    dependencies:
+      react-hook-form: 7.50.0(react@18.2.0)
     dev: false
 
   /@humanwhocodes/config-array@0.11.13:
@@ -10434,6 +10450,15 @@ packages:
       react: 18.2.0
     dev: false
 
+  /react-hook-form@7.50.0(react@18.2.0):
+    resolution: {integrity: sha512-AOhuzM3RdP09ZCnq+Z0yvKGHK25yiOX5phwxjV9L7U6HMla10ezkBnvQ+Pk4GTuDfsC5P2zza3k8mawFwFLVuQ==}
+    engines: {node: '>=12.22.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /react-icons@4.11.0(react@18.2.0):
     resolution: {integrity: sha512-V+4khzYcE5EBk/BvcuYRq6V/osf11ODUM2J8hg2FDSswRrGvqiYUYPRy4OdrWaQOBj4NcpJfmHZLNaD+VH0TyA==}
     peerDependencies:
@@ -12071,3 +12096,7 @@ packages:
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false

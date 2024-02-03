@@ -29,7 +29,8 @@
     "react-merge-refs": "^2.0.2",
     "tailwind-merge": "^1.14.0",
     "unplugin-fonts": "^1.1.1",
-    "use-double-click": "^1.0.5"
+    "use-double-click": "^1.0.5",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.4.0",

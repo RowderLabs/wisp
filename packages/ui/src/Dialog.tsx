@@ -7,7 +7,7 @@ import { useDialogsContext } from "./hooks";
 
 export interface DialogProps extends RadixDialog.DialogProps, RadixDialog.DialogContentProps {
   id: string;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
 }
 
 export type DialogPropKeys = keyof RadixDialog.DialogProps | keyof DialogProps;
