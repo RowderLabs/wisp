@@ -3,7 +3,7 @@ import { ScopeProvider } from "bunshi/react";
 import React, { PropsWithChildren } from "react";
 import { DialogProviderScope } from "./molecules/dialog";
 import { AnimatePresence, motion } from "framer-motion";
-import { useDialogManager, useDialogsContext } from "./hooks";
+import { useDialogsContext } from "./hooks";
 
 export interface DialogProps extends RadixDialog.DialogProps {
   id: string;
@@ -36,14 +36,14 @@ export function Dialog({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.15 } }}
               exit={{ opacity: 0, transition: { duration: 0.15} }}
-              className="fixed pointer-events-none bg-black/10 inset-0"
+              className="fixed m-[1px] pointer-events-none bg-black/10 inset-0 grid place-items-center"
             >
               <RadixDialog.Content asChild>
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, transition: { duration: 0.15 } }}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0, transition: { duration: 0.15 } }}
                   exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                  className="fixed top-1/2 left-1/2 -translate-y-1/2 p-4 -translate-x-1/2 min-w-[200px] min-h-[250px] bg-white rounded-md shadow-md"
+                  className="p-4 min-w-[300px] min-h-[150px] pb-8 bg-white rounded-md shadow-md"
                 >
                   {children}
                 </motion.div>
