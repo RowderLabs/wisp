@@ -14,7 +14,7 @@ export function useDialogsContext() {
   const _registerDialog = useSetAtom($registerDialog);
 
   /**
-   * This function allows toggle a dialog's visibility and will give a dialog error on failure.
+   * This function triggers the safe removal of a dialog.
    * @param id
    */
   const _safeToggleDialog = (id: string) => {

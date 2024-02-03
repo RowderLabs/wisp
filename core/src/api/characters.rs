@@ -26,6 +26,7 @@ struct CreateCharacter {
 #[serde(rename_all = "camelCase")]
 struct FileTreeItem {
     id: String,
+    path: Option<String>,
     name: String,
     is_collection: bool,
     children: Vec<String>,
@@ -54,6 +55,7 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
             graph.entry(location.to_string()).or_insert(FileTreeItem {
                 id: location.to_string(),
                 name: character.full_name.to_string(),
+                path: Some(character.path.to_string()),
                 children: vec![],
                 is_collection: character.is_collection,
             });
@@ -72,6 +74,7 @@ fn create_file_tree(characters: &Vec<character::Data>) -> HashMap<String, FileTr
     let root = FileTreeItem {
         id: ROOT_DELIMITER.to_owned(),
         name: ROOT_DELIMITER.to_owned(),
+        path: None,
         children: in_root.into_iter().collect_vec(),
         is_collection: true,
     };
@@ -132,6 +135,7 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
             t(|ctx: Ctx, character_details: CreateCharacter| async move {
                 let CreateCharacter {
                     full_name,
+                    //TODO: change to parentPath
                     parent,
                     is_collection,
                 } = character_details;

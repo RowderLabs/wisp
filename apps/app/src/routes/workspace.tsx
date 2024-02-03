@@ -1,5 +1,6 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu, Dialog, DialogProps, Input, Label, Button } from "@wisp/ui";
+import { TreeView, ContextMenu, Dialog } from "@wisp/ui";
+import { CreateCharacterDialog } from "../components/CreateCharacterDialog";
 import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
 import {
@@ -32,7 +33,7 @@ function WorkspacePage() {
         {tree && (
           <TreeView
             renderItem={(treeItem) => (
-              <CharacterItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />
+              <CharacterItem path={tree[treeItem.id].path} onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />
             )}
             onExpansionChange={treeApi.toggleExpand}
             treeData={tree as TreeData}
@@ -52,35 +53,16 @@ function WorkspacePage() {
   );
 }
 
-function CreateCharacterDialog({ open, onOpenChange, id }: DialogProps) {
-  return (
-    <Dialog
-      onInteractOutside={(e) => e.preventDefault()}
-      id={id}
-      open={open}
-      onOpenChange={onOpenChange}
-      trigger={undefined}
-    >
-      <div className="flex flex-col gap-2 mb-4">
-        <div className="flex flex-col gap-2 justify-start">
-          <Label htmlFor="name">Character Name</Label>
-          <Input name="name" placeholder="enter a name for your character" />
-        </div>
-      </div>
-      <div>
-        <Button variant="outline" className="w-full flex justify-center">Submit</Button>
-      </div>
-    </Dialog>
-  );
-}
+
 
 function CharacterItem({
   isCollection,
   name,
+  path,
   expanded,
   onDelete,
   id,
-}: Omit<TreeViewNode, "children"> & { expanded?: boolean; onDelete: (id: string) => void }) {
+}: Omit<TreeViewNode, "children"> & { path: string | null,expanded?: boolean; onDelete: (id: string) => void }) {
   const [manager] = useDialogManager();
 
   return isCollection ? (
@@ -96,13 +78,12 @@ function CharacterItem({
       <ContextMenu.Item
         onClick={(e) => {
           e.stopPropagation();
-          manager.createDialog(CreateCharacterDialog, { id: "create-character" });
+          manager.createDialog(CreateCharacterDialog, { id: "create-character", context: {path} });
         }}
         icon={<HiOutlinePencilSquare />}
       >
         Create character
       </ContextMenu.Item>
-      <ContextMenu.Item icon={<HiOutlineTrash />}>Delete</ContextMenu.Item>
     </ContextMenu.Root>
   ) : (
     <ContextMenu.Root
@@ -121,7 +102,7 @@ function CharacterItem({
       }
     >
       <ContextMenu.Item
-        onClick={() => manager.createDialog(Dialog, { id: "create-character" })}
+        disabled
         icon={<HiOutlinePencilSquare />}
       >
         Rename
@@ -130,7 +111,7 @@ function CharacterItem({
         Delete
       </ContextMenu.Item>
       <ContextMenu.Separator />
-      <ContextMenu.Item icon={<HiOutlineFolder />}>Go to Family Tree</ContextMenu.Item>
+      <ContextMenu.Item disabled icon={<HiOutlineFolder />}>Go to Family Tree</ContextMenu.Item>
     </ContextMenu.Root>
   );
 }
