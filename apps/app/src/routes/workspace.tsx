@@ -1,5 +1,5 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu, Dialog } from "@wisp/ui";
+import { TreeView, ContextMenu, Dialog, DialogProps, Input, Label } from "@wisp/ui";
 import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
 import {
@@ -52,6 +52,29 @@ function WorkspacePage() {
   );
 }
 
+function CreateCharacterDialog({ open, onOpenChange, id }: DialogProps) {
+  return (
+    <Dialog
+      onInteractOutside={(e) => e.preventDefault()}
+      id={id}
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={undefined}
+    >
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1 justify-start">
+          <Label htmlFor="name">Character Name</Label>
+          <Input name="name" placeholder="enter a name for your character" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="name">Other</Label>
+          <Input name="other" placeholder="enter other info" />
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
 function CharacterItem({
   isCollection,
   name,
@@ -71,7 +94,15 @@ function CharacterItem({
         </div>
       }
     >
-      <ContextMenu.Item icon={<HiOutlinePencilSquare />}>Rename</ContextMenu.Item>
+      <ContextMenu.Item
+        onClick={(e) => {
+          e.stopPropagation();
+          manager.createDialog(CreateCharacterDialog, { id: "create-character" });
+        }}
+        icon={<HiOutlinePencilSquare />}
+      >
+        Create character
+      </ContextMenu.Item>
       <ContextMenu.Item icon={<HiOutlineTrash />}>Delete</ContextMenu.Item>
     </ContextMenu.Root>
   ) : (

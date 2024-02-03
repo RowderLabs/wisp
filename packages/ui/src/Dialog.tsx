@@ -5,7 +5,7 @@ import { DialogProviderScope } from "./molecules/dialog";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDialogsContext } from "./hooks";
 
-export interface DialogProps extends RadixDialog.DialogProps {
+export interface DialogProps extends RadixDialog.DialogProps, RadixDialog.DialogContentProps {
   id: string;
   trigger: React.ReactNode;
 }
@@ -19,6 +19,7 @@ export function Dialog({
   open,
   onOpenChange,
   defaultOpen,
+  modal,
   ...radixProps
 }: DialogProps) {
   const { unregisterDialog } = useDialogsContext();
@@ -36,14 +37,14 @@ export function Dialog({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.15 } }}
               exit={{ opacity: 0, transition: { duration: 0.15} }}
-              className="fixed m-[1px] pointer-events-none bg-black/10 inset-0 grid place-items-center"
+              className="fixed m-[1px] !pointer-events-none bg-black/10 inset-0 grid place-items-center"
             >
-              <RadixDialog.Content asChild>
+              <RadixDialog.Content onInteractOutside={radixProps.onInteractOutside} asChild>
                 <motion.div
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0, transition: { duration: 0.15 } }}
                   exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                  className="p-4 min-w-[300px] min-h-[150px] pb-8 bg-white rounded-md shadow-md"
+                  className="p-4 min-w-[400px] bg-white rounded-md shadow-md"
                 >
                   {children}
                 </motion.div>
