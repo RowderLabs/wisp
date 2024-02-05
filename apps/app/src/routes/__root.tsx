@@ -1,6 +1,7 @@
 import { Outlet, rootRouteWithContext } from "@tanstack/react-router";
 import { client, queryClient } from "@wisp/client";
 import { DialogProvider, Dialogs } from "@wisp/ui";
+import {useLockBodyScroll} from '@uidotdev/usehooks'
 
 export const Route = rootRouteWithContext<{
   rspc: {
@@ -12,6 +13,8 @@ export const Route = rootRouteWithContext<{
 });
 
 function RootComponent() {
+  useLockBodyScroll()
+
   return (
     <div>
       <DialogProvider>
