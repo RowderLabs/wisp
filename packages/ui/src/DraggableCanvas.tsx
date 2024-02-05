@@ -8,7 +8,6 @@ import { Toolbar } from "./Toolbar";
 import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiTable } from "react-icons/hi";
 
-
 type CanvasItemType = {
   id: string;
 } & Transform;
@@ -16,6 +15,15 @@ type CanvasItemType = {
 type DraggableCanvasProps = {
   items: CanvasItemType[];
   onItemTransform: (event: TransformEvent) => void;
+};
+
+const snapToGrid: Modifier = (args) => {
+  const { transform } = args;
+  return {
+    ...transform,
+    x: Math.ceil(transform.x / 10) * 10,
+    y: Math.ceil(transform.y / 10) * 10,
+  };
 };
 
 function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) {
@@ -31,14 +39,14 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
       </div>
       <DndContext sensors={[mouseSensor]}>
         {items.map((item) => (
-          <DraggableCanvasItem
+          <Transform.Context
             id={item.id}
             key={item.id}
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            {createPanel('textbox', {title: "hello world"}).content}
-          </DraggableCanvasItem>
+            <DraggableCanvasItem>{createPanel("textbox", { title: "hello world" }).content}</DraggableCanvasItem>
+          </Transform.Context>
         ))}
       </DndContext>
     </div>
@@ -47,37 +55,9 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
 
 export const DraggableCanvas = React.memo(DraggableCanvasInner);
 
-const snapToGrid: Modifier = (args) => {
-  const { transform } = args;
-  return {
-    ...transform,
-    x: Math.ceil(transform.x / 10) * 10,
-    y: Math.ceil(transform.y / 10) * 10,
-  };
-};
+interface DraggableCanvasItemProps extends PropsWithChildren {}
 
-interface DraggableCanvasItemProps extends PropsWithChildren, CanvasItemProps, TransformProps {}
-
-function DraggableCanvasItem({
-  id,
-  children,
-  transform,
-  onTransform,
-}: DraggableCanvasItemProps) {
-  return (
-    <Transform.Context id={id} transform={transform} onTransform={onTransform}>
-      <CanvasItem>
-        {children}
-      </CanvasItem>
-    </Transform.Context>
-  );
-}
-
-interface CanvasItemProps {
-
-}
-
-function CanvasItem({ children }: PropsWithChildren) {
+function DraggableCanvasItem({ children }: DraggableCanvasItemProps) {
   const { transform } = useTransformContext();
   const { dragHandle, dragRef, translateStyles } = useTranslate();
   return (
