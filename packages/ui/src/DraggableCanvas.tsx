@@ -45,7 +45,7 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <DraggableCanvasItem>{createPanel("textbox", { title: "hello world" }).content}</DraggableCanvasItem>
+            <DraggableCanvasItem>{createPanel("textbox", {})}</DraggableCanvasItem>
           </Transform.Context>
         ))}
       </DndContext>

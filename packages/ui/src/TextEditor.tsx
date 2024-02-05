@@ -1,3 +1,4 @@
+import type { OnChangeHandler } from './plugins/OnChangePlugin'
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
@@ -8,6 +9,7 @@ import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
+import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
 import { useCallback } from "react";
 
@@ -34,9 +36,10 @@ type TextEditorProps = {
   className?: string;
   features: OptTextEditorFeatures;
   editorTheme?: LexicalEditorProps["initalConfig"]["theme"];
+  onChange?: OnChangeHandler
 };
 
-export default function TextEditor({ className, features, editorTheme }: TextEditorProps) {
+export default function TextEditor({ className, features, editorTheme, onChange }: TextEditorProps) {
   function onError(err: Error) {
     console.error(err);
   }
@@ -84,7 +87,9 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
         />
         <TabIndentationPlugin />
         <HistoryPlugin />
+        {onChange && <OnChangePlugin ignoreSelectionChange={true} onChange={onChange} />}
       </div>
     </LexicalComposer>
   );
 }
+
