@@ -44,7 +44,7 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
         <Toolbar.Root orientation="vertical">
           <Toolbar.IconButton icon={<HiMiniDocumentText />} />
           <Toolbar.IconButton icon={<HiPhoto />} />
-          <Toolbar.IconButton icon={<HiTable />} />
+          <Toolbar.IconButton disabled={true} icon={<HiTable />} />
         </Toolbar.Root>
       </div>
       <DndContext sensors={[mouseSensor]}>
