@@ -26,7 +26,13 @@ const Separator = () => {
 
 const contextMenuItemVariants = cva([
   "flex max-h-fit min-h-10 text-sm overflow-clip rounded-sm px-2 py-1 hover:bg-blue-100 focus:bg-blue-100",
-]);
+], {
+  variants: {
+    disabled: {
+      true: 'text-[#BCBAC7]'
+    }
+  }
+});
 
 interface ContextMenuItemsProps extends RadixContextMenu.MenuItemProps {
   icon?: React.ReactNode;
@@ -35,7 +41,7 @@ interface ContextMenuItemsProps extends RadixContextMenu.MenuItemProps {
 const Item = ({ children, icon, ...radixProps }: ContextMenuItemsProps) => {
   return (
     //TODO: figure out how to apply disabled state with cva
-    <RadixContextMenu.Item {...radixProps} className={clsx(contextMenuItemVariants(), radixProps.disabled && 'text-[#BCBAC7]')}>
+    <RadixContextMenu.Item {...radixProps} className={contextMenuItemVariants({disabled: radixProps.disabled})}>
       <div className="flex gap-1 items-center w-full h-full">
         {icon}
         {children}

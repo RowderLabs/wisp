@@ -1,9 +1,12 @@
 import { FileRoute } from "@tanstack/react-router";
-import { DraggableCanvas, TransformEvent } from "@wisp/ui";
+import { DraggableCanvas, TransformEvent, Toolbar } from "@wisp/ui";
+
 import React, { useEffect, useState } from "react";
 import { Banner } from "@wisp/ui";
 import { rspc } from "@wisp/client";
 import { useDebounce } from "@uidotdev/usehooks";
+import { HiDocumentText, HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
+import { HiTable } from "react-icons/hi";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context }) =>
@@ -17,12 +20,12 @@ export const Route = new FileRoute("/workspace/characters/$characterId").createR
 function WorkspaceCharacterSheetPage() {
   const panels = Route.useLoaderData();
   const [draft, setDraft] = useState<Omit<TransformEvent, "type"> | undefined>(undefined);
-  const [debounceState, setDebounceState] = useState('idle')
+  const [debounceState, setDebounceState] = useState("idle");
   const debouncedDraft = useDebounce(draft, 1000);
 
   useEffect(() => {
     if (!debouncedDraft) return;
-    setDebounceState('committing')
+    setDebounceState("committing");
     commitTransform({
       id: debouncedDraft.id,
       transform: {
@@ -42,11 +45,11 @@ function WorkspaceCharacterSheetPage() {
   //TODO: move into custom hook and apply optimistic updates.
   const { mutate: commitTransform } = rspc.useMutation("panels.transform", {
     onSuccess: () => {
-      setDebounceState('idle')
+      setDebounceState("idle");
     },
     onError: (e) => {
-      console.error(e)
-    }
+      console.error(e);
+    },
   });
   const transform = React.useCallback((event: TransformEvent) => {
     queryClient.setQueryData<{ id: string; x: number; y: number; width: number; height: number }[]>(
@@ -62,6 +65,7 @@ function WorkspaceCharacterSheetPage() {
         <p className="text-lg font-semibold">{debounceState}</p>
       </Banner>
       <div className="basis-full relative" style={{ height: "800px" }}>
+        
         {canvasItems && <DraggableCanvas items={canvasItems} onItemTransform={transform} />}
       </div>
     </div>
