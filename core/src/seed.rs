@@ -50,7 +50,7 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
 
     let panel = prisma
         .panel()
-        .create(150, 200, 150, 300, "hello world".into(), vec![])
+        .create(150, 200, 150, 300, vec![])
         .exec()
         .await
         .unwrap();

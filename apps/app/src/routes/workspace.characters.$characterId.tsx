@@ -1,12 +1,10 @@
 import { FileRoute } from "@tanstack/react-router";
-import { DraggableCanvas, TransformEvent, Toolbar } from "@wisp/ui";
+import { DraggableCanvas, TransformEvent } from "@wisp/ui";
 
 import React, { useEffect, useState } from "react";
 import { Banner } from "@wisp/ui";
 import { rspc } from "@wisp/client";
 import { useDebounce } from "@uidotdev/usehooks";
-import { HiDocumentText, HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
-import { HiTable } from "react-icons/hi";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context }) =>

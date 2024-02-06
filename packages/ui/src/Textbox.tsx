@@ -1,5 +1,5 @@
 import { VariantProps, cva } from "class-variance-authority";
-import TextEditor from "./TextEditor";
+import TextEditor, { TextEditorProps } from "./TextEditor";
 import React from "react";
 
 const textboxVariants = cva("bg-white overflow-clip border rounded-md p-2 w-full h-full");
@@ -16,17 +16,20 @@ const textboxTitleVariants = cva("text-slate-800 text-sm flex", {
   },
 });
 
-export type TextBoxProps = {
+export type TextBoxProps = Omit<TextEditorProps, "features"> & {
   textBoxOptions?: {
     title: VariantProps<typeof textboxTitleVariants>;
   };
 };
 
-export const TextBox: React.FC<TextBoxProps> = (props) => {
+
+export const TextBox: React.FC<TextBoxProps> = ({ onChange, initial }) => {
   return (
-    <div className={textboxVariants()}>
+    <div className={textboxVariants({})}>
       <TextEditor
-        features={{ typeahead: { lists: true, headings: true } }}
+        initial={initial}
+        onChange={onChange}
+        features={{ typeahead: true }}
         className="rounded-md px-2 py-1 min-h-[150px] min-w=[150px]"
       />
     </div>

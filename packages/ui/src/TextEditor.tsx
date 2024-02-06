@@ -12,6 +12,7 @@ import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
 import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
 import { useCallback } from "react";
+import React from 'react';
 
 //type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
@@ -32,17 +33,23 @@ type LexicalEditorProps = {
   initalConfig: Parameters<typeof LexicalComposer>["0"]["initialConfig"];
 };
 
-type TextEditorProps = {
+export type TextEditorProps = {
+  initial?: string | null
   className?: string;
   features: OptTextEditorFeatures;
   editorTheme?: LexicalEditorProps["initalConfig"]["theme"];
   onChange?: OnChangeHandler
 };
 
-export default function TextEditor({ className, features, editorTheme, onChange }: TextEditorProps) {
+export default function TextEditor({ className, features, editorTheme, onChange, initial }: TextEditorProps) {
   function onError(err: Error) {
     console.error(err);
   }
+
+  React.useEffect(() => {
+    console.log(initial)
+
+  }, [initial])
 
   const featureEnabled = useCallback(
     (flag?: Omit<TextEditorFeatures, "full">[keyof Omit<TextEditorFeatures, "full">]) => {
@@ -53,6 +60,7 @@ export default function TextEditor({ className, features, editorTheme, onChange 
 
   const initialConfig: LexicalEditorProps["initalConfig"] = {
     namespace: "MyEditor",
+    editorState: (initial ?? undefined) || undefined,
     theme: editorTheme || {
       heading: {
         h1: "text-[24px] m-0  text-slate-600",

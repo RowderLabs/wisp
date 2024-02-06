@@ -16,6 +16,12 @@ struct PanelTransformUpdatePayload {
     transform: TransformUpdate,
 }
 
+#[derive(Deserialize, specta::Type)]
+struct PanelContentUpdatePayload {
+    id: String,
+    content: Option<String>,
+}
+
 pub fn panels_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
         .query("find", |t| {
@@ -36,6 +42,19 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
                 ctx.client
                     .panel()
                     .update_unchecked(panel::id::equals(update.id), update.transform.to_params())
+                    .exec()
+                    .await
+                    .map_err(Into::into)
+            })
+        })
+        .mutation("set_content", |t| {
+            t(|ctx: Ctx, update: PanelContentUpdatePayload| async move {
+                ctx.client
+                    .panel()
+                    .update(
+                        panel::id::equals(update.id),
+                        vec![panel::content::set(update.content)],
+                    )
                     .exec()
                     .await
                     .map_err(Into::into)

@@ -1,21 +1,31 @@
-import { ImageUploadOverlay, ImageUploader, ImageUploaderProps } from "./ImageUploader";
-import { TextBox, TextBoxProps } from "./Textbox";
+import { TextBox } from "./Textbox";
 
 const registeredPanels = {
-  textbox: TextBox,
+  textbox: {
+    component: TextBox,
+    derivedProps: "initial",
+  },
 } as const;
 
 type PanelKey = keyof typeof registeredPanels;
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 
-type T1 = RequiredKeys<React.ComponentProps<typeof registeredPanels["textbox"]>>;
-
 type PanelDefinition<T extends typeof registeredPanels = typeof registeredPanels> = {
-  [key in PanelKey]: React.ComponentProps<T[key]>;
+  [key in PanelKey]: {
+    props: Omit<React.ComponentPropsWithoutRef<T[key]["component"]>, T[key]["derivedProps"]>;
+    fromJSON: (json: string | null) => Pick<React.ComponentPropsWithoutRef<T[key]['component']>, T[key]['derivedProps']>
+  };
 };
+type T1 = Pick<React.ComponentPropsWithoutRef<typeof TextBox>, 'initial'>
 
-export function createPanel(key: PanelKey, props: PanelDefinition[typeof key]): React.ReactNode {
-  const Component = registeredPanels[key];
-  return <Component {...props} />;
+export function createPanel(
+  key: PanelKey,
+  content: string | null,
+  props: PanelDefinition[typeof key]["props"],
+  fromJSON: PanelDefinition[typeof key]["fromJSON"]
+): React.ReactNode {
+  const Component = registeredPanels[key]["component"];
+  const jsonProps = fromJSON(content)
+  const allProps = { ...props, ...jsonProps};
+  return <Component {...allProps} />;
 }
-

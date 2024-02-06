@@ -1,5 +1,5 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu, Dialog, Toolbar } from "@wisp/ui";
+import { TreeView, ContextMenu, Toolbar } from "@wisp/ui";
 import { CreateCharacterDialog } from "../components/CreateCharacterDialog";
 import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc } from "@wisp/client";
@@ -13,10 +13,16 @@ import {
 import { HiBattery50, HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 
 export const Route = new FileRoute("/workspace").createRoute({
+  loader: ({ context }) =>
+    context.rspc.queryClient.ensureQueryData({
+      queryKey: ["characters.build_tree"],
+      queryFn: () => context.rspc.client.query(['characters.build_tree']),
+    }),
   component: WorkspacePage,
 });
 
 function WorkspacePage() {
+  const tree = Route.useLoaderData()
   const queryClient = rspc.useContext().queryClient;
   const { mutate: deleteCharacter } = rspc.useMutation("characters.delete", {
     onSuccess: () => {
@@ -24,8 +30,6 @@ function WorkspacePage() {
     },
   });
   const [_, treeApi] = useTreeView({ onDelete: (id: string) => deleteCharacter(id) });
-  const { data: tree } = rspc.useQuery(["characters.build_tree"]);
-  const [manager] = useDialogManager();
 
   return (
     <div className="flex h-screen bg-neutral text-slate-600">

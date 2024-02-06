@@ -7,13 +7,12 @@ import { createPanel } from "./panels";
 import { Toolbar } from "./Toolbar";
 import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiTable } from "react-icons/hi";
+import {Panel} from '@wisp/client/src/bindings'
+import {rspc} from '@wisp/client'
 
-type CanvasItemType = {
-  id: string;
-} & Transform;
 
 type DraggableCanvasProps = {
-  items: CanvasItemType[];
+  items: Panel[];
   onItemTransform: (event: TransformEvent) => void;
 };
 
@@ -26,8 +25,13 @@ const snapToGrid: Modifier = (args) => {
   };
 };
 
+
 function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) {
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { delay: 100, tolerance: 5 } });
+  const queryClient = rspc.useContext().queryClient
+  const {mutate: setPanelContent} = rspc.useMutation(['panels.set_content'], {onSuccess: () => {
+    queryClient.invalidateQueries(['panels.find'])
+  }})
   return (
     <div className="w-full h-full">
       <div className="absolute top-0 left-2">
@@ -45,7 +49,20 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <DraggableCanvasItem>{createPanel("textbox", {})}</DraggableCanvasItem>
+            <DraggableCanvasItem>
+              {createPanel(
+                "textbox",
+                item.content,
+                {
+                  onChange: (editorState) => {
+                    setPanelContent({id: item.id, content: JSON.stringify(editorState.toJSON())})
+                  },
+                },
+                (json) => {
+                  return { initial: json };
+                }
+              )}
+            </DraggableCanvasItem>
           </Transform.Context>
         ))}
       </DndContext>
