@@ -12,6 +12,7 @@ import { rspc } from "@wisp/client";
 
 type DraggableCanvasProps = {
   items: Panel[];
+  createImage: () => void;
   onItemTransform: (event: TransformEvent) => void;
 };
 
@@ -24,7 +25,7 @@ const snapToGrid: Modifier = (args) => {
   };
 };
 
-function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) {
+function DraggableCanvasInner({ items, onItemTransform, createImage }: DraggableCanvasProps) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 100, tolerance: 5 },
   });
@@ -56,7 +57,7 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
             }
             icon={<HiMiniDocumentText />}
           />
-          <Toolbar.IconButton icon={<HiPhoto />} />
+          <Toolbar.IconButton onClick={() => createImage()} icon={<HiPhoto />} />
           <Toolbar.IconButton disabled={true} icon={<HiTable />} />
         </Toolbar.Root>
       </div>

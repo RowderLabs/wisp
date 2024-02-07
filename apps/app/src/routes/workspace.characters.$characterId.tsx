@@ -3,6 +3,8 @@ import { DraggableCanvas } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
 import { rspc } from "@wisp/client";
 import { useDebouncedPanelTransform } from "../hooks/useDebouncedPanelTransform";
+import { useDialogManager } from "@wisp/ui/src/hooks";
+import { ImageUploadDialog } from "../components/ImageUploadDialog";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context }) =>
@@ -20,15 +22,21 @@ function WorkspaceCharacterSheetPage() {
     placeholderData: panels,
     staleTime: Infinity,
   });
+  const [dialogManager] = useDialogManager();
 
   //TODO: move into custom hook and apply optimistic updates.
 
   return (
     <div className="w-full" style={{ height: "100vh", overflowY: "auto" }}>
-      <Banner className="bg-slate-300">
-      </Banner>
+      <Banner className="bg-slate-300"></Banner>
       <div className="basis-full relative" style={{ height: "800px" }}>
-        {canvasItems && <DraggableCanvas items={canvasItems} onItemTransform={transformPanel} />}
+        {canvasItems && (
+          <DraggableCanvas
+            createImage={() => dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel" })}
+            items={canvasItems}
+            onItemTransform={transformPanel}
+          />
+        )}
       </div>
     </div>
   );
