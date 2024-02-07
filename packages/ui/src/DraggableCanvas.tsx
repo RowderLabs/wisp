@@ -1,9 +1,9 @@
+import React from "react";
 import { DndContext, Modifier, MouseSensor, useSensor } from "@dnd-kit/core";
 import { PropsWithChildren } from "react";
-import { Transform, TransformEvent, TransformProps } from "./Transform";
+import { Transform, TransformEvent } from "./Transform";
 import { useTransformContext, useTranslate } from "./hooks";
-import React from "react";
-import { createPanel } from "./panels";
+import { TextboxPanel } from "../panels";
 import { Toolbar } from "./Toolbar";
 import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiTable } from "react-icons/hi";
@@ -69,19 +69,12 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
             onTransform={onItemTransform}
           >
             <DraggableCanvasItem>
-              {createPanel(
-                "textbox",
-                item.content,
-                {
-                  pluginOpts: { onChange: { debounce: { duration: 500 } } },
-                  onChange: (editorState) => {
-                    setPanelContent({ id: item.id, content: JSON.stringify(editorState.toJSON()) });
-                  },
+              {new TextboxPanel({
+                pluginOpts: { onChange: { debounce: { duration: 500 } } },
+                onChange: (editorState) => {
+                  setPanelContent({ id: item.id, content: JSON.stringify({initial: editorState.toJSON()}) });
                 },
-                (json) => {
-                  return { initial: json };
-                }
-              )}
+              }).renderFromJSON(item.content)}
             </DraggableCanvasItem>
           </Transform.Context>
         ))}

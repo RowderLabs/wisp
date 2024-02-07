@@ -48,10 +48,4 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         .await
         .unwrap();
 
-    let panel = prisma
-        .panel()
-        .create(150, 200, 150, 300, vec![])
-        .exec()
-        .await
-        .unwrap();
 }

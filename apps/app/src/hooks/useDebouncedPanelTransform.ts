@@ -18,10 +18,11 @@ export function useDebouncedPanelTransform({
 
   //we need more than to perform optimistic update because we only want to commit to sending state to server after delay
   const transformPanel = React.useCallback((event: TransformEvent) => {
+    const oldPanel = (queryClient.getQueryData(['panels.find']) as Panel[]).find(item => item.id === event.id) as Panel
     const prev = (queryClient.getQueryData(['panels.find']) as Panel[]).filter(item => item.id !== event.id)
-    queryClient.setQueryData<{ id: string; x: number; y: number; width: number; height: number }[]>(
+    queryClient.setQueryData<Panel[]>(
       ["panels.find"],
-      [...prev, { ...event }]
+      [...prev, { ...event, content: oldPanel.content }]
     );
     setDraft(event);
   }, []);
