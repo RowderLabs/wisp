@@ -22,13 +22,11 @@ export type TextBoxProps = Omit<TextEditorProps, "features"> & {
   };
 };
 
-
-export const TextBox: React.FC<TextBoxProps> = ({ onChange, initial }) => {
+export const TextBox: React.FC<TextBoxProps> = (props) => {
   return (
     <div className={textboxVariants({})}>
       <TextEditor
-        initial={initial}
-        onChange={onChange}
+        {...props}
         features={{ typeahead: true }}
         className="rounded-md px-2 py-1 min-h-[150px] min-w=[150px]"
       />

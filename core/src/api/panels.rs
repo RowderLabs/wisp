@@ -75,6 +75,7 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
         })
         .mutation("set_content", |t| {
             t(|ctx: Ctx, update: PanelContentUpdatePayload| async move {
+                println!("Attempting content update on {}", update.id);
                 ctx.client
                     .panel()
                     .update(

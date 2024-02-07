@@ -1,4 +1,4 @@
-import type { OnChangeHandler } from './plugins/OnChangePlugin'
+import type { OnChangeHandler, OnChangePluginProps } from './plugins/OnChangePlugin'
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
@@ -13,6 +13,7 @@ import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
 import { useCallback } from "react";
 import React from 'react';
+import {useDebounceCallback} from 'usehooks-ts'
 
 //type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
@@ -39,12 +40,16 @@ export type TextEditorProps = {
   features: OptTextEditorFeatures;
   editorTheme?: LexicalEditorProps["initalConfig"]["theme"];
   onChange?: OnChangeHandler
+  pluginOpts?: {
+    onChange: Partial<Omit<OnChangePluginProps, 'onChange'>>
+  }
 };
 
-export default function TextEditor({ className, features, editorTheme, onChange, initial }: TextEditorProps) {
+export default function TextEditor({ className, features, editorTheme, onChange, initial, pluginOpts }: TextEditorProps) {
   function onError(err: Error) {
     console.error(err);
   }
+
 
   React.useEffect(() => {
     console.log(initial)
@@ -95,7 +100,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
         />
         <TabIndentationPlugin />
         <HistoryPlugin />
-        {onChange && <OnChangePlugin ignoreSelectionChange={true} onChange={onChange} />}
+        {onChange && <OnChangePlugin {...pluginOpts?.onChange} onChange={onChange} />}
       </div>
     </LexicalComposer>
   );

@@ -35,9 +35,11 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
     },
   });
 
-  const { mutate: creatPanelDb } = rspc.useMutation(["panels.create"], {onSuccess: () => {
-    queryClient.invalidateQueries(['panels.find'])
-  }});
+  const { mutate: creatPanelDb } = rspc.useMutation(["panels.create"], {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["panels.find"]);
+    },
+  });
   return (
     <div className="w-full h-full">
       <div className="absolute top-0 left-2">
@@ -71,6 +73,7 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
                 "textbox",
                 item.content,
                 {
+                  pluginOpts: { onChange: { debounce: { duration: 500 } } },
                   onChange: (editorState) => {
                     setPanelContent({ id: item.id, content: JSON.stringify(editorState.toJSON()) });
                   },
