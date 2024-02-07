@@ -7,9 +7,8 @@ import { createPanel } from "./panels";
 import { Toolbar } from "./Toolbar";
 import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiTable } from "react-icons/hi";
-import {Panel} from '@wisp/client/src/bindings'
-import {rspc} from '@wisp/client'
-
+import { Panel } from "@wisp/client/src/bindings";
+import { rspc } from "@wisp/client";
 
 type DraggableCanvasProps = {
   items: Panel[];
@@ -25,18 +24,36 @@ const snapToGrid: Modifier = (args) => {
   };
 };
 
-
 function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) {
-  const mouseSensor = useSensor(MouseSensor, { activationConstraint: { delay: 100, tolerance: 5 } });
-  const queryClient = rspc.useContext().queryClient
-  const {mutate: setPanelContent} = rspc.useMutation(['panels.set_content'], {onSuccess: () => {
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: { delay: 100, tolerance: 5 },
+  });
+  const queryClient = rspc.useContext().queryClient;
+  const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["panels.find"]);
+    },
+  });
+
+  const { mutate: creatPanelDb } = rspc.useMutation(["panels.create"], {onSuccess: () => {
     queryClient.invalidateQueries(['panels.find'])
-  }})
+  }});
   return (
     <div className="w-full h-full">
       <div className="absolute top-0 left-2">
         <Toolbar.Root orientation="vertical">
-          <Toolbar.IconButton icon={<HiMiniDocumentText />} />
+          <Toolbar.IconButton
+            onClick={() =>
+              creatPanelDb({
+                x: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
+                y: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
+                width: 150,
+                height: 200,
+                content: null,
+              })
+            }
+            icon={<HiMiniDocumentText />}
+          />
           <Toolbar.IconButton icon={<HiPhoto />} />
           <Toolbar.IconButton disabled={true} icon={<HiTable />} />
         </Toolbar.Root>
@@ -55,7 +72,7 @@ function DraggableCanvasInner({ items, onItemTransform }: DraggableCanvasProps) 
                 item.content,
                 {
                   onChange: (editorState) => {
-                    setPanelContent({id: item.id, content: JSON.stringify(editorState.toJSON())})
+                    setPanelContent({ id: item.id, content: JSON.stringify(editorState.toJSON()) });
                   },
                 },
                 (json) => {

@@ -13,7 +13,17 @@ panel::partial_unchecked!(TransformUpdate {
 #[derive(Deserialize, specta::Type)]
 struct PanelTransformUpdatePayload {
     id: String,
+    #[serde(flatten)]
     transform: TransformUpdate,
+}
+
+#[derive(Deserialize, specta::Type)]
+struct CreatePanel {
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+    content: Option<String>
 }
 
 #[derive(Deserialize, specta::Type)]
@@ -31,6 +41,22 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
                 ctx.client
                     .panel()
                     .find_many(vec![]) //list of filters (empty for now because not filtering)
+                    .exec()
+                    .await
+                    .map_err(Into::into)
+            })
+        })
+        .mutation("create", |t| {
+            t(|ctx: Ctx, panel: CreatePanel| async move {
+                ctx.client
+                    .panel()
+                    .create(
+                        panel.x,
+                        panel.y,
+                        panel.width,
+                        panel.height,
+                        vec![panel::content::set(panel.content)],
+                    )
                     .exec()
                     .await
                     .map_err(Into::into)
