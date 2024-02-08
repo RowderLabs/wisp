@@ -17,7 +17,7 @@ tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
 wispcore = {path = "../../../core" }
-tauri = { version = "1.4", features = ["api-all"] }
+tauri = {  version = "=1.5.3", features = [ "path-all", "fs-all", "dialog-all"] }
 prisma-client-rust = {workspace = true}
 serde = { workspace = true }
 serde_json = "1.0"
