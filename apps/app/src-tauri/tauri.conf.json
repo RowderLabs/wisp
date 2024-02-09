@@ -18,6 +18,9 @@
       "fs": {
         "all": true
       },
+      "protocol": {
+        "asset": true
+      },
       "dialog": {
         "all": true
       }
