@@ -6,14 +6,16 @@ const schema = z.object({
   src: z.string(),
 });
 
-interface ImageUploadDialogProps extends DialogProps {}
+interface ImageUploadDialogProps extends DialogProps {
+  onUpload: (path: string) => void
+}
 
-export function ImageUploadDialog({ id, open, onOpenChange }: ImageUploadDialogProps) {
+export function ImageUploadDialog({ id, open, onOpenChange, onUpload }: ImageUploadDialogProps) {
   const form = useZodForm({ schema });
   const [dialogManager] = useDialogManager();
   return (
     <Dialog id={id} open={open} onOpenChange={onOpenChange}>
-      <FileDropper/>
+      <FileDropper onSubmitFile={(path) => onUpload(path)}/>
     </Dialog>
   );
 }

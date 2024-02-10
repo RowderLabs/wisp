@@ -19,6 +19,7 @@ struct PanelTransformUpdatePayload {
 
 #[derive(Deserialize, specta::Type)]
 struct CreatePanel {
+    panel_type: String,
     x: i32,
     y: i32,
     width: i32,
@@ -51,6 +52,7 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
                 ctx.client
                     .panel()
                     .create(
+                        panel.panel_type,
                         panel.x,
                         panel.y,
                         panel.width,

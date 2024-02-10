@@ -15,9 +15,11 @@ const fileDropperVariants = cva("border p-2 h-[300px] w-[300px] bg-white", {
     },
   },
 });
-export function FileDropper() {
-  const [over, setOver] = React.useState(false);
-  const [src, setSrc] = React.useState<string>()
+
+type FileDropperProps = {
+  onSubmitFile: (path: string) => void
+}
+export function FileDropper({onSubmitFile}: FileDropperProps) {
   const openDialog = () => {
     open({ multiple: false, directory: false }).then(async (res) => {
       if (res) {
@@ -26,23 +28,17 @@ export function FileDropper() {
         const imageId = `image-${nanoid(5)}.png`
         const imagePath = await join(appData, 'wisp_dev', 'assets', imageId)
         await copyFile(res, imagePath).catch(reason => console.error('failed to copy image ' + reason))
-        await retriveNewImage(imagePath)
+        onSubmitFile(imagePath)
       }
     });
   };
 
-  const retriveNewImage = async (path: string) => {
-    const image = await convertFileSrc(path)
-    setSrc(image)
-  }
 
   return (
     <div>
       <div
-        className={fileDropperVariants({ over })}
-
+        className={fileDropperVariants()}
       >
-        {src && new ImagePanel({fit: 'contain'}).renderFromJSON(JSON.stringify({src}))}
       </div>
       <Button onClick={openDialog} variant="outline">
         Upload

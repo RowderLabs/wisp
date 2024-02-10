@@ -19,6 +19,7 @@ model Character {
 
 model Panel {
     id String @id @default(uuid())
+    panelType String
     x Int
     y Int
     width Int

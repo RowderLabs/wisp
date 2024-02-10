@@ -9,6 +9,7 @@ import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiTable } from "react-icons/hi";
 import { Panel } from "@wisp/client/src/bindings";
 import { rspc } from "@wisp/client";
+import { ImagePanel } from "../panels/image";
 
 type DraggableCanvasProps = {
   items: Panel[];
@@ -53,6 +54,7 @@ function DraggableCanvasInner({ items, onItemTransform, createImage }: Draggable
                 width: 150,
                 height: 200,
                 content: null,
+                panel_type: "textbox",
               })
             }
             icon={<HiMiniDocumentText />}
@@ -70,12 +72,17 @@ function DraggableCanvasInner({ items, onItemTransform, createImage }: Draggable
             onTransform={onItemTransform}
           >
             <DraggableCanvasItem>
-              {new TextboxPanel({
-                pluginOpts: { onChange: { debounce: { duration: 500 } } },
-                onChange: (editorState) => {
-                  setPanelContent({ id: item.id, content: JSON.stringify({initial: editorState.toJSON()}) });
-                },
-              }).renderFromJSON(item.content)}
+              {item.panelType === "textbox"
+                ? new TextboxPanel({
+                    pluginOpts: { onChange: { debounce: { duration: 500 } } },
+                    onChange: (editorState) => {
+                      setPanelContent({
+                        id: item.id,
+                        content: JSON.stringify({ initial: editorState.toJSON() }),
+                      });
+                    },
+                  }).renderFromJSON(item.content)
+                : new ImagePanel({ fit: "cover" }).renderFromJSON(item.content)}
             </DraggableCanvasItem>
           </Transform.Context>
         ))}

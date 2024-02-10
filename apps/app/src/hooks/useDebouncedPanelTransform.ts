@@ -22,7 +22,7 @@ export function useDebouncedPanelTransform({
     const prev = (queryClient.getQueryData(['panels.find']) as Panel[]).filter(item => item.id !== event.id)
     queryClient.setQueryData<Panel[]>(
       ["panels.find"],
-      [...prev, { ...event, content: oldPanel.content }]
+      [...prev, { ...event, content: oldPanel.content, panelType: oldPanel.panelType }]
     );
     setDraft(event);
   }, []);
