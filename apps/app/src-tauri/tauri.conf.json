@@ -19,7 +19,12 @@
         "all": true
       },
       "protocol": {
-        "asset": true
+        "all": false,
+        "asset": true,
+        "assetScope": {
+          "allow": ["**"],
+          "requireLiteralLeadingDot": false
+        }
       },
       "dialog": {
         "all": true

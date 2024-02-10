@@ -15,7 +15,6 @@ async fn main() -> Result<(), snafu::Whatever> {
     let dev_dir = init_dev(&context)?;
     let prisma_arc = init_prisma_client(&dev_dir).await?;
 
-    //wispcore::seed::seed(&prisma).await;
 
     tauri::Builder::default()
         .plugin(rspc::integrations::tauri::plugin(router, move || {
@@ -35,6 +34,7 @@ async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>,
 
     #[cfg(target_os = "macos")]
     let db_url = format!("file:{}/dev.db", dev_data_dir.display());
+    println!("{}", dev_data_dir.display());
 
     #[cfg(debug_assertions)]
     let prisma: PrismaClient = wispcore::prisma::PrismaClient::_builder()
@@ -42,6 +42,8 @@ async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>,
         .build()
         .await
         .whatever_context("Failed to initialize prisma client")?;
+
+    //wispcore::seed::seed(&prisma).await;
 
     #[cfg(debug_assertions)]
     prisma
@@ -55,7 +57,7 @@ async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>,
 }
 
 fn init_dev_dir(path: &PathBuf) -> Result<(), snafu::Whatever> {
-    std::fs::create_dir(path).unwrap();
+    std::fs::create_dir_all(path).whatever_context("failed to create dev dir")?;
     std::fs::create_dir(path.join("assets")).whatever_context("Failed to create dev dir.")?;
     Ok(())
 }
