@@ -27,9 +27,9 @@ function WorkspaceCharacterSheetPage() {
   //TODO: move into custom hook and apply optimistic updates.
 
   return (
-    <div className="w-full" style={{ height: "100vh", overflowY: "auto" }}>
+    <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
       <Banner className="bg-slate-300"></Banner>
-      <div className="basis-full relative" style={{ height: "800px" }}>
+      <div className="basis-full relative" style={{ flexBasis: '100%' }}>
         {canvasItems && (
           <DraggableCanvas
             createImage={() => dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel" })}

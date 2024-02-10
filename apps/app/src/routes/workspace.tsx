@@ -47,10 +47,6 @@ function WorkspacePage() {
         )}
       </div>
       <div className="basis-full">
-        {/** Character SHeet*/}
-        <Toolbar.Root>
-          <Toolbar.IconButton icon={<HiBattery50/>}/>
-        </Toolbar.Root>
         <div className="flex">
           <Outlet />
         </div>
