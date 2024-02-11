@@ -1,21 +1,24 @@
-import { Button, Dialog, DialogProps, FileDropper, Form, InputField } from "@wisp/ui";
-import { useDialogManager, useZodForm } from "@wisp/ui/src/hooks";
-import { z } from "zod";
-
-const schema = z.object({
-  src: z.string(),
-});
+import { Dialog, DialogProps, FileDropper } from "@wisp/ui";
+import { useDialogManager } from "@wisp/ui/src/hooks";
 
 interface ImageUploadDialogProps extends DialogProps {
-  onUpload: (path: string) => void
+  onUpload: (path: string) => void;
 }
 
 export function ImageUploadDialog({ id, open, onOpenChange, onUpload }: ImageUploadDialogProps) {
-  const form = useZodForm({ schema });
   const [dialogManager] = useDialogManager();
+
+  const handleUpload = (path: string) => {
+    onUpload(path);
+    afterUpload();
+  };
+
+  const afterUpload = () => {
+    dialogManager.removeDialog(id);
+  };
   return (
     <Dialog id={id} open={open} onOpenChange={onOpenChange}>
-      <FileDropper onSubmitFile={(path) => onUpload(path)}/>
+      <FileDropper onSubmitFile={handleUpload} />
     </Dialog>
   );
 }
