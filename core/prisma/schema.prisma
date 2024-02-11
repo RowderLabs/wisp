@@ -22,7 +22,7 @@ model Canvas {
     id String @id @default(uuid())
     panels Panel[]
     characterId String @unique
-    character Character @relation(fields: [characterId], references: [id])
+    character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 }
 
 model Panel {
@@ -34,7 +34,7 @@ model Panel {
     height Int
     content String?
     canvasId String
-    canvas Canvas @relation(fields: [canvasId], references: [id])
+    canvas Canvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
 }
 
 model CharacterSheet {
