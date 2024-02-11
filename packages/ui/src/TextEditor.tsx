@@ -50,11 +50,6 @@ export default function TextEditor({ className, features, editorTheme, onChange,
   }
 
 
-  React.useEffect(() => {
-    console.log(initial)
-
-  }, [initial])
-
   const featureEnabled = useCallback(
     (flag?: Omit<TextEditorFeatures, "full">[keyof Omit<TextEditorFeatures, "full">]) => {
       return Boolean(flag);

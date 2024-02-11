@@ -5,14 +5,21 @@ import { Transform, TransformEvent } from "./Transform";
 import { useTransformContext, useTranslate } from "./hooks";
 import { TextboxPanel } from "../panels";
 import { Toolbar } from "./Toolbar";
-import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
+import {
+  HiMiniDocumentText,
+  HiOutlineClipboardDocument,
+  HiOutlineSquare3Stack3D,
+  HiPhoto,
+  HiTrash,
+} from "react-icons/hi2";
 import { HiTable } from "react-icons/hi";
 import { Panel } from "@wisp/client/src/bindings";
 import { rspc } from "@wisp/client";
 import { ImagePanel } from "../panels/image";
+import { ContextMenu } from "./ContextMenu";
 
 type DraggableCanvasProps = {
-  id: string
+  id: string;
   items: Panel[];
   createImage: () => void;
   onItemTransform: (event: TransformEvent) => void;
@@ -56,7 +63,7 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage }: Dragg
                 height: 200,
                 content: null,
                 panel_type: "textbox",
-                canvas_id: id
+                canvas_id: id,
               })
             }
             icon={<HiMiniDocumentText />}
@@ -73,7 +80,7 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage }: Dragg
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <DraggableCanvasItem>
+            <DraggableCanvasItem onDelete={(id) => console.log(id)}>
               {item.panelType === "textbox"
                 ? new TextboxPanel({
                     pluginOpts: { onChange: { debounce: { duration: 500 } } },
@@ -95,35 +102,58 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage }: Dragg
 
 export const DraggableCanvas = React.memo(DraggableCanvasInner);
 
-interface DraggableCanvasItemProps extends PropsWithChildren {}
+interface DraggableCanvasItemProps extends PropsWithChildren {
+  onDelete?: (id: string) => void;
+}
 
-function DraggableCanvasItem({ children }: DraggableCanvasItemProps) {
-  const { transform } = useTransformContext();
+function DraggableCanvasItem({ children, onDelete }: DraggableCanvasItemProps) {
+  const { transform, id } = useTransformContext();
   const { dragHandle, dragRef, translateStyles } = useTranslate();
   return (
-    <div
-      ref={dragRef}
-      {...dragHandle.listeners}
-      {...dragHandle.attributes}
-      className="rounded-md absolute"
-      style={{
-        left: transform.x,
-        top: transform.y,
-        width: transform.width,
-        height: transform.height,
-        ...translateStyles,
-      }}
+    <ContextMenu.Root
+      className="text-xs"
+      trigger={
+        <div
+          ref={dragRef}
+          {...dragHandle.listeners}
+          {...dragHandle.attributes}
+          className="rounded-md absolute"
+          style={{
+            left: transform.x,
+            top: transform.y,
+            width: transform.width,
+            height: transform.height,
+            ...translateStyles,
+          }}
+        >
+          <Transform.Resize
+            activeHandles={{
+              "bottom-left": true,
+              "bottom-right": true,
+              "top-left": true,
+              "top-right": true,
+            }}
+            constraints={{ width: { min: 150 }, height: { min: 150 } }}
+          />
+          {children}
+        </div>
+      }
     >
-      <Transform.Resize
-        activeHandles={{
-          "bottom-left": true,
-          "bottom-right": true,
-          "top-left": true,
-          "top-right": true,
-        }}
-        constraints={{ width: { min: 150 }, height: { min: 150 } }}
-      />
-      {children}
-    </div>
+      <ContextMenu.Item disabled={true} icon={<HiOutlineClipboardDocument />}>
+        Duplicate
+      </ContextMenu.Item>
+      <ContextMenu.Item disabled={true} icon={<HiOutlineSquare3Stack3D />}>
+        Send to front
+      </ContextMenu.Item>
+      <ContextMenu.Item disabled={true} icon={<HiOutlineSquare3Stack3D />}>
+        Send to back
+      </ContextMenu.Item>
+      <ContextMenu.Separator />
+      {onDelete && (
+        <ContextMenu.Item onClick={() => onDelete(id)} icon={<HiTrash />}>
+          Delete
+        </ContextMenu.Item>
+      )}
+    </ContextMenu.Root>
   );
 }
