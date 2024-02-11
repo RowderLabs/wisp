@@ -12,6 +12,7 @@ import { rspc } from "@wisp/client";
 import { ImagePanel } from "../panels/image";
 
 type DraggableCanvasProps = {
+  id: string
   items: Panel[];
   createImage: () => void;
   onItemTransform: (event: TransformEvent) => void;
@@ -26,20 +27,20 @@ const snapToGrid: Modifier = (args) => {
   };
 };
 
-function DraggableCanvasInner({ items, onItemTransform, createImage }: DraggableCanvasProps) {
+function DraggableCanvasInner({ id, items, onItemTransform, createImage }: DraggableCanvasProps) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 100, tolerance: 5 },
   });
   const queryClient = rspc.useContext().queryClient;
   const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
     onSuccess: () => {
-      queryClient.invalidateQueries(["panels.find"]);
+      queryClient.invalidateQueries(["characters.canvas"]);
     },
   });
 
   const { mutate: creatPanelDb } = rspc.useMutation(["panels.create"], {
     onSuccess: () => {
-      queryClient.invalidateQueries(["panels.find"]);
+      queryClient.invalidateQueries(["characters.canvas"]);
     },
   });
   return (
@@ -55,6 +56,7 @@ function DraggableCanvasInner({ items, onItemTransform, createImage }: Draggable
                 height: 200,
                 content: null,
                 panel_type: "textbox",
+                canvas_id: id
               })
             }
             icon={<HiMiniDocumentText />}

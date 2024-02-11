@@ -6,6 +6,7 @@ use serde::Deserialize;
 use std::{path::PathBuf, sync::Arc};
 
 pub mod characters;
+pub mod canvas;
 pub mod panels;
 
 pub struct Ctx {
@@ -24,5 +25,6 @@ pub fn new() -> RouterBuilder<Ctx> {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../packages/client/src/bindings.ts"),
         ))
         .merge("characters.", characters::characters_router())
+        .merge("canvas.", canvas::canvas_router())
         .merge("panels.", panels::panels_router())
 }

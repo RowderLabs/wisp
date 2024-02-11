@@ -19,33 +19,4 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         .exec()
         .await
         .unwrap();
-
-    let sotiria_id = generate_id("Sotiria".into());
-    let sotiria = prisma
-        .character()
-        .create(
-            sotiria_id.clone(),
-            construct_path(&sotiria_id, &Some(characters.path.as_str())),
-            "Sotiria".into(),
-            false,
-            vec![],
-        )
-        .exec()
-        .await
-        .unwrap();
-
-    let sage_id = generate_id("Sage".into());
-    let sage = prisma
-        .character()
-        .create(
-            sage_id.clone(),
-            construct_path(&sage_id, &Some(&characters.path)),
-            "Sage".into(),
-            false,
-            vec![],
-        )
-        .exec()
-        .await
-        .unwrap();
-
 }

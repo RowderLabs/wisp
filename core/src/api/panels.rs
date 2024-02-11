@@ -1,5 +1,5 @@
 use super::Ctx;
-use crate::prisma::panel;
+use crate::prisma::{canvas, panel};
 use rspc::RouterBuilder;
 use serde::Deserialize;
 
@@ -24,7 +24,8 @@ struct CreatePanel {
     y: i32,
     width: i32,
     height: i32,
-    content: Option<String>
+    content: Option<String>,
+    canvas_id: String
 }
 
 #[derive(Deserialize, specta::Type)]
@@ -35,18 +36,6 @@ struct PanelContentUpdatePayload {
 
 pub fn panels_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
-        .query("find", |t| {
-            t(|ctx: Ctx, _: ()| async move {
-                //takes no arguments
-                println!("{}", "Getting panels...");
-                ctx.client
-                    .panel()
-                    .find_many(vec![]) //list of filters (empty for now because not filtering)
-                    .exec()
-                    .await
-                    .map_err(Into::into)
-            })
-        })
         .mutation("create", |t| {
             t(|ctx: Ctx, panel: CreatePanel| async move {
                 ctx.client
@@ -57,11 +46,12 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
                         panel.y,
                         panel.width,
                         panel.height,
+                        canvas::id::equals(panel.canvas_id),
                         vec![panel::content::set(panel.content)],
                     )
                     .exec()
                     .await
-                    .map_err(Into::into)
+                    .unwrap()
             })
         })
         .mutation("transform", |t| {
