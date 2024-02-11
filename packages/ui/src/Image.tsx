@@ -17,26 +17,13 @@ export type ImageProps = {
   src: string;
 } & VariantProps<typeof imageVariants>;
 export const Image = ({ src, fit }: ImageProps) => {
-  const [showFallback, setShowFallback] = React.useState(false);
-  return (
-    <>
-      {showFallback ? (
-        <img
-          src={src}
-          onError={(e) => setShowFallback(true)}
-          className={imageVariants({ fit })}
-        />
-      ) : (
-        <ImageErrorFallback/>
-      )}
-    </>
-  );
+  return <img src={src} className={imageVariants({ fit })} />;
 };
 
 function ImageErrorFallback() {
   return (
     <div className="text-slate-500 text-lg border w-full h-full rounded-md flex justify-center items-center">
-      <HiExclamationTriangle/>
+      <HiExclamationTriangle />
     </div>
-  )
+  );
 }

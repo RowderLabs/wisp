@@ -25,7 +25,7 @@ struct CreatePanel {
     width: i32,
     height: i32,
     content: Option<String>,
-    canvas_id: String
+    canvas_id: String,
 }
 
 #[derive(Deserialize, specta::Type)]
@@ -52,6 +52,16 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
                     .exec()
                     .await
                     .unwrap()
+            })
+        })
+        .mutation("delete", |t| {
+            t(|ctx: Ctx, panel_id: String| async move {
+                ctx.client
+                    .panel()
+                    .delete(panel::id::equals(panel_id))
+                    .exec()
+                    .await
+                    .map_err(Into::into)
             })
         })
         .mutation("transform", |t| {

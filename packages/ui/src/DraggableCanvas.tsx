@@ -50,6 +50,13 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage }: Dragg
       queryClient.invalidateQueries(["characters.canvas"]);
     },
   });
+
+  const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["characters.canvas"]);
+    },
+  });
+
   return (
     <div className="w-full h-full">
       <div className="absolute top-0 left-2">
@@ -80,7 +87,7 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage }: Dragg
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <DraggableCanvasItem onDelete={(id) => console.log(id)}>
+            <DraggableCanvasItem onDelete={deletePanel}>
               {item.panelType === "textbox"
                 ? new TextboxPanel({
                     pluginOpts: { onChange: { debounce: { duration: 500 } } },
