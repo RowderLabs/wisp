@@ -1,7 +1,7 @@
 import * as RadixToolBar from "@radix-ui/react-toolbar";
 import { cva } from "class-variance-authority";
 import clsx from "clsx";
-import React from "react";
+import React, { PropsWithChildren } from "react";
 
 interface ToolbarProps extends RadixToolBar.ToolbarProps {}
 
@@ -48,4 +48,29 @@ function IconButton({ icon, disabled = false, ...radixProps }: ToolbarIconButton
     </RadixToolBar.Button>
   );
 }
-export const Toolbar = { IconButton, Root };
+
+interface ToolbarToggleItemProps extends RadixToolBar.ToolbarToggleItemProps {
+  icon: React.ReactNode;
+}
+
+interface ToolbarToggleGroupProps extends RadixToolBar.ToolbarToggleGroupSingleProps, PropsWithChildren {}
+
+function ToggleGroup({ children }: ToolbarToggleGroupProps) {
+  return <RadixToolBar.ToggleGroup type="single">{children}</RadixToolBar.ToggleGroup>;
+}
+
+const toolbarToggleItemVariants = cva([
+  "data-[state=on]:bg-blue-200 data-[state=on]:shadow-sm, data-[state=off]:bg-inherit",
+]);
+function ToggleItem({ icon, disabled = false, ...radixProps}: ToolbarToggleItemProps) {
+  return (
+    <RadixToolBar.ToggleItem
+      className={clsx(toolbarButtonVariants({ disabled }), toolbarToggleItemVariants())}
+      disabled={disabled}
+      {...radixProps}
+    >
+      <div className="flex w-6 h-6 justify-center items-center">{icon}</div>
+    </RadixToolBar.ToggleItem>
+  );
+}
+export const Toolbar = { IconButton, Root, ToggleItem, ToggleGroup };

@@ -1,13 +1,16 @@
 import { FileRoute } from "@tanstack/react-router";
-import { DraggableCanvas, TransformEvent } from "@wisp/ui";
+import { DraggableCanvas, Toolbar, TransformEvent } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
 import { rspc } from "@wisp/client";
 import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
 import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { Procedures } from "@wisp/client/src/bindings";
-import React from "react";
+import React, { PropsWithChildren } from "react";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
+import { HiOutlineViewGrid, HiTable } from "react-icons/hi";
+import { Modifier } from "@dnd-kit/core";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -70,12 +73,54 @@ function WorkspaceCharacterSheetPage() {
     });
   };
 
+  const createImage = () => dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel", onUpload });
+
+  const { mutate: createTextboxDb } = rspc.useMutation(["panels.create"], {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["characters.canvas"]);
+    },
+  });
+
+  const createTextbox = () => {
+    createTextboxDb({
+      x: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
+      y: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
+      width: 150,
+      height: 200,
+      content: null,
+      panel_type: "textbox",
+      canvas_id: canvas!.id,
+    });
+  };
+
   //TODO: move into custom hook and apply optimistic updates.
   const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
     onSuccess: () => {
       queryClient.invalidateQueries(["characters.canvas"]);
     },
   });
+  const snapToGrid: Modifier = (args) => {
+    const { transform } = args;
+    return {
+      ...transform,
+      x: Math.ceil(transform.x / 10) * 10,
+      y: Math.ceil(transform.y / 10) * 10,
+    };
+  };
+
+  const [canvasModifiers, setCanvasModifiers] = React.useState<Modifier[]>([]);
+  const gridSnapActive = React.useRef<boolean>(false);
+
+  const toggleGridSnap = () => {
+    //TODO: actually filter modifiers 
+    if (gridSnapActive.current === true) {
+      setCanvasModifiers([])
+    }
+    else {
+      setCanvasModifiers([...canvasModifiers, snapToGrid]) 
+    }
+    gridSnapActive.current = !gridSnapActive.current;
+  };
 
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
@@ -87,6 +132,7 @@ function WorkspaceCharacterSheetPage() {
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
           <DraggableCanvas
+            modifiers={canvasModifiers}
             onItemDelete={(id) => {
               dialogManager.createDialog(ConfirmationDialog, {
                 id: `confirm-delete-${id}`,
@@ -95,12 +141,28 @@ function WorkspaceCharacterSheetPage() {
               });
             }}
             id={canvas.id}
-            createImage={() => dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel", onUpload })}
             items={canvas.panels}
             onItemTransform={setDraft}
-          />
+          >
+            <DraggableCanvasToolbar>
+              <Toolbar.IconButton onClick={createTextbox} icon={<HiMiniDocumentText />} />
+              <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
+              <Toolbar.IconButton disabled={true} icon={<HiTable />} />
+              <Toolbar.ToggleGroup asChild type="single">
+                <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
+              </Toolbar.ToggleGroup>
+            </DraggableCanvasToolbar>
+          </DraggableCanvas>
         )}
       </div>
+    </div>
+  );
+}
+
+function DraggableCanvasToolbar({ children }: PropsWithChildren) {
+  return (
+    <div className="absolute top-0 left-2">
+      <Toolbar.Root orientation="vertical">{children}</Toolbar.Root>
     </div>
   );
 }

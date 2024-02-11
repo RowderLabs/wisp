@@ -21,7 +21,7 @@ export function FileDropper({onSubmitFile}: FileDropperProps) {
       if (res) {
         if (Array.isArray(res)) return;
         const appData = await appDataDir()
-        const imageId = `image-${nanoid(5)}.png`
+        const imageId = `image-${nanoid(5)}`
         const imagePath = await join(appData, 'wisp_dev', 'assets', imageId)
         await copyFile(res, imagePath).catch(reason => console.error('failed to copy image ' + reason))
         onSubmitFile(imagePath)

@@ -4,41 +4,32 @@ import { PropsWithChildren } from "react";
 import { Transform, TransformEvent } from "./Transform";
 import { useTransformContext, useTranslate } from "./hooks";
 import { TextboxPanel } from "../panels";
-import { Toolbar } from "./Toolbar";
-import {
-  HiMiniDocumentText,
-  HiOutlineClipboardDocument,
-  HiOutlineSquare3Stack3D,
-  HiPhoto,
-  HiTrash,
-} from "react-icons/hi2";
-import { HiTable } from "react-icons/hi";
+import { HiOutlineClipboardDocument, HiOutlineSquare3Stack3D, HiTrash } from "react-icons/hi2";
 import { Panel } from "@wisp/client/src/bindings";
 import { rspc } from "@wisp/client";
 import { ImagePanel } from "../panels/image";
 import { ContextMenu } from "./ContextMenu";
+import { d } from "@tauri-apps/api/path-c062430b";
 
 type DraggableCanvasProps = {
   id: string;
   items: Panel[];
-  createImage: () => void;
   onItemTransform: (event: TransformEvent) => void;
-  onItemDelete: (id: string) => void
+  onItemDelete: (id: string) => void;
+  modifiers?: Modifier[];
 };
 
-const snapToGrid: Modifier = (args) => {
-  const { transform } = args;
-  return {
-    ...transform,
-    x: Math.ceil(transform.x / 10) * 10,
-    y: Math.ceil(transform.y / 10) * 10,
-  };
-};
-
-function DraggableCanvasInner({ id, items, onItemTransform, createImage, onItemDelete }: DraggableCanvasProps) {
+function DraggableCanvasInner({
+  items,
+  onItemTransform,
+  onItemDelete,
+  modifiers,
+  children,
+}: PropsWithChildren<DraggableCanvasProps>) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 100, tolerance: 5 },
   });
+
   const queryClient = rspc.useContext().queryClient;
   const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
     onSuccess: () => {
@@ -46,37 +37,10 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage, onItemD
     },
   });
 
-  const { mutate: creatPanelDb } = rspc.useMutation(["panels.create"], {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["characters.canvas"]);
-    },
-  });
-
-  
-
   return (
     <div className="w-full h-full">
-      <div className="absolute top-0 left-2">
-        <Toolbar.Root orientation="vertical">
-          <Toolbar.IconButton
-            onClick={() =>
-              creatPanelDb({
-                x: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
-                y: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
-                width: 150,
-                height: 200,
-                content: null,
-                panel_type: "textbox",
-                canvas_id: id,
-              })
-            }
-            icon={<HiMiniDocumentText />}
-          />
-          <Toolbar.IconButton onClick={() => createImage()} icon={<HiPhoto />} />
-          <Toolbar.IconButton disabled={true} icon={<HiTable />} />
-        </Toolbar.Root>
-      </div>
-      <DndContext sensors={[mouseSensor]}>
+      {children}
+      <DndContext modifiers={modifiers} sensors={[mouseSensor]}>
         {items.map((item) => (
           <Transform.Context
             id={item.id}
