@@ -7,6 +7,7 @@ import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { Procedures } from "@wisp/client/src/bindings";
 import React from "react";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
@@ -70,6 +71,11 @@ function WorkspaceCharacterSheetPage() {
   };
 
   //TODO: move into custom hook and apply optimistic updates.
+  const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["characters.canvas"]);
+    },
+  });
 
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
@@ -81,6 +87,13 @@ function WorkspaceCharacterSheetPage() {
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
           <DraggableCanvas
+            onItemDelete={(id) => {
+              dialogManager.createDialog(ConfirmationDialog, {
+                id: `confirm-delete-${id}`,
+                message: `Are you sure you want to delete this panel?`,
+                onConfirm: () => deletePanel(id),
+              });
+            }}
             id={canvas.id}
             createImage={() => dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel", onUpload })}
             items={canvas.panels}

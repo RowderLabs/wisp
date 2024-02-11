@@ -23,6 +23,7 @@ type DraggableCanvasProps = {
   items: Panel[];
   createImage: () => void;
   onItemTransform: (event: TransformEvent) => void;
+  onItemDelete: (id: string) => void
 };
 
 const snapToGrid: Modifier = (args) => {
@@ -34,7 +35,7 @@ const snapToGrid: Modifier = (args) => {
   };
 };
 
-function DraggableCanvasInner({ id, items, onItemTransform, createImage }: DraggableCanvasProps) {
+function DraggableCanvasInner({ id, items, onItemTransform, createImage, onItemDelete }: DraggableCanvasProps) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { delay: 100, tolerance: 5 },
   });
@@ -51,11 +52,7 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage }: Dragg
     },
   });
 
-  const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["characters.canvas"]);
-    },
-  });
+  
 
   return (
     <div className="w-full h-full">
@@ -87,7 +84,7 @@ function DraggableCanvasInner({ id, items, onItemTransform, createImage }: Dragg
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <DraggableCanvasItem onDelete={deletePanel}>
+            <DraggableCanvasItem onDelete={onItemDelete}>
               {item.panelType === "textbox"
                 ? new TextboxPanel({
                     pluginOpts: { onChange: { debounce: { duration: 500 } } },
