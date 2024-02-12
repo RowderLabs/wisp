@@ -1,7 +1,7 @@
 import { FileRoute } from "@tanstack/react-router";
 import { DraggableCanvas, Toolbar, TransformEvent } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
-import { rspc } from "@wisp/client";
+import { rspc, useUtils } from "@wisp/client";
 import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
 import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
@@ -30,13 +30,19 @@ function WorkspaceCharacterSheetPage() {
       console.error(e);
     },
   });
-  const [draft, setDraft] = useDebouncedDraft<TransformEvent>({ duration: 500, callback: commitTransform });
+  const [draft, setDraft] = useDebouncedDraft<TransformEvent>({
+    duration: 500,
+    callback: commitTransform,
+  });
   const queryClient = rspc.useContext().queryClient;
 
   React.useEffect(() => {
     if (!draft) return;
     type CharacterCanvas = Extract<Procedures["queries"], { key: "characters.canvas" }>["result"];
-    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>(["characters.canvas", params.characterId]);
+    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>([
+      "characters.canvas",
+      params.characterId,
+    ]);
     const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
     const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
 
@@ -53,10 +59,11 @@ function WorkspaceCharacterSheetPage() {
     staleTime: Infinity,
   });
   const [dialogManager] = useDialogManager();
+  const utils = useUtils();
 
   const { mutate: createImagePanel } = rspc.useMutation(["panels.create"], {
     onSuccess: () => {
-      queryClient.invalidateQueries(["characters.canvas"]);
+      utils.invalidateQueries(["characters.canvas"]);
     },
   });
 
@@ -73,11 +80,12 @@ function WorkspaceCharacterSheetPage() {
     });
   };
 
-  const createImage = () => dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel", onUpload });
+  const createImage = () =>
+    dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel", onUpload });
 
   const { mutate: createTextboxDb } = rspc.useMutation(["panels.create"], {
     onSuccess: () => {
-      queryClient.invalidateQueries(["characters.canvas"]);
+      utils.invalidateQueries(["characters.canvas"]);
     },
   });
 
@@ -96,7 +104,7 @@ function WorkspaceCharacterSheetPage() {
   //TODO: move into custom hook and apply optimistic updates.
   const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
     onSuccess: () => {
-      queryClient.invalidateQueries(["characters.canvas"]);
+      utils.invalidateQueries(["characters.canvas"]);
     },
   });
   const snapToGrid: Modifier = (args) => {
@@ -112,12 +120,11 @@ function WorkspaceCharacterSheetPage() {
   const gridSnapActive = React.useRef<boolean>(false);
 
   const toggleGridSnap = () => {
-    //TODO: actually filter modifiers 
+    //TODO: actually filter modifiers
     if (gridSnapActive.current === true) {
-      setCanvasModifiers([])
-    }
-    else {
-      setCanvasModifiers([...canvasModifiers, snapToGrid]) 
+      setCanvasModifiers([]);
+    } else {
+      setCanvasModifiers([...canvasModifiers, snapToGrid]);
     }
     gridSnapActive.current = !gridSnapActive.current;
   };
@@ -149,7 +156,11 @@ function WorkspaceCharacterSheetPage() {
               <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
               <Toolbar.IconButton disabled={true} icon={<HiTable />} />
               <Toolbar.ToggleGroup asChild type="single">
-                <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
+                <Toolbar.ToggleItem
+                  onClick={toggleGridSnap}
+                  value="grid-snap"
+                  icon={<HiOutlineViewGrid />}
+                />
               </Toolbar.ToggleGroup>
             </DraggableCanvasToolbar>
           </DraggableCanvas>

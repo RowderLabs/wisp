@@ -1,4 +1,4 @@
-import { rspc } from "@wisp/client";
+import { rspc, useUtils } from "@wisp/client";
 import { Button, Dialog, DialogProps, Form, Input, InputField, Label } from "@wisp/ui";
 import { useDialogManager, useZodForm } from "@wisp/ui/src/hooks";
 import { z } from "zod";
@@ -17,16 +17,19 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
   const form = useZodForm({ schema });
   const [dialogManager] = useDialogManager();
 
-  const queryClient = rspc.useContext().queryClient
   const { mutate: createCharacter } = rspc.useMutation(["characters.create"], {
     onSuccess: () => {
       dialogManager.removeDialog(id);
-      queryClient.invalidateQueries(['characters.build_tree'])
     },
   });
 
   return (
-    <Dialog onInteractOutside={(e) => e.preventDefault()} id={id} open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      onInteractOutside={(e) => e.preventDefault()}
+      id={id}
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <Form
         form={form}
         onSubmit={(formData) => {
@@ -35,7 +38,13 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
       >
         <div className="flex flex-col gap-2 mb-4">
           <div className="flex flex-col gap-2 justify-start">
-            <InputField label="Character Name" {...form.register("name")} id="name" name="name" required />
+            <InputField
+              label="Character Name"
+              {...form.register("name")}
+              id="name"
+              name="name"
+              required
+            />
           </div>
         </div>
         <div>
