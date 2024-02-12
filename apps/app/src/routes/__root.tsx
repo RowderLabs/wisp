@@ -3,13 +3,15 @@ import { client, queryClient, RSPCUtils } from "@wisp/client";
 import { DialogProvider, Dialogs } from "@wisp/ui";
 import { useLockBodyScroll } from "@uidotdev/usehooks";
 
-export const Route = createRootRouteWithContext<{
+interface WispRouterContext {
   rspc: {
-    utils: RSPCUtils;
-    client: typeof client;
-    queryClient: typeof queryClient;
-  };
-}>()({
+    utils: RSPCUtils,
+    client: typeof client,
+    queryClient: typeof queryClient
+  }
+}
+
+export const Route = createRootRouteWithContext<WispRouterContext>()({
   component: RootComponent,
 });
 
