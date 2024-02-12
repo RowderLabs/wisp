@@ -1,9 +1,9 @@
-import { Outlet, rootRouteWithContext } from "@tanstack/react-router";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { client, queryClient, RSPCUtils } from "@wisp/client";
 import { DialogProvider, Dialogs } from "@wisp/ui";
 import { useLockBodyScroll } from "@uidotdev/usehooks";
 
-export const Route = rootRouteWithContext<{
+export const Route = createRootRouteWithContext<{
   rspc: {
     utils: RSPCUtils;
     client: typeof client;

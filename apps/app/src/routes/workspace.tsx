@@ -1,4 +1,4 @@
-import { FileRoute, Link, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { TreeView, ContextMenu } from "@wisp/ui";
 import { CreateCharacterDialog } from "../components/CreateCharacterDialog";
 import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
@@ -12,7 +12,7 @@ import {
 } from "react-icons/hi";
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 
-export const Route = new FileRoute("/workspace").createRoute({
+export const Route = createFileRoute("/workspace")({
   loader: ({ context }) => context.rspc.utils.ensureQueryData(["characters.build_tree"]),
   component: WorkspacePage,
 });

@@ -1,4 +1,4 @@
-import { FileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { DraggableCanvas, Toolbar, TransformEvent } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
 import { rspc, useUtils } from "@wisp/client";
@@ -12,12 +12,11 @@ import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiOutlineViewGrid, HiTable } from "react-icons/hi";
 import { Modifier } from "@dnd-kit/core";
 
-export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
+export const Route = createFileRoute("/workspace/characters/$characterId")({
   loader: ({ context, params }) =>
     context.rspc.utils.ensureQueryData(["characters.canvas", params.characterId]),
-    component: WorkspaceCharacterSheetPage,
+  component: WorkspaceCharacterSheetPage,
 });
-
 function WorkspaceCharacterSheetPage() {
   const canvasPreload = Route.useLoaderData();
   const params = Route.useParams();

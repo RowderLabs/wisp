@@ -1,7 +1,7 @@
-import { FileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-export const Route = new FileRoute("/").createRoute({
+export const Route = createFileRoute("/")({
   component: Home,
 });
 
