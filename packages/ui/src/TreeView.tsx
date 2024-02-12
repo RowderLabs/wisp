@@ -44,10 +44,8 @@ export function TreeView<TData>({
 function TreeViewInner<TData>({ treeData, renderItem }: Omit<TreeViewProps<TData>, keyof TreeViewScopeType>) {
   const { viewState } = useMolecule(TreeViewMolecule);
   const flattenedTree = useMemo(() => buildTree({ rootId: ROOT_ID, treeData, viewState }), [treeData, viewState]);
-
   return (
     <div className="text-sm">
-      {Object.keys(viewState).map(key => <span key={key}>{key} {String(viewState.get(key))}</span>)}
       {flattenedTree.map((node) => (
         <TreeViewItem {...(treeData[node.id] as TData)} renderItem={renderItem} key={node.id} {...node} />
       ))}
@@ -63,10 +61,11 @@ type TreeViewItemProps<TData> = TreeViewNode<TData> & { renderItem: TreeViewProp
 function TreeViewItem<TData>({ renderItem, ...node }: TreeViewItemProps<TData>) {
   const { viewState, onExpansionChange, indentation } = useMolecule(TreeViewMolecule);
   const handleExpand = React.useCallback(() => onExpansionChange(node.id), [node.id]);
-  const visible = React.useMemo(() => !node.parentId || viewState.get(node.id), [node]);
+  const visible = React.useMemo(() => !node.parentId || viewState.get(node.parentId), [node]);
   const expanded = React.useMemo(() => Boolean(node.children) && viewState.get(node.id) === true, [node]);
   return (
     <>
+      {visible && (
         <li
           onClick={() => node.isCollection && handleExpand()}
           className="rounded-md px-2 py-1 list-none cursor-pointer hover:bg-blue-100"
@@ -75,6 +74,7 @@ function TreeViewItem<TData>({ renderItem, ...node }: TreeViewItemProps<TData>) 
             {renderItem({ ...node, expanded } as TreeViewRenderNode<TData>)}
           </div>
         </li>
+      )}
     </>
   );
 }

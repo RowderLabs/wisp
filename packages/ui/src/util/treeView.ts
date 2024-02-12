@@ -54,7 +54,6 @@ export function buildTree({
       stack.push({ ...child, depth: curr.depth + 1, parentId });
     }
   }
-  console.log(result)
 
   return result;
 }

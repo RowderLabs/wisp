@@ -26,7 +26,6 @@ export const TreeViewScope = createScope<TreeViewScopeType | undefined>(undefine
 export const TreeViewMolecule = molecule((_, scope) => {
   const ctx = scope(TreeViewScope)
   invariant(ctx, "no treeview context")
-  console.log(ctx)
 
   return ctx
 
