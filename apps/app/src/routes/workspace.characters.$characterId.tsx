@@ -14,11 +14,8 @@ import { Modifier } from "@dnd-kit/core";
 
 export const Route = new FileRoute("/workspace/characters/$characterId").createRoute({
   loader: ({ context, params }) =>
-    context.rspc.queryClient.ensureQueryData({
-      queryKey: ["characters.canvas"],
-      queryFn: () => context.rspc.client.query(["characters.canvas", params.characterId]),
-    }),
-  component: WorkspaceCharacterSheetPage,
+    context.rspc.utils.ensureQueryData(["characters.canvas", params.characterId]),
+    component: WorkspaceCharacterSheetPage,
 });
 
 function WorkspaceCharacterSheetPage() {

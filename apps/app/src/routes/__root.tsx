@@ -1,10 +1,11 @@
 import { Outlet, rootRouteWithContext } from "@tanstack/react-router";
-import { client, queryClient } from "@wisp/client";
+import { client, queryClient, RSPCUtils } from "@wisp/client";
 import { DialogProvider, Dialogs } from "@wisp/ui";
-import {useLockBodyScroll} from '@uidotdev/usehooks'
+import { useLockBodyScroll } from "@uidotdev/usehooks";
 
 export const Route = rootRouteWithContext<{
   rspc: {
+    utils: RSPCUtils;
     client: typeof client;
     queryClient: typeof queryClient;
   };
@@ -13,13 +14,13 @@ export const Route = rootRouteWithContext<{
 });
 
 function RootComponent() {
-  useLockBodyScroll()
+  useLockBodyScroll();
 
   return (
     <div>
       <DialogProvider>
         <Outlet />
-        <Dialogs/>
+        <Dialogs />
       </DialogProvider>
     </div>
   );
