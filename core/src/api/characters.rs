@@ -181,7 +181,7 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .delete(character::id::equals(id))
                     .exec()
                     .await
-                    .map_err(Into::into)
+                    .unwrap()
             })
         })
 }

@@ -1,5 +1,5 @@
 import { FileRoute, Link, Outlet } from "@tanstack/react-router";
-import { TreeView, ContextMenu, Toolbar } from "@wisp/ui";
+import { TreeView, ContextMenu } from "@wisp/ui";
 import { CreateCharacterDialog } from "../components/CreateCharacterDialog";
 import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc, useUtils } from "@wisp/client";
@@ -10,7 +10,7 @@ import {
   HiOutlineFolder,
   HiOutlineTrash,
 } from "react-icons/hi";
-import { HiBattery50, HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
+import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 
 export const Route = new FileRoute("/workspace").createRoute({
   loader: ({ context }) =>
