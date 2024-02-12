@@ -5,10 +5,10 @@ import { useLockBodyScroll } from "@uidotdev/usehooks";
 
 interface WispRouterContext {
   rspc: {
-    utils: RSPCUtils,
-    client: typeof client,
-    queryClient: typeof queryClient
-  }
+    utils: RSPCUtils;
+    client: typeof client;
+    queryClient: typeof queryClient;
+  };
 }
 
 export const Route = createRootRouteWithContext<WispRouterContext>()({
@@ -20,6 +20,7 @@ function RootComponent() {
 
   return (
     <div>
+      
       <DialogProvider>
         <Outlet />
         <Dialogs />

@@ -11,8 +11,12 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiOutlineViewGrid, HiTable } from "react-icons/hi";
 import { Modifier } from "@dnd-kit/core";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
+  staticData: {
+    routeBreadcrumb: 'character-page'
+  },
   loader: ({ context, params }) =>
     context.rspc.utils.ensureQueryData(["characters.canvas", params.characterId]),
   component: WorkspaceCharacterSheetPage,
@@ -132,6 +136,7 @@ function WorkspaceCharacterSheetPage() {
           <p>canvas id: {canvas?.id}</p>
         </div>
       </Banner>
+      <Breadcrumbs/>
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
           <DraggableCanvas
