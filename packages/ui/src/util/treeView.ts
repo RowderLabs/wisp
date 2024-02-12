@@ -1,4 +1,5 @@
-import { TreeViewNode, TreeViewNodeInner } from "../hooks/useTreeView";
+import { TreeViewNode } from "../hooks/useTreeView";
+import { _TreeViewNode } from "../molecules/treeview";
 
 export function findParentOf(
   treeData: Record<string, TreeViewNode>,
@@ -36,11 +37,11 @@ export function buildTree({
 }) {
   const root = treeData[rootId];
   let parentId: string | null = null;
-  const result = [] as TreeViewNodeInner[];
-  const stack: TreeViewNodeInner[] = [{ ...root, depth: -1, parentId }];
+  const result = [] as _TreeViewNode[];
+  const stack: _TreeViewNode[] = [{ ...root, depth: -1, parentId }];
 
   while (stack.length > 0) {
-    const curr = stack.pop() as TreeViewNodeInner;
+    const curr = stack.pop() as _TreeViewNode;
     if (curr.id !== rootId) result.push(curr);
     parentId = curr.id;
 
