@@ -44,7 +44,7 @@ export function Dialog({
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0, transition: { duration: 0.15 } }}
                   exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                  className="p-4 min-w-[400px] bg-white rounded-md shadow-md"
+                  className="p-4 min-w-[100px] bg-white rounded-md shadow-md"
                 >
                   {children}
                 </motion.div>

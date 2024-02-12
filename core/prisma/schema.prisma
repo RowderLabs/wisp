@@ -1,6 +1,6 @@
 datasource db {
     provider = "sqlite"
-    url      = "file:../../apps/app/dev.db"
+    url      = "file:dev.db"
 }
 
 generator client {
@@ -15,15 +15,26 @@ model Character {
     isCollection Boolean
     traits CharacterHasTrait[]
     characterSheet CharacterSheet?
+    canvas Canvas?
+}
+
+model Canvas {
+    id String @id @default(uuid())
+    panels Panel[]
+    characterId String @unique
+    character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 }
 
 model Panel {
     id String @id @default(uuid())
+    panelType String
     x Int
     y Int
     width Int
     height Int
-    content String
+    content String?
+    canvasId String
+    canvas Canvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
 }
 
 model CharacterSheet {

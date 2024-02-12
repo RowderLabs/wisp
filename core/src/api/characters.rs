@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use super::Ctx;
 use super::RouterBuilder;
 use crate::prisma;
+use crate::prisma::canvas;
 use crate::prisma::character;
 use itertools::Itertools;
 use nanoid::nanoid;
@@ -131,6 +132,17 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .map_err(Into::into)
             })
         })
+        .query("canvas", |t| {
+            t(|ctx: Ctx, character_id: String| async move {
+                ctx.client
+                    .canvas()
+                    .find_unique(canvas::character_id::equals(character_id))
+                    .include(canvas::include!({panels}))
+                    .exec()
+                    .await
+                    .map_err(Into::into)
+            })
+        })
         .mutation("create", |t| {
             t(|ctx: Ctx, character_details: CreateCharacter| async move {
                 let CreateCharacter {
@@ -141,7 +153,8 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                 } = character_details;
 
                 let id = generate_id(&full_name);
-                ctx.client
+                let character = ctx
+                    .client
                     .character()
                     .create(
                         id.clone(),
@@ -150,6 +163,12 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                         is_collection,
                         vec![],
                     )
+                    .exec()
+                    .await?;
+
+                ctx.client
+                    .canvas()
+                    .create(character::id::equals(character.id), vec![])
                     .exec()
                     .await
                     .map_err(Into::into)
@@ -162,7 +181,7 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .delete(character::id::equals(id))
                     .exec()
                     .await
-                    .map_err(Into::into)
+                    .unwrap()
             })
         })
 }

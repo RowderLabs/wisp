@@ -1,4 +1,8 @@
 import { VariantProps, cva } from "class-variance-authority";
+import { useDialogManager } from "./hooks";
+import { Dialog } from "./Dialog";
+import React from "react";
+import { HiExclamationTriangle } from "react-icons/hi2";
 
 export const imageVariants = cva("w-full h-full block rounded-md", {
   variants: {
@@ -15,3 +19,11 @@ export type ImageProps = {
 export const Image = ({ src, fit }: ImageProps) => {
   return <img src={src} className={imageVariants({ fit })} />;
 };
+
+function ImageErrorFallback() {
+  return (
+    <div className="text-slate-500 text-lg border w-full h-full rounded-md flex justify-center items-center">
+      <HiExclamationTriangle />
+    </div>
+  );
+}

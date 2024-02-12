@@ -28,7 +28,7 @@ type TransformScopeType = {
   onTransform: (event: TransformEvent) => void;
 };
 
-export type TransformProps = TransformScopeType & {};
+export interface TransformProps extends TransformScopeType {}
 
 export const TransformScope = createScope<TransformScopeType | undefined>(undefined);
 

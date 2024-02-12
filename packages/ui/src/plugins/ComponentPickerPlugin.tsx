@@ -81,7 +81,6 @@ type ComponentPickerPluginProps = {
   features: TextEditorFeatures["typeahead"];
 };
 export default function ComponentPickerPlugin({ features }: ComponentPickerPluginProps) {
-  useEffect(() => console.log(features), []);
   const [editor] = useLexicalComposerContext();
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("/", { minLength: 0 });
   const [query, setQuery] = useState<string | null>(null);
@@ -122,7 +121,6 @@ export default function ComponentPickerPlugin({ features }: ComponentPickerPlugi
         anchorElementRef,
         { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }
       ) => {
-        console.log(anchorElementRef.current);
         return anchorElementRef.current && options.length > 0
           ? createPortal(
               <div className="p-2 bg-white shadow-lg min-w-[300px] text-sm mt-6">

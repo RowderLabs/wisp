@@ -1,5 +1,5 @@
 use super::Ctx;
-use crate::prisma::panel;
+use crate::prisma::{canvas, panel};
 use rspc::RouterBuilder;
 use serde::Deserialize;
 
@@ -13,18 +13,52 @@ panel::partial_unchecked!(TransformUpdate {
 #[derive(Deserialize, specta::Type)]
 struct PanelTransformUpdatePayload {
     id: String,
+    #[serde(flatten)]
     transform: TransformUpdate,
+}
+
+#[derive(Deserialize, specta::Type)]
+struct CreatePanel {
+    panel_type: String,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+    content: Option<String>,
+    canvas_id: String,
+}
+
+#[derive(Deserialize, specta::Type)]
+struct PanelContentUpdatePayload {
+    id: String,
+    content: Option<String>,
 }
 
 pub fn panels_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
-        .query("find", |t| {
-            t(|ctx: Ctx, _: ()| async move {
-                //takes no arguments
-                println!("{}", "Getting panels...");
+        .mutation("create", |t| {
+            t(|ctx: Ctx, panel: CreatePanel| async move {
                 ctx.client
                     .panel()
-                    .find_many(vec![]) //list of filters (empty for now because not filtering)
+                    .create(
+                        panel.panel_type,
+                        panel.x,
+                        panel.y,
+                        panel.width,
+                        panel.height,
+                        canvas::id::equals(panel.canvas_id),
+                        vec![panel::content::set(panel.content)],
+                    )
+                    .exec()
+                    .await
+                    .unwrap()
+            })
+        })
+        .mutation("delete", |t| {
+            t(|ctx: Ctx, panel_id: String| async move {
+                ctx.client
+                    .panel()
+                    .delete(panel::id::equals(panel_id))
                     .exec()
                     .await
                     .map_err(Into::into)
@@ -36,6 +70,20 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
                 ctx.client
                     .panel()
                     .update_unchecked(panel::id::equals(update.id), update.transform.to_params())
+                    .exec()
+                    .await
+                    .map_err(Into::into)
+            })
+        })
+        .mutation("set_content", |t| {
+            t(|ctx: Ctx, update: PanelContentUpdatePayload| async move {
+                println!("Attempting content update on {}", update.id);
+                ctx.client
+                    .panel()
+                    .update(
+                        panel::id::equals(update.id),
+                        vec![panel::content::set(update.content)],
+                    )
                     .exec()
                     .await
                     .map_err(Into::into)

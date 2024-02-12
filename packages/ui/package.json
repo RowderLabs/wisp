@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./src/hooks": "./src/hooks/index.ts",
+    "./panels": "./panels/index.ts",
     "./index.css": "./index.css",
     "./tailwind-config": "./tailwind.config.js"
   },
@@ -44,6 +45,7 @@
     "storybook": "^7.5.1",
     "typescript": "^5.0.2",
     "use-double-click": "^1.0.5",
+    "usehooks-ts": "^2.13.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

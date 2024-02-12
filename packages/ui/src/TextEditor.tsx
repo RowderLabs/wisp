@@ -1,3 +1,4 @@
+import type { OnChangeHandler, OnChangePluginProps } from './plugins/OnChangePlugin'
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
@@ -8,8 +9,10 @@ import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
+import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
 import { useCallback } from "react";
+import React from 'react';
 
 //type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
@@ -30,16 +33,22 @@ type LexicalEditorProps = {
   initalConfig: Parameters<typeof LexicalComposer>["0"]["initialConfig"];
 };
 
-type TextEditorProps = {
+export type TextEditorProps = {
+  initial?: string | null
   className?: string;
   features: OptTextEditorFeatures;
   editorTheme?: LexicalEditorProps["initalConfig"]["theme"];
+  onChange?: OnChangeHandler
+  pluginOpts?: {
+    onChange: Partial<Omit<OnChangePluginProps, 'onChange'>>
+  }
 };
 
-export default function TextEditor({ className, features, editorTheme }: TextEditorProps) {
+export default function TextEditor({ className, features, editorTheme, onChange, initial, pluginOpts }: TextEditorProps) {
   function onError(err: Error) {
     console.error(err);
   }
+
 
   const featureEnabled = useCallback(
     (flag?: Omit<TextEditorFeatures, "full">[keyof Omit<TextEditorFeatures, "full">]) => {
@@ -50,6 +59,7 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
 
   const initialConfig: LexicalEditorProps["initalConfig"] = {
     namespace: "MyEditor",
+    editorState: (initial ?? undefined) || undefined,
     theme: editorTheme || {
       heading: {
         h1: "text-[24px] m-0  text-slate-600",
@@ -84,7 +94,9 @@ export default function TextEditor({ className, features, editorTheme }: TextEdi
         />
         <TabIndentationPlugin />
         <HistoryPlugin />
+        {onChange && <OnChangePlugin {...pluginOpts?.onChange} onChange={onChange} />}
       </div>
     </LexicalComposer>
   );
 }
+
