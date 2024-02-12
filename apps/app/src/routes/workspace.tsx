@@ -13,17 +13,13 @@ import {
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 
 export const Route = new FileRoute("/workspace").createRoute({
-  loader: ({ context }) =>
-    context.rspc.queryClient.ensureQueryData({
-      queryKey: ["characters.build_tree"],
-      queryFn: () => context.rspc.client.query(['characters.build_tree']),
-    }),
+  loader: ({ context }) => context.rspc.utils.ensureQueryData(["characters.build_tree"]),
   component: WorkspacePage,
 });
 
 function WorkspacePage() {
-  const tree = Route.useLoaderData()
-  const utils = useUtils()
+  const tree = Route.useLoaderData();
+  const utils = useUtils();
   const { mutate: deleteCharacter } = rspc.useMutation("characters.delete", {
     onSuccess: () => {
       utils.invalidateQueries(["characters.build_tree"]);
@@ -37,7 +33,11 @@ function WorkspacePage() {
         {tree && (
           <TreeView
             renderItem={(treeItem) => (
-              <CharacterItem path={tree[treeItem.id].path} onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />
+              <CharacterItem
+                path={tree[treeItem.id].path}
+                onDelete={(id) => treeApi.deleteNode(id)}
+                {...treeItem}
+              />
             )}
             onExpansionChange={treeApi.toggleExpand}
             treeData={tree as TreeData}
@@ -55,8 +55,6 @@ function WorkspacePage() {
   );
 }
 
-
-
 function CharacterItem({
   isCollection,
   name,
@@ -64,7 +62,11 @@ function CharacterItem({
   expanded,
   onDelete,
   id,
-}: Omit<TreeViewNode, "children"> & { path: string | null,expanded?: boolean; onDelete: (id: string) => void }) {
+}: Omit<TreeViewNode, "children"> & {
+  path: string | null;
+  expanded?: boolean;
+  onDelete: (id: string) => void;
+}) {
   const [manager] = useDialogManager();
 
   return isCollection ? (
@@ -80,7 +82,10 @@ function CharacterItem({
       <ContextMenu.Item
         onClick={(e) => {
           e.stopPropagation();
-          manager.createDialog(CreateCharacterDialog, { id: "create-character", context: {path} });
+          manager.createDialog(CreateCharacterDialog, {
+            id: "create-character",
+            context: { path },
+          });
         }}
         icon={<HiOutlinePencilSquare />}
       >
@@ -103,17 +108,16 @@ function CharacterItem({
         </div>
       }
     >
-      <ContextMenu.Item
-        disabled
-        icon={<HiOutlinePencilSquare />}
-      >
+      <ContextMenu.Item disabled icon={<HiOutlinePencilSquare />}>
         Rename
       </ContextMenu.Item>
       <ContextMenu.Item onClick={() => onDelete(id)} icon={<HiOutlineTrash />}>
         Delete
       </ContextMenu.Item>
       <ContextMenu.Separator />
-      <ContextMenu.Item disabled icon={<HiOutlineFolder />}>Go to Family Tree</ContextMenu.Item>
+      <ContextMenu.Item disabled icon={<HiOutlineFolder />}>
+        Go to Family Tree
+      </ContextMenu.Item>
     </ContextMenu.Root>
   );
 }

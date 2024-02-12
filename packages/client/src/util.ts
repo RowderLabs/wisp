@@ -40,7 +40,7 @@ export class RSPCUtils {
   ): Promise<QueryResultFromKey<Tkey>> {
     const [key, input] = query;
     return queryClient.ensureQueryData({
-      queryKey: [key],
+      queryKey: [key, input],
       queryFn: () => client.query([key as any, input as any]),
     });
   }
