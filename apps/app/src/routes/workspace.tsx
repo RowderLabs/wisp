@@ -1,20 +1,14 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { TreeView, ContextMenu } from "@wisp/ui";
 import { CreateCharacterDialog } from "../components/CreateCharacterDialog";
-import { TreeData, TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
+import { TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
 import { rspc, useUtils } from "@wisp/client";
-import {
-  HiFolder,
-  HiChevronDown,
-  HiChevronRight,
-  HiOutlineFolder,
-  HiOutlineTrash,
-} from "react-icons/hi";
+import { HiFolder, HiChevronDown, HiChevronRight, HiOutlineFolder, HiOutlineTrash } from "react-icons/hi";
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 
 export const Route = createFileRoute("/workspace")({
   staticData: {
-    routeBreadcrumb: 'workspace'
+    routeBreadcrumb: "workspace",
   },
   loader: ({ context }) => context.rspc.utils.ensureQueryData(["characters.build_tree"]),
   component: WorkspacePage,
@@ -33,21 +27,13 @@ function WorkspacePage() {
   return (
     <div className="flex h-screen bg-neutral text-slate-600">
       <div className="h-full basis-[300px] bg-white">
-        {tree && (
-          <TreeView
-            renderItem={(treeItem) => (
-              <CharacterItem
-                path={tree[treeItem.id].path}
-                onDelete={(id) => treeApi.deleteNode(id)}
-                {...treeItem}
-              />
-            )}
-            onExpansionChange={treeApi.toggleExpand}
-            treeData={tree as TreeData}
-            indentation={25}
-            {...treeApi}
-          />
-        )}
+        <TreeView
+          renderItem={(treeItem) => <CharacterItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
+          onExpansionChange={treeApi.toggleExpand}
+          treeData={tree}
+          indentation={25}
+          {...treeApi}
+        />
       </div>
       <div className="basis-full">
         <div className="flex">
@@ -100,12 +86,7 @@ function CharacterItem({
       trigger={
         <div className="flex items-center gap-1 w-full h-full">
           <HiMiniUserCircle />
-          <Link
-            className="basis-full"
-            from={Route.id}
-            to="./characters/$characterId"
-            params={{ characterId: id }}
-          >
+          <Link className="basis-full" from={Route.id} to="./characters/$characterId" params={{ characterId: id }}>
             {name}
           </Link>
         </div>

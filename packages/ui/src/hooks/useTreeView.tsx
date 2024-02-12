@@ -9,7 +9,7 @@ export type TreeViewNodeInner = {
   children: string[];
 };
 
-export type TreeData = Record<string, TreeViewNode>
+export type TreeData = Record<string, TreeViewNode>;
 
 export type TreeViewNode = Omit<TreeViewNodeInner, "parentId" | "depth">;
 export type TreeViewApiHandle = {
@@ -22,21 +22,29 @@ export type TreeViewApiHandle = {
 
 type UseTreeViewProps = {
   onDelete: (id: string) => void;
-}
+};
 
-export function useTreeView({onDelete}: UseTreeViewProps): [TreeData, TreeViewApiHandle] {
+export function useTreeView({ onDelete }: UseTreeViewProps): [TreeData, TreeViewApiHandle] {
   const [treeData, _setTreeData] = useState<Record<string, TreeViewNode>>({});
-  const [viewState, setViewState] = useState<Map<string, boolean | undefined>>(
-    new Map([["root", true]])
-  );
+  const [viewState, setViewState] = useState<Map<string, boolean | undefined>>(new Map([["root", true]]));
 
   function deleteNode(id: string) {
-    onDelete(id)
+    onDelete(id);
   }
 
   function toggleExpand(id: string) {
-    const nodeViewState = viewState.get(id) ? undefined : true;
-    setViewState((old) => new Map(old).set(id, nodeViewState));
+    setViewState((prev) => {
+      const update = new Map(prev)
+      if (update.has(id)) {
+        update.delete(id)
+      }
+      else {
+        update.set(id, true)
+      }
+
+      return update
+    })
+    
   }
 
   function expandAll() {
@@ -50,7 +58,6 @@ export function useTreeView({onDelete}: UseTreeViewProps): [TreeData, TreeViewAp
     setViewState(new Map([["root", true]]));
   }
 
-
   const treeApi = {
     viewState,
     collapseAll,
@@ -59,5 +66,5 @@ export function useTreeView({onDelete}: UseTreeViewProps): [TreeData, TreeViewAp
     deleteNode,
   };
 
-  return [treeData, treeApi]
+  return [treeData, treeApi];
 }
