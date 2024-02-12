@@ -22,6 +22,9 @@ const router = createRouter({
 
 // Register things for typesafety
 declare module "@tanstack/react-router" {
+  interface StaticDataRouteOption {
+    routeBreadcrumb?: string
+  }
   interface Register {
     router: typeof router;
   }

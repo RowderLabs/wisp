@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as WorkspaceImport } from './routes/workspace'
 import { Route as IndexImport } from './routes/index'
+import { Route as WorkspaceIndexImport } from './routes/workspace.index'
 import { Route as WorkspaceCharactersImport } from './routes/workspace.characters'
 import { Route as WorkspaceCharactersCharacterIdImport } from './routes/workspace.characters.$characterId'
 
@@ -26,6 +27,11 @@ const WorkspaceRoute = WorkspaceImport.update({
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const WorkspaceIndexRoute = WorkspaceIndexImport.update({
+  path: '/',
+  getParentRoute: () => WorkspaceRoute,
 } as any)
 
 const WorkspaceCharactersRoute = WorkspaceCharactersImport.update({
@@ -55,6 +61,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceCharactersImport
       parentRoute: typeof WorkspaceImport
     }
+    '/workspace/': {
+      preLoaderRoute: typeof WorkspaceIndexImport
+      parentRoute: typeof WorkspaceImport
+    }
     '/workspace/characters/$characterId': {
       preLoaderRoute: typeof WorkspaceCharactersCharacterIdImport
       parentRoute: typeof WorkspaceCharactersImport
@@ -68,6 +78,7 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   WorkspaceRoute.addChildren([
     WorkspaceCharactersRoute.addChildren([WorkspaceCharactersCharacterIdRoute]),
+    WorkspaceIndexRoute,
   ]),
 ])
 

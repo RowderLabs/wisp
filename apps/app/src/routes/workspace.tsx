@@ -13,6 +13,9 @@ import {
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 
 export const Route = createFileRoute("/workspace")({
+  staticData: {
+    routeBreadcrumb: 'workspace'
+  },
   loader: ({ context }) => context.rspc.utils.ensureQueryData(["characters.build_tree"]),
   component: WorkspacePage,
 });
