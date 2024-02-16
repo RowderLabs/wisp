@@ -16,9 +16,11 @@ interface CharacterDialogProps extends DialogProps {
 export function CreateCharacterDialog({ open, onOpenChange, id, context }: CharacterDialogProps) {
   const form = useZodForm({ schema });
   const [dialogManager] = useDialogManager();
+  const utils = useUtils()
 
   const { mutate: createCharacter } = rspc.useMutation(["characters.create"], {
     onSuccess: () => {
+      utils.invalidateQueries(['characters.build_tree'])
       dialogManager.removeDialog(id);
     },
   });

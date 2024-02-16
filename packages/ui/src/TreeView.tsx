@@ -1,67 +1,77 @@
-import { useMemo } from "react";
-import { TreeData, TreeViewNode as TreeViewNodeType } from "./hooks/useTreeView";
+import React, { PropsWithChildren, useMemo } from "react";
 import { buildTree } from "./util/treeView";
+import {
+  TreeData,
+  TreeViewMolecule,
+  TreeViewNode,
+  TreeViewScope,
+  TreeViewScopeType,
+  _TreeViewNode,
+} from "./molecules/treeview";
+import { ScopeProvider, useMolecule } from "bunshi/react";
 
 const ROOT_ID = "root";
 
-type TreeViewProps = {
-  treeData: TreeData;
-  viewState: Map<string, boolean | undefined>;
-  renderItem: TreeViewItemProps["renderItem"];
-  onExpansionChange: (id: string) => void;
-  indentation?: number;
+type TreeViewRenderNode<TData> = TreeViewNode<TData> & { expanded?: boolean };
+
+type TreeViewProps<TData> = TreeViewScopeType & {
+  treeData: TreeData<TData>;
+  renderItem: (node: TreeViewRenderNode<TData>) => React.ReactNode;
 };
 
-export function TreeView({ treeData, renderItem, viewState, indentation, onExpansionChange }: TreeViewProps) {
-  const flattenedTree = useMemo(() => buildTree({ rootId: ROOT_ID, treeData, viewState }), [treeData, viewState]);
+function Provider(props: PropsWithChildren<TreeViewScopeType>) {
+  return (
+    <ScopeProvider scope={TreeViewScope} value={props}>
+      {props.children}
+    </ScopeProvider>
+  );
+}
 
+export function TreeView<TData>({
+  treeData,
+  renderItem,
+  viewState,
+  onExpansionChange,
+  indentation,
+}: TreeViewProps<TData>) {
+  return (
+    <Provider viewState={viewState} onExpansionChange={onExpansionChange} indentation={indentation}>
+      <TreeViewInner treeData={treeData} renderItem={renderItem} />
+    </Provider>
+  );
+}
+
+function TreeViewInner<TData>({ treeData, renderItem }: Omit<TreeViewProps<TData>, keyof TreeViewScopeType>) {
+  const { viewState } = useMolecule(TreeViewMolecule);
+  const flattenedTree = useMemo(() => buildTree({ rootId: ROOT_ID, treeData, viewState }), [treeData, viewState]);
   return (
     <div className="text-sm">
       {flattenedTree.map((node) => (
-        <TreeViewItem
-          key={node.id}
-          renderItem={renderItem}
-          indentation={indentation || 25}
-          handleExpand={() => onExpansionChange(node.id)}
-          visible={!node.parentId || viewState.get(node.parentId) === true}
-          expanded={Boolean(node.children) && viewState.get(node.id) === true}
-          itemIsCollection={node.isCollection === true}
-          {...node}
-        />
+        <TreeViewItem {...(treeData[node.id] as TData)} renderItem={renderItem} key={node.id} {...node} />
       ))}
     </div>
   );
 }
 
-type TreeViewItemProps = {
-  handleExpand: () => void;
-  itemIsCollection: boolean;
-  renderItem: (node: Omit<TreeViewNodeType, 'children'> & {expanded?: boolean}) => JSX.Element;
-  visible: boolean;
-  expanded?: boolean;
-  indentation: number;
-  depth: number;
-} & Omit<TreeViewNodeType, 'children'>;
+type TreeViewItemProps<TData> = TreeViewNode<TData> & { renderItem: TreeViewProps<TData>["renderItem"] } & Pick<
+    _TreeViewNode,
+    "parentId" | "depth"
+  >;
 
-function TreeViewItem({
-  itemIsCollection,
-  visible,
-  depth,
-  handleExpand,
-  expanded,
-  renderItem,
-  indentation,
-  ...node
-}: TreeViewItemProps) {
+function TreeViewItem<TData>({ renderItem, ...node }: TreeViewItemProps<TData>) {
+  const { viewState, onExpansionChange, indentation } = useMolecule(TreeViewMolecule);
+  const handleExpand = React.useCallback(() => onExpansionChange(node.id), [node.id]);
+  const visible = React.useMemo(() => !node.parentId || viewState.get(node.parentId), [node]);
+  const expanded = React.useMemo(() => Boolean(node.children) && viewState.get(node.id) === true, [node]);
   return (
     <>
       {visible && (
         <li
-          onClick={() => itemIsCollection && handleExpand()}
+          onClick={() => node.isCollection && handleExpand()}
           className="rounded-md px-2 py-1 list-none cursor-pointer hover:bg-blue-100"
         >
-          <div style={{ marginLeft: depth * indentation }}>
-            {renderItem({ ...node, expanded })}
+          <div style={{ marginLeft: node.depth * (indentation || 25) }}>
+            {renderItem({ ...node, expanded } as TreeViewRenderNode<TData>)}
           </div>
         </li>
       )}
