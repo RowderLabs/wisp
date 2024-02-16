@@ -13,6 +13,8 @@ import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
 import { useCallback } from "react";
 import React from 'react';
+import MentionsPlugin from './plugins/MentionsPlugin';
+import { MentionNode } from './nodes/MentionNode';
 
 //type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
@@ -75,7 +77,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
       },
     },
     onError,
-    nodes: [ListNode, ListItemNode, HeadingNode],
+    nodes: [ListNode, ListItemNode, HeadingNode, MentionNode],
   };
   return (
     <LexicalComposer initialConfig={initialConfig}>
@@ -93,6 +95,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
           ErrorBoundary={LexicalErrorBoundary}
         />
         <TabIndentationPlugin />
+        <MentionsPlugin/>
         <HistoryPlugin />
         {onChange && <OnChangePlugin {...pluginOpts?.onChange} onChange={onChange} />}
       </div>

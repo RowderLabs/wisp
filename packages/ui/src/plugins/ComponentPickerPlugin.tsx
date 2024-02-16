@@ -13,7 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { TextEditorFeatures } from "../TextEditor";
-type TypeaheadFlag = keyof Exclude<TextEditorFeatures["typeahead"], boolean>;
+export type TypeaheadFlag = keyof Exclude<TextEditorFeatures["typeahead"], boolean>;
 
 class ComponentPickerOption extends MenuOption {
   // What shows up in the editor
