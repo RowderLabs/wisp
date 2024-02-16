@@ -107,6 +107,17 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .unwrap()
             })
         })
+        .query("list_links", |t| {
+            t(|ctx: Ctx, _: ()| async move {
+                ctx.client
+                    .character()
+                    .find_many(vec![])
+                    .select(character::select!({id full_name}))
+                    .exec()
+                    .await
+                    .map_err(Into::into)
+            })
+        })
         .query("build_tree", |t| {
             t(|ctx: Ctx, _: ()| async move {
                 //takes no arguments
@@ -137,7 +148,7 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                 ctx.client
                     .canvas()
                     .find_unique(canvas::character_id::equals(character_id))
-                    .include(canvas::include!({panels}))
+                    .include(canvas::include!({ panels }))
                     .exec()
                     .await
                     .map_err(Into::into)

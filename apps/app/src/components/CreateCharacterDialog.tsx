@@ -22,6 +22,7 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
     onSuccess: () => {
       utils.invalidateQueries(['characters.build_tree'])
       dialogManager.removeDialog(id);
+      
     },
   });
 

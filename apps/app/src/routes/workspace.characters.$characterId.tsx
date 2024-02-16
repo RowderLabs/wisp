@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DraggableCanvas, Toolbar, TransformEvent } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
 import { rspc, useUtils } from "@wisp/client";
@@ -12,13 +12,18 @@ import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
 import { HiOutlineViewGrid, HiTable } from "react-icons/hi";
 import { Modifier } from "@dnd-kit/core";
 import { Breadcrumbs } from "../components/Breadcrumbs";
+import { NotFound } from "../components/NotFound";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
   staticData: {
     routeBreadcrumb: 'character-page'
   },
-  loader: ({ context, params }) =>
-    context.rspc.utils.ensureQueryData(["characters.canvas", params.characterId]),
+  loader: async ({ context, params }) => {
+    const canvas = await context.rspc.client.query(['characters.canvas', params.characterId])
+    if (!canvas) throw notFound()
+    return canvas
+  },
+  notFoundComponent: () => <NotFound/>,
   component: WorkspaceCharacterSheetPage,
 });
 function WorkspaceCharacterSheetPage() {

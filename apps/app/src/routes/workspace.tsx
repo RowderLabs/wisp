@@ -2,10 +2,11 @@ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { TreeView, ContextMenu } from "@wisp/ui";
 import { CreateCharacterDialog } from "../components/CreateCharacterDialog";
 import { TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
-import { rspc, useUtils } from "@wisp/client";
+import { rspc } from "@wisp/client";
 import { HiFolder, HiChevronDown, HiChevronRight, HiOutlineFolder, HiOutlineTrash } from "react-icons/hi";
 import { HiMiniUserCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { useDeleteCharacter } from "../hooks/useDeleteCharacter";
 
 export const Route = createFileRoute("/workspace")({
   staticData: {
@@ -17,14 +18,9 @@ export const Route = createFileRoute("/workspace")({
 
 function WorkspacePage() {
   const initialTreeData = Route.useLoaderData();
-  const utils = useUtils();
-
   const { data: treeData } = rspc.useQuery(["characters.build_tree"], { initialData: initialTreeData });
-  const { mutate: deleteCharacter } = rspc.useMutation("characters.delete", {
-    onSuccess: () => {
-      utils.invalidateQueries(["characters.build_tree"]);
-    },
-  });
+  const { deleteCharacter } = useDeleteCharacter();
+
   const [dialogManager] = useDialogManager();
   const [_, treeApi] = useTreeView({
     onDelete: (id) =>
@@ -48,9 +44,7 @@ function WorkspacePage() {
         />
       </div>
       <div className="basis-full">
-        <div className="flex">
-          <Outlet />
-        </div>
+        <Outlet />
       </div>
     </div>
   );

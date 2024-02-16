@@ -1,7 +1,7 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { $createTextNode, $getSelection, $insertNodes, COMMAND_PRIORITY_LOW, TextNode } from "lexical";
-import { $createMentionNode, INSERT_MENTION_NODE, MentionNode } from "../nodes/MentionNode";
+import { $createMentionNode, INSERT_MENTION_NODE_COMMAND, MentionNode } from "../nodes/MentionNode";
 import { Button } from "../Button";
 import {
   LexicalTypeaheadMenuPlugin,
@@ -11,69 +11,72 @@ import {
 import { TypeaheadFlag } from "./ComponentPickerPlugin";
 import clsx from "clsx";
 import { createPortal } from "react-dom";
+import { rspc } from "@wisp/client";
 
 interface MentionPluginProps {}
 
 class MentionOption extends MenuOption {
   // What shows up in the editor
+  id: string;
   name: string;
   // Icon for display
   // For extra searching.
   // TBD
   // What happens when you select this option?
 
-  constructor(name: string) {
+  constructor(id: string, name: string) {
     super(name);
     this.name = name;
+    this.id = id;
   }
 }
 
-const staticOpts: MentionOption[] = [
-  new MentionOption("Bob"),
-  new MentionOption("Stacy"),
-  new MentionOption("Mark"),
-  new MentionOption("Jim"),
-];
-
 export default function MentionsPlugin({}: MentionPluginProps) {
+  const { data: mentions } = rspc.useQuery(["characters.list_links"], {
+    select: (data) => data.map((link) => new MentionOption(link.id, link.fullName)),
+  });
   const [editor] = useLexicalComposerContext();
 
   if (!editor.hasNodes([MentionNode])) {
-    throw new Error("Missing MentionNode registration in Lexical Composer")
+    throw new Error("Missing MentionNode registration in Lexical Composer");
   }
 
   const [query, setQuery] = useState<string | null>(null);
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("@", { minLength: 0 });
   useEffect(() => {
     return editor.registerCommand(
-      INSERT_MENTION_NODE,
-      (name) => {
-        const mention = $createMentionNode(name);
-        $insertNodes([mention, $createTextNode(' ')]);
+      INSERT_MENTION_NODE_COMMAND,
+      (payload) => {
+        const mention = $createMentionNode(payload.id, payload.name);
+        $insertNodes([mention, $createTextNode(" ")]);
         return true;
       },
       COMMAND_PRIORITY_LOW
     );
   });
 
+  const options = useMemo(
+    () => {
+      return mentions?.filter((opt) => {
+        if (query) {
+          return opt.name.toLowerCase().includes(query.toLowerCase());
+        }
+        return opt;
+      }) ?? []},
+    [query]
+  );
+
   const onSelectOption = useCallback(
     (selectedOption: MentionOption, nodeToRemove: TextNode | null, closeMenu: () => void, matchingString: string) => {
       editor.update(() => {
         nodeToRemove?.remove();
         console.log(matchingString);
-        editor.dispatchCommand(INSERT_MENTION_NODE, selectedOption.name);
+        editor.dispatchCommand(INSERT_MENTION_NODE_COMMAND, { id: selectedOption.id, name: selectedOption.name });
         closeMenu();
       });
     },
     [editor]
   );
-
-  const options = useMemo(() => staticOpts.filter((opt) => {
-    if (query) {
-      return opt.name.toLowerCase().includes(query.toLowerCase())
-    }
-    return opt
-  }), [query]);
 
   return (
     <LexicalTypeaheadMenuPlugin<MentionOption>
