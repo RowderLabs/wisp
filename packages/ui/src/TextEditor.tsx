@@ -69,7 +69,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
         h3: "text-[16px] m-0  text-slate-800",
       },
       list: {
-        listitem: "list-disc mx-[32px]",
+        listitem: "list-disc list-outside mx-[32px]",
         nested: {
           listitem: "!list-none before:display-none after:display-none",
         },
