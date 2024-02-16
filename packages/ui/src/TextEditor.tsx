@@ -11,10 +11,11 @@ import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin
 import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
 import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import React from 'react';
 import MentionsPlugin from './plugins/MentionsPlugin';
 import { MentionNode } from './nodes/MentionNode';
+import { ToggleEditablePlugin } from './plugins/ToggleEditablePlugin';
 
 //type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
@@ -39,18 +40,23 @@ export type TextEditorProps = {
   initial?: string | null
   className?: string;
   features: OptTextEditorFeatures;
+  editable?: boolean,
   editorTheme?: LexicalEditorProps["initalConfig"]["theme"];
+
   onChange?: OnChangeHandler
   pluginOpts?: {
     onChange: Partial<Omit<OnChangePluginProps, 'onChange'>>
   }
 };
 
-export default function TextEditor({ className, features, editorTheme, onChange, initial, pluginOpts }: TextEditorProps) {
+export default function TextEditor({ className, features, editorTheme, onChange, initial, pluginOpts, editable }: TextEditorProps) {
   function onError(err: Error) {
     console.error(err);
   }
 
+  useEffect(() => {
+    console.log('editable chaanged')
+  }, [editable])
 
   const featureEnabled = useCallback(
     (flag?: Omit<TextEditorFeatures, "full">[keyof Omit<TextEditorFeatures, "full">]) => {
@@ -61,7 +67,9 @@ export default function TextEditor({ className, features, editorTheme, onChange,
 
   const initialConfig: LexicalEditorProps["initalConfig"] = {
     namespace: "MyEditor",
+
     editorState: (initial ?? undefined) || undefined,
+    editable,
     theme: editorTheme || {
       heading: {
         h1: "text-[24px] m-0  text-slate-600",
@@ -98,6 +106,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
         <MentionsPlugin/>
         <HistoryPlugin />
         {onChange && <OnChangePlugin {...pluginOpts?.onChange} onChange={onChange} />}
+        <ToggleEditablePlugin editable={editable} onEditableChange={(status) => console.log(`editor in ${status ? 'edit' : 'read'} mode`)}/>
       </div>
     </LexicalComposer>
   );
