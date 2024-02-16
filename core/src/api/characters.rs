@@ -177,12 +177,13 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .exec()
                     .await?;
 
-                ctx.client
+                let canvas = ctx.client
                     .canvas()
-                    .create(character::id::equals(character.id), vec![])
+                    .create(character::id::equals(character.id.clone()), vec![])
                     .exec()
-                    .await
-                    .map_err(Into::into)
+                    .await?;
+
+                return  Ok(character);
             })
         })
         .mutation("delete", |t| {
