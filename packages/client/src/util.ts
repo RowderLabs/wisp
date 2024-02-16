@@ -17,7 +17,7 @@ type QueryResultFromKey<Tkey extends Procedures["queries"]["key"]> = Extract<
 
 export function useUtils() {
   const invalidateQueries = React.useCallback((queryKey: QueryKey) => {
-    queryClient.invalidateQueries(queryKey);
+    queryClient.invalidateQueries({queryKey});
   }, []);
 
   const utils = {
