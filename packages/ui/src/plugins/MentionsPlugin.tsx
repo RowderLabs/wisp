@@ -1,7 +1,7 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { $createTextNode, $getSelection, $insertNodes, COMMAND_PRIORITY_LOW, TextNode } from "lexical";
-import { $createMentionNode, INSERT_MENTION_NODE } from "../nodes/MentionNode";
+import { $createMentionNode, INSERT_MENTION_NODE, MentionNode } from "../nodes/MentionNode";
 import { Button } from "../Button";
 import {
   LexicalTypeaheadMenuPlugin,
@@ -37,6 +37,11 @@ const staticOpts: MentionOption[] = [
 
 export default function MentionsPlugin({}: MentionPluginProps) {
   const [editor] = useLexicalComposerContext();
+
+  if (!editor.hasNodes([MentionNode])) {
+    throw new Error("Missing MentionNode registration in Lexical Composer")
+  }
+
   const [query, setQuery] = useState<string | null>(null);
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch("@", { minLength: 0 });
   useEffect(() => {
