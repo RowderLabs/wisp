@@ -22,7 +22,7 @@ export class MentionNode extends DecoratorNode<ReactNode> {
   }
 
   static clone(node: MentionNode): MentionNode {
-    return new MentionNode(node.__name, node.__key);
+    return new MentionNode(node.__id, node.__name, node.__key);
   }
 
   constructor(id: string, name: string, key?: NodeKey) {
@@ -39,9 +39,7 @@ export class MentionNode extends DecoratorNode<ReactNode> {
     return false;
   }
 
-  getTextContent(): string {
-      return `@${this.__name}`
-  }
+
 
   exportJSON(): SerializedMentionNode {
     return {
