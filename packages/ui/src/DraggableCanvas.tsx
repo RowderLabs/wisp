@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { DndContext, Modifier, MouseSensor, useSensor } from "@dnd-kit/core";
 import { PropsWithChildren } from "react";
 import { Transform, TransformEvent } from "./Transform";
-import { useTransformContext, useTranslate } from "./hooks";
+import { useClickExact, useTransformContext, useTranslate } from "./hooks";
 import { TextboxPanel } from "../panels";
 import { HiOutlineClipboardDocument, HiOutlineSquare3Stack3D, HiTrash } from "react-icons/hi2";
 import { Panel } from "@wisp/client/src/bindings";
@@ -10,6 +10,7 @@ import { rspc } from "@wisp/client";
 import { ImagePanel } from "../panels/image";
 import { ContextMenu } from "./ContextMenu";
 import { d } from "@tauri-apps/api/path-c062430b";
+import clsx from "clsx";
 
 type DraggableCanvasProps = {
   id: string;
@@ -27,7 +28,7 @@ function DraggableCanvasInner({
   children,
 }: PropsWithChildren<DraggableCanvasProps>) {
   const mouseSensor = useSensor(MouseSensor, {
-    activationConstraint: { delay: 100, tolerance: 5 },
+    activationConstraint: { distance: 0.01 },
   });
 
   const queryClient = rspc.useContext().queryClient;
@@ -36,9 +37,12 @@ function DraggableCanvasInner({
       queryClient.invalidateQueries(["characters.canvas"]);
     },
   });
+  const [selected, setSelected] = useState<string>();
+  const canvasRef = useRef<HTMLDivElement>(null)
+  useClickExact(canvasRef, () => setSelected(undefined))
 
   return (
-    <div className="w-full h-full">
+    <div ref={canvasRef} className="w-full h-full">
       {children}
       <DndContext modifiers={modifiers} sensors={[mouseSensor]}>
         {items.map((item) => (
@@ -48,9 +52,15 @@ function DraggableCanvasInner({
             transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
             onTransform={onItemTransform}
           >
-            <DraggableCanvasItem onDelete={onItemDelete}>
+            <DraggableCanvasItem
+              selected={selected === item.id}
+              canMove={selected !== item.id}
+              onSelect={(id) => setSelected(id)}
+              onDelete={onItemDelete}
+            >
               {item.panelType === "textbox"
                 ? new TextboxPanel({
+                  editable: selected === item.id,
                     pluginOpts: { onChange: { debounce: { duration: 500 } } },
                     onChange: (editorState) => {
                       setPanelContent({
@@ -72,20 +82,27 @@ export const DraggableCanvas = React.memo(DraggableCanvasInner);
 
 interface DraggableCanvasItemProps extends PropsWithChildren {
   onDelete?: (id: string) => void;
+  selected: boolean;
+  canMove: boolean;
+  onSelect: (id: string) => void;
 }
 
-function DraggableCanvasItem({ children, onDelete }: DraggableCanvasItemProps) {
+function DraggableCanvasItem({ children, onDelete, selected, onSelect, canMove}: DraggableCanvasItemProps) {
   const { transform, id } = useTransformContext();
-  const { dragHandle, dragRef, translateStyles } = useTranslate();
+  const { dragHandle, dragRef, translateStyles } = useTranslate({canMove});
   return (
     <ContextMenu.Root
       className="text-xs"
       trigger={
         <div
+          onClick={(e) => {
+            e.preventDefault()
+            onSelect(id)
+          }}
           ref={dragRef}
           {...dragHandle.listeners}
           {...dragHandle.attributes}
-          className="rounded-md absolute"
+          className={clsx("rounded-md absolute", selected && "outline outline-emerald-500")}
           style={{
             left: transform.x,
             top: transform.y,

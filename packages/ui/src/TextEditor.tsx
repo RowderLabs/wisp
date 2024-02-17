@@ -11,11 +11,11 @@ import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin
 import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
 import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
-import { useCallback, useEffect } from "react";
-import React from 'react';
+import { useCallback } from "react";
 import MentionsPlugin from './plugins/MentionsPlugin';
 import { MentionNode } from './nodes/MentionNode';
 import { ToggleEditablePlugin } from './plugins/ToggleEditablePlugin';
+import { $getRoot } from 'lexical';
 
 //type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
@@ -54,9 +54,6 @@ export default function TextEditor({ className, features, editorTheme, onChange,
     console.error(err);
   }
 
-  useEffect(() => {
-    console.log('editable chaanged')
-  }, [editable])
 
   const featureEnabled = useCallback(
     (flag?: Omit<TextEditorFeatures, "full">[keyof Omit<TextEditorFeatures, "full">]) => {
@@ -98,7 +95,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
         )}
 
         <RichTextPlugin
-          contentEditable={<ContentEditable className="editor editor-input" />}
+          contentEditable={<ContentEditable className="editor editor-input cursor-text" />}
           placeholder={null}
           ErrorBoundary={LexicalErrorBoundary}
         />
@@ -106,7 +103,15 @@ export default function TextEditor({ className, features, editorTheme, onChange,
         <MentionsPlugin/>
         <HistoryPlugin />
         {onChange && <OnChangePlugin {...pluginOpts?.onChange} onChange={onChange} />}
-        <ToggleEditablePlugin editable={editable} onEditableChange={(status) => console.log(`editor in ${status ? 'edit' : 'read'} mode`)}/>
+        <ToggleEditablePlugin editable={editable} onEditableChange={(canEdit, editor) => {
+          if(canEdit) {
+            //focus editor and select end of text
+            editor.focus()
+            editor.update(() => {
+              $getRoot().selectEnd()
+            })
+          }
+        }}/>
       </div>
     </LexicalComposer>
   );

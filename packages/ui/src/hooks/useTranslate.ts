@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { molecule, useMolecule } from "bunshi/react";
 import { TransformScope } from "../Transform";
 import invariant from "tiny-invariant";
+import { useEffect, useState } from "react";
 
 const TranslateMolecule = molecule((_, scope) => {
   const transformCtx = scope(TransformScope);
@@ -23,8 +24,9 @@ const TranslateMolecule = molecule((_, scope) => {
   return { translate, transformId };
 });
 
-export function useTranslate() {
+export function useTranslate({ canMove }: { canMove: boolean }) {
   const { transformId, translate } = useMolecule(TranslateMolecule);
+  const [disabled, setDisabled] = useState(false);
   const {
     attributes,
     setNodeRef,
@@ -32,7 +34,11 @@ export function useTranslate() {
     listeners,
     isDragging,
     transform: dragTransform,
-  } = useDraggable({ id: `${transformId}-translate`, data: { transform: { type: "translate" } } });
+  } = useDraggable({ id: `${transformId}-translate`, data: { transform: { type: "translate" } }, disabled });
+
+  useEffect(() => {
+    setDisabled(!canMove);
+  }, [canMove]);
 
   useDndMonitor({
     onDragStart: ({ active }) => {
