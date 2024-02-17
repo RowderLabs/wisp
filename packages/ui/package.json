@@ -23,6 +23,7 @@
     "@lexical/react": "^0.12.2",
     "@lexical/rich-text": "^0.12.2",
     "@lexical/selection": "^0.12.2",
+    "@lexical/utils": "^0.13.1",
     "@radix-ui/react-context-menu": "^2.1.5",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
