@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -286,10 +290,13 @@ importers:
         version: 0.12.2(lexical@0.12.2)(react-dom@18.2.0)(react@18.2.0)(yjs@13.6.12)
       '@lexical/rich-text':
         specifier: ^0.12.2
-        version: 0.12.2(@lexical/clipboard@0.12.2)(@lexical/selection@0.12.2)(@lexical/utils@0.12.2)(lexical@0.12.2)
+        version: 0.12.2(@lexical/clipboard@0.12.2)(@lexical/selection@0.12.2)(@lexical/utils@0.13.1)(lexical@0.12.2)
       '@lexical/selection':
         specifier: ^0.12.2
         version: 0.12.2(lexical@0.12.2)
+      '@lexical/utils':
+        specifier: ^0.13.1
+        version: 0.13.1(lexical@0.12.2)
       '@radix-ui/react-context-menu':
         specifier: ^2.1.5
         version: 2.1.5(@types/react-dom@18.2.7)(@types/react@18.2.15)(react-dom@18.2.0)(react@18.2.0)
@@ -2472,6 +2479,15 @@ packages:
       lexical: 0.12.2
     dev: false
 
+  /@lexical/list@0.13.1(lexical@0.12.2):
+    resolution: {integrity: sha512-6U1pmNZcKLuOWiWRML8Raf9zSEuUCMlsOye82niyF6I0rpPgYo5UFghAAbGISDsyqzM1B2L4BgJ6XrCk/dJptg==}
+    peerDependencies:
+      lexical: 0.13.1
+    dependencies:
+      '@lexical/utils': 0.13.1(lexical@0.12.2)
+      lexical: 0.12.2
+    dev: false
+
   /@lexical/mark@0.12.2(lexical@0.12.2):
     resolution: {integrity: sha512-ub+37PDfmThsqAWipRTrwqpgE+83ckqJ5C3mKQUBZvhZfVZW1rEUXZnKjFh2Q3eZK6iT7zVgoVJWJS9ZgEEyag==}
     peerDependencies:
@@ -2574,10 +2590,32 @@ packages:
       lexical: 0.12.2
     dev: false
 
+  /@lexical/rich-text@0.12.2(@lexical/clipboard@0.12.2)(@lexical/selection@0.12.2)(@lexical/utils@0.13.1)(lexical@0.12.2):
+    resolution: {integrity: sha512-igsEuv7CwBOAj5c8jeE41cnx6zkhI/Bkbu4W7shT6S6lNA/3cnyZpAMlgixwyK5RoqjGRCT+IJK5l6yBxQfNkw==}
+    peerDependencies:
+      '@lexical/clipboard': 0.12.2
+      '@lexical/selection': 0.12.2
+      '@lexical/utils': 0.12.2
+      lexical: 0.12.2
+    dependencies:
+      '@lexical/clipboard': 0.12.2(lexical@0.12.2)
+      '@lexical/selection': 0.12.2(lexical@0.12.2)
+      '@lexical/utils': 0.13.1(lexical@0.12.2)
+      lexical: 0.12.2
+    dev: false
+
   /@lexical/selection@0.12.2(lexical@0.12.2):
     resolution: {integrity: sha512-h+g3oOnihHKIyLTyG6uLCEVR/DmUEVdCcZO1iAoGsuW7nwWiWNPWj6oZ3Cw5J1Mk5u62DHnkkVDQsVSZbAwmtg==}
     peerDependencies:
       lexical: 0.12.2
+    dependencies:
+      lexical: 0.12.2
+    dev: false
+
+  /@lexical/selection@0.13.1(lexical@0.12.2):
+    resolution: {integrity: sha512-Kt9eSwjxPznj7yzIYipu9yYEgmRJhHiq3DNxHRxInYcZJWWNNHum2xKyxwwcN8QYBBzgfPegfM/geqQEJSV1lQ==}
+    peerDependencies:
+      lexical: 0.13.1
     dependencies:
       lexical: 0.12.2
     dev: false
@@ -2588,6 +2626,15 @@ packages:
       lexical: 0.12.2
     dependencies:
       '@lexical/utils': 0.12.2(lexical@0.12.2)
+      lexical: 0.12.2
+    dev: false
+
+  /@lexical/table@0.13.1(lexical@0.12.2):
+    resolution: {integrity: sha512-VQzgkfkEmnvn6C64O/kvl0HI3bFoBh3WA/U67ALw+DS11Mb5CKjbt0Gzm/258/reIxNMpshjjicpWMv9Miwauw==}
+    peerDependencies:
+      lexical: 0.13.1
+    dependencies:
+      '@lexical/utils': 0.13.1(lexical@0.12.2)
       lexical: 0.12.2
     dev: false
 
@@ -2607,6 +2654,17 @@ packages:
       '@lexical/list': 0.12.2(lexical@0.12.2)
       '@lexical/selection': 0.12.2(lexical@0.12.2)
       '@lexical/table': 0.12.2(lexical@0.12.2)
+      lexical: 0.12.2
+    dev: false
+
+  /@lexical/utils@0.13.1(lexical@0.12.2):
+    resolution: {integrity: sha512-AtQQKzYymkbOaQxaBXjRBS8IPxF9zWQnqwHTUTrJqJ4hX71aIQd/thqZbfQETAFJfC8pNBZw5zpxN6yPHk23dQ==}
+    peerDependencies:
+      lexical: 0.13.1
+    dependencies:
+      '@lexical/list': 0.13.1(lexical@0.12.2)
+      '@lexical/selection': 0.13.1(lexical@0.12.2)
+      '@lexical/table': 0.13.1(lexical@0.12.2)
       lexical: 0.12.2
     dev: false
 
@@ -11430,7 +11488,3 @@ packages:
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false

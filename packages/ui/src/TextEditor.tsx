@@ -12,10 +12,11 @@ import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
 import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
 import { useCallback, useEffect } from "react";
-import React from 'react';
 import MentionsPlugin from './plugins/MentionsPlugin';
 import { MentionNode } from './nodes/MentionNode';
 import { ToggleEditablePlugin } from './plugins/ToggleEditablePlugin';
+import { ZeroWidthPlugin } from './plugins/ZeroWidthPlugin';
+import { ZeroWidthNode } from './nodes/ZeroWidthNode';
 
 //type FeatureFlags = { typeahead?: Partial<TypeaheadFlags> } & { full: true };
 
@@ -85,7 +86,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
       },
     },
     onError,
-    nodes: [ListNode, ListItemNode, HeadingNode, MentionNode],
+    nodes: [ListNode, ListItemNode, HeadingNode, MentionNode, ZeroWidthNode],
   };
   return (
     <LexicalComposer initialConfig={initialConfig}>
@@ -107,6 +108,8 @@ export default function TextEditor({ className, features, editorTheme, onChange,
         <HistoryPlugin />
         {onChange && <OnChangePlugin {...pluginOpts?.onChange} onChange={onChange} />}
         <ToggleEditablePlugin editable={editable} onEditableChange={(status) => console.log(`editor in ${status ? 'edit' : 'read'} mode`)}/>
+        {/**Temporary fix for https://github.com/facebook/lexical/issues/4487 */}
+        <ZeroWidthPlugin/>
       </div>
     </LexicalComposer>
   );
