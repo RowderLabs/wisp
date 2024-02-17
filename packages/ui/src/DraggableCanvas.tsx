@@ -95,7 +95,7 @@ function DraggableCanvasItem({ children, onDelete, selected, onSelect, canMove}:
       className="text-xs"
       trigger={
         <div
-          onClick={(e) => {
+          onDoubleClick={(e) => {
             e.preventDefault()
             onSelect(id)
           }}
