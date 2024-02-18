@@ -51,6 +51,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@wisp/eslint": "workspace:*",
     "@types/react-dom": "^18.2.7",
     "@types/use-double-click": "^1.0.2",
     "react-icons": "^4.11.0",
