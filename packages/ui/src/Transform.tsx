@@ -4,7 +4,7 @@ import { ResizeConstraints, useResize, useTransformContext } from "./hooks";
 import { cva } from "class-variance-authority";
 import { useDraggable } from "@dnd-kit/core";
 
-export type Maybe<T extends unknown> = T extends object
+export type Maybe<T> = T extends object
   ? {
       [K in keyof T]: T[K] | undefined;
     }

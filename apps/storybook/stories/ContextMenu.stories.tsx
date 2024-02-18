@@ -14,7 +14,7 @@ type Story = StoryObj<(typeof ContextMenu)["Root"]>;
 export const Basic: Story = {
   args: {
     trigger: (
-      <div className="w-[400px] h-[400px] border flex justify-center items-center">
+      <div className="w-[400px] h-[400px] border border-blue-500 flex justify-center items-center">
         <p>Right click to trigger</p>
       </div>
     ),

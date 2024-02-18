@@ -11,7 +11,7 @@ import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin
 import ComponentPickerPlugin from "./plugins/ComponentPickerPlugin";
 import OnChangePlugin  from "./plugins/OnChangePlugin";
 import clsx from "clsx";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import MentionsPlugin from './plugins/MentionsPlugin';
 import { MentionNode } from './nodes/MentionNode';
 import { ToggleEditablePlugin } from './plugins/ToggleEditablePlugin';
