@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { Panel } from "./base";
+import { PanelContract } from "./base";
 import { Image, ImageProps } from "../src/Image";
+import { ReactElement, JSXElementConstructor } from "react";
 
 const ImagePanelJSONSchema = z
   .object({
@@ -8,23 +9,35 @@ const ImagePanelJSONSchema = z
   })
   .nullable();
 
-type ImagePanelJSONProps = z.infer<typeof ImagePanelJSONSchema>
-type ImagePanelProps = Omit<ImageProps, 'src'>
+type ImagePanelJSONProps = z.infer<typeof ImagePanelJSONSchema>;
+type ImagePanelProps = Omit<ImageProps, "src">;
 
-export class ImagePanel extends Panel<ImagePanelProps, ImagePanelJSONProps> {
-  constructor(props: ImagePanelProps) {
-    super(props);
+export class ImagePanel implements PanelContract<ImagePanelProps, ImagePanelJSONProps> {
+  private __props?: Omit<ImagePanelProps, "src">;
+  private __serverProps?: ImagePanelJSONProps;
+
+  getType() {
+    return "image";
   }
+  getClientProps(
+    props: ImagePanelProps
+  ): Omit<PanelContract<ImagePanelProps, { src: string } | null>, "getClientProps"> {
+    this.__props = props;
+    return this;
+  }
+  getServerProps(json: string | null): Omit<PanelContract<ImagePanelProps, { src: string } | null>, "fromJSON"> {
+    if (!json) return this;
+    try {
+      this.__serverProps = ImagePanelJSONSchema.parse(JSON.parse(json));
+    } catch (error) {
+      console.error("could not parse textbox schema");
+    }
 
-  renderFromJSON(json: string | null): React.ReactElement<ImageProps> | React.ReactElement | null {
-    
-    const jsonProps = this.__parseJSONProps(json, ImagePanelJSONSchema);
-    return jsonProps ? (
-      //if exists pass initial
-      <Image {...jsonProps} {...this.__props} />
-    ) : (
-      //else create textbox
-      <div className="h-[300px] h-[300px] bg-slate-300"></div>
-    );
+    return this;
+  }
+  render(): ReactElement<unknown, string | JSXElementConstructor<any>> | null {
+    if (!this.__props || !this.__serverProps) return null;
+
+    return <Image {...this.__props} {...this.__serverProps} />;
   }
 }

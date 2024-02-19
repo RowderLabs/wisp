@@ -47,10 +47,7 @@ function WorkspaceCharacterSheetPage() {
   React.useEffect(() => {
     if (!draft) return;
     type CharacterCanvas = Extract<Procedures["queries"], { key: "characters.canvas" }>["result"];
-    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>([
-      "characters.canvas",
-      params.characterId,
-    ]);
+    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>(["characters.canvas", params.characterId]);
     const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
     const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
 
@@ -71,7 +68,6 @@ function WorkspaceCharacterSheetPage() {
   const createPanelWithType = useCreatePanel(canvas!.id);
   const { deletePanel } = useDeletePanel();
 
-
   const createImage = () =>
     dialogManager.createDialog(ImageUploadDialog, {
       id: "create-image-panel",
@@ -80,7 +76,6 @@ function WorkspaceCharacterSheetPage() {
         createPanelWithType("image", { content: JSON.stringify({ src: imageSrc }) });
       },
     });
-
 
   const snapToGrid: Modifier = (args) => {
     const { transform } = args;
@@ -132,35 +127,36 @@ function WorkspaceCharacterSheetPage() {
             id={canvas.id}
             items={canvas.panels}
             renderItem={(item) => {
-              return item.panelType === "textbox"
-              ? new TextboxPanel({
-                editable: true,
-                  pluginOpts: { onChange: { debounce: { duration: 500 } } },
-                  onChange: (editorState) => {
-                    setPanelContent({
-                      id: item.id,
-                      content: JSON.stringify({ initial: editorState.toJSON() }),
-                    });
-                  },
-                }).renderFromJSON(item.content)
-              : new ImagePanel({ fit: "cover" }).renderFromJSON(item.content)}
+              if (item.panelType === "textbox") {
+                return new TextboxPanel()
+                  .getClientProps({
+                    editable: true,
+                    pluginOpts: { onChange: { debounce: { duration: 500 } } },
+                    onChange: (editorState) => {
+                      setPanelContent({
+                        id: item.id,
+                        content: JSON.stringify({ initial: editorState.toJSON() }),
+                      });
+                    },
+                  })
+                  .getServerProps(item.content)
+                  .render();
+              }
 
-            }
+              if (item.panelType === "image") {
+                return new ImagePanel().getClientProps({ fit: "cover" }).getServerProps(item.content).render();
+              }
+
+              return null;
+            }}
             onItemTransform={setDraft}
           >
             <DraggableCanvasToolbar>
-              <Toolbar.IconButton
-                onClick={() => createPanelWithType("textbox")}
-                icon={<HiMiniDocumentText />}
-              />
+              <Toolbar.IconButton onClick={() => createPanelWithType("textbox", {content: null})} icon={<HiMiniDocumentText />} />
               <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
               <Toolbar.IconButton disabled={true} icon={<HiTable />} />
               <Toolbar.ToggleGroup asChild type="single">
-                <Toolbar.ToggleItem
-                  onClick={toggleGridSnap}
-                  value="grid-snap"
-                  icon={<HiOutlineViewGrid />}
-                />
+                <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
               </Toolbar.ToggleGroup>
             </DraggableCanvasToolbar>
           </DraggableCanvas>

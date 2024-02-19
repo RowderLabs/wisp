@@ -12,13 +12,13 @@ export function useCreatePanel(id: string) {
 
   const createPanelWithType = (type: "textbox" | "image", args?: T1) => {
     createPanel({
-      x: args?.x ?? 150,
-      y: args?.y ?? 300,
-      width: args?.width ?? 150,
-      height: args?.height ?? 150,
+      x: args?.x ?? Math.floor(Math.random() * (400 - 150 + 1)) + 150,
+      y: args?.y ?? Math.floor(Math.random() * (400 - 150 + 1)) + 150,
+      width: args?.width ?? 300,
+      height: args?.height ?? 300,
       panel_type: type,
       canvas_id: id,
-      content: null,
+      content: args?.content || null,
     });
   };
 
