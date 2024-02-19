@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DraggableCanvas, Toolbar, TransformEvent } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
-import { rspc, useUtils } from "@wisp/client";
+import { rspc } from "@wisp/client";
 import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
 import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
@@ -13,17 +13,19 @@ import { HiOutlineViewGrid, HiTable } from "react-icons/hi";
 import { Modifier } from "@dnd-kit/core";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { NotFound } from "../components/NotFound";
+import { useCreatePanel } from "../hooks/useCreatePanel";
+import { useDeletePanel } from "../hooks/useDeletePanel";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
   staticData: {
-    routeBreadcrumb: 'character-page'
+    routeBreadcrumb: "character-page",
   },
   loader: async ({ context, params }) => {
-    const canvas = await context.rspc.client.query(['characters.canvas', params.characterId])
-    if (!canvas) throw notFound()
-    return canvas
+    const canvas = await context.rspc.client.query(["characters.canvas", params.characterId]);
+    if (!canvas) throw notFound();
+    return canvas;
   },
-  notFoundComponent: () => <NotFound/>,
+  notFoundComponent: () => <NotFound />,
   component: WorkspaceCharacterSheetPage,
 });
 function WorkspaceCharacterSheetPage() {
@@ -57,6 +59,7 @@ function WorkspaceCharacterSheetPage() {
         panels: [...cachedPanels, { ...cachedPanel, ...draft }],
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
 
   const { data: canvas } = rspc.useQuery(["characters.canvas", params.characterId], {
@@ -64,54 +67,20 @@ function WorkspaceCharacterSheetPage() {
     staleTime: Infinity,
   });
   const [dialogManager] = useDialogManager();
-  const utils = useUtils();
+  const createPanelWithType = useCreatePanel(canvas!.id);
+  const { deletePanel } = useDeletePanel();
 
-  const { mutate: createImagePanel } = rspc.useMutation(["panels.create"], {
-    onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
-    },
-  });
-
-  const onUpload = (path: string) => {
-    const imageSrc = convertFileSrc(path);
-    createImagePanel({
-      x: 300,
-      y: 300,
-      width: 200,
-      height: 300,
-      content: JSON.stringify({ src: imageSrc }),
-      panel_type: "image",
-      canvas_id: canvas!.id,
-    });
-  };
 
   const createImage = () =>
-    dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel", onUpload });
-
-  const { mutate: createTextboxDb } = rspc.useMutation(["panels.create"], {
-    onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
-    },
-  });
-
-  const createTextbox = () => {
-    createTextboxDb({
-      x: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
-      y: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
-      width: 150,
-      height: 200,
-      content: null,
-      panel_type: "textbox",
-      canvas_id: canvas!.id,
+    dialogManager.createDialog(ImageUploadDialog, {
+      id: "create-image-panel",
+      onUpload: (path: string) => {
+        const imageSrc = convertFileSrc(path);
+        createPanelWithType("image", { content: JSON.stringify({ src: imageSrc }) });
+      },
     });
-  };
 
-  //TODO: move into custom hook and apply optimistic updates.
-  const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
-    onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
-    },
-  });
+
   const snapToGrid: Modifier = (args) => {
     const { transform } = args;
     return {
@@ -141,7 +110,7 @@ function WorkspaceCharacterSheetPage() {
           <p>canvas id: {canvas?.id}</p>
         </div>
       </Banner>
-      <Breadcrumbs/>
+      <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
           <DraggableCanvas
@@ -158,7 +127,10 @@ function WorkspaceCharacterSheetPage() {
             onItemTransform={setDraft}
           >
             <DraggableCanvasToolbar>
-              <Toolbar.IconButton onClick={createTextbox} icon={<HiMiniDocumentText />} />
+              <Toolbar.IconButton
+                onClick={() => createPanelWithType("textbox")}
+                icon={<HiMiniDocumentText />}
+              />
               <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
               <Toolbar.IconButton disabled={true} icon={<HiTable />} />
               <Toolbar.ToggleGroup asChild type="single">
