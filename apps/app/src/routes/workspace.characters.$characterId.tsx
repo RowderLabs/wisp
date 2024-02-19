@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { DraggableCanvas, Toolbar, TransformEvent } from "@wisp/ui";
+import { DraggableCanvas, ImagePanel, TextboxPanel, Toolbar, TransformEvent } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
 import { rspc } from "@wisp/client";
 import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
@@ -15,6 +15,7 @@ import { Breadcrumbs } from "../components/Breadcrumbs";
 import { NotFound } from "../components/NotFound";
 import { useCreatePanel } from "../hooks/useCreatePanel";
 import { useDeletePanel } from "../hooks/useDeletePanel";
+import { Panel } from "@wisp/client/src/bindings";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
   staticData: {
@@ -103,6 +104,12 @@ function WorkspaceCharacterSheetPage() {
     gridSnapActive.current = !gridSnapActive.current;
   };
 
+  const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["characters.canvas"]);
+    },
+  });
+
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
       <Banner className="bg-slate-300">
@@ -113,7 +120,7 @@ function WorkspaceCharacterSheetPage() {
       <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
-          <DraggableCanvas
+          <DraggableCanvas<Panel>
             modifiers={canvasModifiers}
             onItemDelete={(id) => {
               dialogManager.createDialog(ConfirmationDialog, {
@@ -124,6 +131,21 @@ function WorkspaceCharacterSheetPage() {
             }}
             id={canvas.id}
             items={canvas.panels}
+            renderItem={(item) => {
+              return item.panelType === "textbox"
+              ? new TextboxPanel({
+                editable: true,
+                  pluginOpts: { onChange: { debounce: { duration: 500 } } },
+                  onChange: (editorState) => {
+                    setPanelContent({
+                      id: item.id,
+                      content: JSON.stringify({ initial: editorState.toJSON() }),
+                    });
+                  },
+                }).renderFromJSON(item.content)
+              : new ImagePanel({ fit: "cover" }).renderFromJSON(item.content)}
+
+            }
             onItemTransform={setDraft}
           >
             <DraggableCanvasToolbar>
