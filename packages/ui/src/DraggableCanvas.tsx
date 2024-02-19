@@ -105,7 +105,7 @@ function DraggableCanvasItem({ children, onDelete, selected, onSelect, canMove}:
               "top-left": true,
               "top-right": true,
             }}
-            constraints={{ width: { min: 150 }, height: { min: 150 } }}
+            constraints={{ width: { min: 200 }, height: { min: 200 } }}
           />
           {children}
         </div>

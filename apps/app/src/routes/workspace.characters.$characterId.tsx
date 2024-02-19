@@ -16,6 +16,7 @@ import { NotFound } from "../components/NotFound";
 import { useCreatePanel } from "../hooks/useCreatePanel";
 import { useDeletePanel } from "../hooks/useDeletePanel";
 import { Panel } from "@wisp/client/src/bindings";
+import { FactSheetPanel } from "../panels/factsheet";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
   staticData: {
@@ -107,10 +108,18 @@ function WorkspaceCharacterSheetPage() {
 
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
-      <Banner className="bg-slate-300">
-        <div>
-          <p>canvas id: {canvas?.id}</p>
-        </div>
+      <Banner className="bg-slate-300 relative">
+        <DraggableCanvasToolbar>
+          <Toolbar.IconButton
+            onClick={() => createPanelWithType("textbox", { content: null })}
+            icon={<HiMiniDocumentText />}
+          />
+          <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
+          <Toolbar.IconButton onClick={() => createPanelWithType("factsheet")} icon={<HiTable />} />
+          <Toolbar.ToggleGroup asChild type="single">
+            <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
+          </Toolbar.ToggleGroup>
+        </DraggableCanvasToolbar>
       </Banner>
       <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
@@ -147,19 +156,14 @@ function WorkspaceCharacterSheetPage() {
                 return new ImagePanel().getClientProps({ fit: "cover" }).getServerProps(item.content).render();
               }
 
+              if (item.panelType === "factsheet") {
+                return new FactSheetPanel().getClientProps({}).getServerProps("").render();
+              }
+
               return null;
             }}
             onItemTransform={setDraft}
-          >
-            <DraggableCanvasToolbar>
-              <Toolbar.IconButton onClick={() => createPanelWithType("textbox", {content: null})} icon={<HiMiniDocumentText />} />
-              <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
-              <Toolbar.IconButton disabled={true} icon={<HiTable />} />
-              <Toolbar.ToggleGroup asChild type="single">
-                <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
-              </Toolbar.ToggleGroup>
-            </DraggableCanvasToolbar>
-          </DraggableCanvas>
+          ></DraggableCanvas>
         )}
       </div>
     </div>
@@ -168,8 +172,8 @@ function WorkspaceCharacterSheetPage() {
 
 function DraggableCanvasToolbar({ children }: PropsWithChildren) {
   return (
-    <div className="absolute top-0 left-2">
-      <Toolbar.Root orientation="vertical">{children}</Toolbar.Root>
+    <div className="absolute top-8 left-4">
+      <Toolbar.Root orientation="horizontal">{children}</Toolbar.Root>
     </div>
   );
 }

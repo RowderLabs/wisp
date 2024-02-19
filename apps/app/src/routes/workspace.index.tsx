@@ -24,7 +24,7 @@ function Fact() {
 
 export function FactList() {
   return (
-    <div className="bg-white rounded-md border text-sm p-8 mx-auto flex flex-col gap-2 max-w-[600px]">
+    <div className="bg-white w-full h-full rounded-md border text-sm p-8 mx-auto flex flex-col gap-2">
       <Fact />
       <Fact />
       <Fact />

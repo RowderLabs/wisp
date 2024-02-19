@@ -1,5 +1,7 @@
 import { rspc, useUtils } from "@wisp/client";
 
+type PanelType = 'textbox' | 'image' | 'factsheet'
+
 export function useCreatePanel(id: string) {
   const utils = useUtils();
 
@@ -10,7 +12,7 @@ export function useCreatePanel(id: string) {
   });
   type T1 = Omit<Partial<Parameters<typeof createPanel>[0]>, "panel_type">;
 
-  const createPanelWithType = (type: "textbox" | "image", args?: T1) => {
+  const createPanelWithType = (type: PanelType, args?: T1) => {
     createPanel({
       x: args?.x ?? Math.floor(Math.random() * (400 - 150 + 1)) + 150,
       y: args?.y ?? Math.floor(Math.random() * (400 - 150 + 1)) + 150,
