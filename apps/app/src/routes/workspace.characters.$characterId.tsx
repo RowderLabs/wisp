@@ -115,7 +115,17 @@ function WorkspaceCharacterSheetPage() {
             icon={<HiMiniDocumentText />}
           />
           <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
-          <Toolbar.IconButton onClick={() => createPanelWithType("factsheet")} icon={<HiTable />} />
+          <Toolbar.IconButton
+            onClick={() =>
+              createPanelWithType("factsheet", {
+                content: JSON.stringify({facts: [
+                  { factKey: "name", value: "Matt", type: "text" },
+                  { factKey: "traits", value: ["kind", "caring"], type: "attr" },
+                ]}),
+              })
+            }
+            icon={<HiTable />}
+          />
           <Toolbar.ToggleGroup asChild type="single">
             <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
           </Toolbar.ToggleGroup>
@@ -157,7 +167,7 @@ function WorkspaceCharacterSheetPage() {
               }
 
               if (item.panelType === "factsheet") {
-                return new FactSheetPanel().getClientProps({}).getServerProps("").render();
+                return new FactSheetPanel().getClientProps({}).getServerProps(item.content).render();
               }
 
               return null;

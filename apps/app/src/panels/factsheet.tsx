@@ -1,23 +1,38 @@
 import { z } from "zod";
-import { PanelContract } from '@wisp/ui';
-import { ReactElement, JSXElementConstructor } from "react";
-import { FactList } from "../routes/workspace.index";
+import { PanelContract } from "@wisp/ui";
+import React, { ReactElement, JSXElementConstructor } from "react";
+import { FactSheet } from "../components/FactSheet";
 
-const FactSheetJSONSchema = z.any()
+const FactSchema = z.union([
+  z.object({
+    type: z.enum(["text"]),
+    factKey: z.string(),
+    value: z.string(),
+  }),
+  z.object({
+    type: z.enum(["attr"]),
+    factKey: z.string(),
+    value: z.array(z.string()),
+  }),
+]);
+
+const FactSheetJSONSchema = z.object({
+  facts: z.array(FactSchema),
+});
 
 type FactSheetServerProps = z.infer<typeof FactSheetJSONSchema>;
 
 export class FactSheetPanel implements PanelContract<any, FactSheetServerProps> {
-  private __props?: any
-  private __serverProps?: FactSheetServerProps;
+  //private __props: unknown
+  private __serverProps?: React.ComponentPropsWithoutRef<typeof FactSheet>;
 
   getType() {
-    return "image";
+    return "factsheet";
   }
   getClientProps(
-    props: any 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    props: any
   ): Omit<PanelContract<any, { src: string } | null>, "getClientProps"> {
-    this.__props = props;
     return this;
   }
   getServerProps(json: string | null): Omit<PanelContract<any, { src: string } | null>, "fromJSON"> {
@@ -25,12 +40,14 @@ export class FactSheetPanel implements PanelContract<any, FactSheetServerProps> 
     try {
       this.__serverProps = FactSheetJSONSchema.parse(JSON.parse(json));
     } catch (error) {
-      console.error("could not parse textbox schema");
+      console.error(error);
     }
 
     return this;
   }
   render(): ReactElement<unknown, string | JSXElementConstructor<any>> | null {
-    return <FactList/>;
+    if (!this.__serverProps) return null;
+
+    return <FactSheet {...this.__serverProps} />;
   }
 }
