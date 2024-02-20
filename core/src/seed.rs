@@ -20,6 +20,7 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         ]
   }
 }"#).unwrap();
+    println!("{:#?}", result);
 
     let mut facts = vec![];
     for group in result.character.groups.into_iter() {
@@ -31,18 +32,24 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
             .unwrap();
         for fact in group.facts {
             match fact {
-                Fact::TextItem(fact) => facts.push(prisma.fact().create(
-                    fact.key,
-                    fact.item_type,
-                    prisma::fact_group::id::equals(new_group.id),
-                    vec![],
-                )),
-                Fact::AttrItem(fact) => facts.push(prisma.fact().create(
-                    fact.key,
-                    fact.item_type,
-                    prisma::fact_group::id::equals(new_group.id),
-                    vec![fact::options::set(Some(fact.options))],
-                )),
+                Fact::TextItem { key } => {
+                    facts.push(prisma.fact().create(
+                        key,
+                        "text".into(),
+                        prisma::fact_group::id::equals(new_group.id),
+                        vec![],
+                    ));
+                }
+                Fact::AttrItem { key, options } => {
+                    facts.push(prisma.fact().create(
+                        key,
+                        "attr".into(),
+                        prisma::fact_group::id::equals(new_group.id),
+                        vec![prisma::fact::options::set(Some(
+                            (serde_json::to_string(&options).unwrap()),
+                        ))],
+                    ));
+                }
             }
         }
     }
@@ -73,6 +80,7 @@ struct FactsEntry {
     groups: Vec<FactGroup>,
 }
 
+
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 pub struct FactGroup {
     pub name: String,
@@ -80,17 +88,18 @@ pub struct FactGroup {
     pub facts: Vec<Fact>,
 }
 
-
-
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
-#[serde(untagged)]
+#[serde(tag = "type")]
 pub enum Fact {
-    TextItem(TextFact),
-    AttrItem(AttrFact),
+    #[serde(rename = "text")]
+    TextItem { key: String },
+    #[serde(rename = "attr")]
+    AttrItem { key: String, options: Vec<String> },
 }
 
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 pub struct TextFact {
+    #[serde(rename = "factKey")]
     pub key: String,
     #[serde(rename = "type")]
     pub item_type: String,
@@ -98,9 +107,9 @@ pub struct TextFact {
 
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 pub struct AttrFact {
+    #[serde(rename = "factKey")]
     pub key: String,
     #[serde(rename = "type")]
     pub item_type: String,
-    #[serde(skip_deserializing)]
-    pub options: String,
+    pub options: Vec<String>,
 }

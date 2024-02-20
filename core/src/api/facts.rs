@@ -37,15 +37,11 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
 impl Into<Fact> for prisma::fact::Data {
     fn into(self) -> Fact {
         match self.r#type.as_str() {
-            "text" => Fact::TextItem(TextFact {
-                item_type: self.r#type,
+            "text" => Fact::TextItem { key: self.key },
+            "attr" => Fact::AttrItem {
                 key: self.key,
-            }),
-            "attr" => Fact::AttrItem(AttrFact {
-                key: self.key,
-                item_type: self.r#type,
-                options: self.options.unwrap_or(String::new()),
-            }),
+                options: serde_json::from_str(&self.options.unwrap_or_default()).unwrap_or(vec![]),
+            },
             _ => panic!("unknown fact type"),
         }
     }
