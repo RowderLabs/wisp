@@ -51,6 +51,7 @@ model FactGroup {
     entity String
     name String
     facts Fact[]
+    @@unique([name, entity])
 }
 
 model Fact {
@@ -60,5 +61,7 @@ model Fact {
     options String?
     groupId Int
     group FactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+    @@unique([key, groupId])
 }
 

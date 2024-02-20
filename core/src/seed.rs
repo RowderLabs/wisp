@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     api::characters::{construct_path, generate_id},
@@ -73,34 +73,34 @@ struct FactsEntry {
     groups: Vec<FactGroup>,
 }
 
-#[derive(Debug, Deserialize)]
-struct FactGroup {
-    name: String,
-    entity: String,
-    facts: Vec<Fact>,
+#[derive(Debug, Serialize, Deserialize, specta::Type)]
+pub struct FactGroup {
+    pub name: String,
+    pub entity: String,
+    pub facts: Vec<Fact>,
 }
 
 
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, specta::Type)]
 #[serde(untagged)]
-enum Fact {
+pub enum Fact {
     TextItem(TextFact),
     AttrItem(AttrFact),
 }
 
-#[derive(Debug, Deserialize)]
-struct TextFact {
-    key: String,
+#[derive(Debug, Serialize, Deserialize, specta::Type)]
+pub struct TextFact {
+    pub key: String,
     #[serde(rename = "type")]
-    item_type: String,
+    pub item_type: String,
 }
 
-#[derive(Debug, Deserialize)]
-struct AttrFact {
-    key: String,
+#[derive(Debug, Serialize, Deserialize, specta::Type)]
+pub struct AttrFact {
+    pub key: String,
     #[serde(rename = "type")]
-    item_type: String,
+    pub item_type: String,
     #[serde(skip_deserializing)]
-    options: String,
+    pub options: String,
 }

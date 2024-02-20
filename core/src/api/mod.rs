@@ -8,6 +8,7 @@ use std::{path::PathBuf, sync::Arc};
 pub mod canvas;
 pub mod characters;
 pub mod panels;
+pub mod facts;
 
 pub struct Ctx {
     pub client: Arc<prisma::PrismaClient>,
@@ -27,4 +28,5 @@ pub fn new() -> RouterBuilder<Ctx> {
         .merge("characters.", characters::characters_router())
         .merge("canvas.", canvas::canvas_router())
         .merge("panels.", panels::panels_router())
+        .merge("facts.", facts::facts_router())
 }
