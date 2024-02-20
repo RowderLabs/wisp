@@ -5,8 +5,8 @@ use rspc::{Config, RouterBuilder};
 use serde::Deserialize;
 use std::{path::PathBuf, sync::Arc};
 
-pub mod characters;
 pub mod canvas;
+pub mod characters;
 pub mod panels;
 
 pub struct Ctx {

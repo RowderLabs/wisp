@@ -5877,6 +5877,7 @@ dependencies = [
  "prisma-client-rust",
  "rspc",
  "serde",
+ "serde_json",
  "snafu",
  "specta",
  "tokio",
