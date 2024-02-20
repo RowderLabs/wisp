@@ -1,7 +1,6 @@
 import { cva } from "class-variance-authority";
 import React from "react";
 import { FormField, UseFormFieldProps, useFormField } from "./Form";
-import { useFormContext } from "react-hook-form";
 
 const inputVariants = cva([
   "px-2 py-1 border border-slate-300 rounded-md min-w-[250px]",
