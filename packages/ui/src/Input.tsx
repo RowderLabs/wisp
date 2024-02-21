@@ -3,7 +3,7 @@ import React from "react";
 import { FormField, UseFormFieldProps, useFormField } from "./Form";
 
 const inputVariants = cva([
-  "px-2 py-1 border border-slate-300 rounded-md min-w-[250px] w-full",
+  "px-2 py-1 border border-slate-300 rounded-md min-w-[250px] w-full h-full",
   "placeholder-slate-500 placeholder-text-xs",
   "focus:outline-none focus:ring focus:ring-slate-200",
 ]);
