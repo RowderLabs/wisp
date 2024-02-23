@@ -62,6 +62,7 @@ model Fact {
     options String?
     groupId Int
     group FactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    slices FactSlice[]
     characterFacts FactOnCharacter[]
     @@unique([name, groupId])
 }
@@ -74,4 +75,11 @@ model FactOnCharacter {
     factName String 
     fact Fact @relation(fields: [factName], references: [name])
     @@id([characterId, factName])
+}
+
+
+model FactSlice {
+    id Int @id @default(autoincrement())
+    name String
+    facts Fact[]
 }

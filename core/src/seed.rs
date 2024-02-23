@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     api::characters::{construct_path, generate_id},
-    prisma::{self, fact},
+    prisma::{self, fact, fact_slice},
 };
 
 pub async fn seed(prisma: &prisma::PrismaClient) {
@@ -20,8 +20,6 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
         ]
   }
 }"#).unwrap();
-    println!("{:#?}", result);
-
     let mut facts = vec![];
     for group in result.character.groups.into_iter() {
         let new_group = prisma
@@ -55,6 +53,14 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
     }
 
     prisma._batch(facts).await.unwrap();
+    let basic_info_slice = prisma.fact_slice().create("summary".into(), vec![fact_slice::facts::connect(vec![
+        fact::name::equals("First Name".into()),
+        fact::name::equals("Last Name".into())
+    ])]).exec().await;
+
+
+    println!("{:#?}", basic_info_slice);
+
     let characters_id = generate_id("Characters".into());
     let characters = prisma
         .character()

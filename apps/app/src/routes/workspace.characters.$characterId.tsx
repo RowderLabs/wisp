@@ -50,10 +50,7 @@ function WorkspaceCharacterSheetPage() {
   React.useEffect(() => {
     if (!draft) return;
     type CharacterCanvas = Extract<Procedures["queries"], { key: "characters.canvas" }>["result"];
-    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>([
-      "characters.canvas",
-      params.characterId,
-    ]);
+    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>(["characters.canvas", params.characterId]);
     const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
     const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
 
@@ -123,22 +120,13 @@ function WorkspaceCharacterSheetPage() {
           <Toolbar.IconButton
             onClick={() =>
               createPanelWithType("factsheet", {
-                content: JSON.stringify({
-                  facts: [
-                    { name: "First Name", value: "Matt", type: "text", group_name: 'characters' },
-                    { name: "Personality", options: ['kind', 'caring', 'old'], value: ["kind", "caring"], type: "attr", group_name: 'characters' },
-                  ],
-                }),
+                content: JSON.stringify({ entity_id: "any", slice_id: 1 }),
               })
             }
             icon={<HiTable />}
           />
           <Toolbar.ToggleGroup asChild type="single">
-            <Toolbar.ToggleItem
-              onClick={toggleGridSnap}
-              value="grid-snap"
-              icon={<HiOutlineViewGrid />}
-            />
+            <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
           </Toolbar.ToggleGroup>
         </DraggableCanvasToolbar>
       </Banner>
@@ -175,17 +163,11 @@ function WorkspaceCharacterSheetPage() {
               }
 
               if (item.panelType === "image") {
-                return new ImagePanel()
-                  .getClientProps({ fit: "cover" })
-                  .getServerProps(item.content)
-                  .render();
+                return new ImagePanel().getClientProps({ fit: "cover" }).getServerProps(item.content).render();
               }
 
               if (item.panelType === "factsheet") {
-                return new FactSlicePanel()
-                  .getClientProps({})
-                  .getServerProps(item.content)
-                  .render();
+                return new FactSlicePanel().getClientProps({}).getServerProps(item.content).render();
               }
 
               return null;

@@ -49,7 +49,6 @@ export function FactForm({ facts, entityId }: FactFormProps) {
       }}
     >
       <div className="p-8 bg-white rounded-md border grid grid-cols-2 items-center gap-4 text-sm max-w-[600px]">
-        <div>{JSON.stringify(facts)}</div>
         {facts.map((fact) => {
           return (
             <>

@@ -4,7 +4,7 @@ use rspc::RouterBuilder;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    prisma,
+    prisma::{self, fact, fact_slice},
     seed::{AttrFact, Fact, FactGroup, TextFact},
 };
 
@@ -32,30 +32,30 @@ enum FactDTOEnum {
     },
 }
 
-impl Into<FactDTOEnum> for raw_character_fact::Data {
-    fn into(self) -> FactDTOEnum {
-        match self.r#type.as_str() {
+impl From<raw_character_fact::Data> for FactDTOEnum {
+    fn from(data: raw_character_fact::Data) -> Self {
+        match data.r#type.as_str() {
             "text" => FactDTOEnum::Text {
-                name: self.name,
-                value: self
+                name: data.name,
+                value: data
                     .character_facts
                     .first()
                     .map(|entry| entry.value.to_owned())
                     .unwrap_or_else(|| String::new()),
-                group_name: self.group.name,
+                group_name: data.group.name,
             },
             "attr" => FactDTOEnum::Attr {
-                name: self.name,
-                value: self
+                name: data.name,
+                value: data
                     .character_facts
                     .first()
                     .map(|entry| {
-                        serde_json::from_str(&self.options.clone().unwrap_or_default())
+                        serde_json::from_str(&data.options.clone().unwrap_or_default())
                             .unwrap_or(vec![])
                     })
                     .unwrap_or_default(),
-                options: serde_json::from_str(&self.options.unwrap_or_default()).unwrap_or(vec![]),
-                group_name: self.group.name,
+                options: serde_json::from_str(&data.options.unwrap_or_default()).unwrap_or(vec![]),
+                group_name: data.group.name,
             },
             _ => panic!("Unknown fact!"),
         }
@@ -69,9 +69,9 @@ struct FactFilters {
 
 #[derive(Clone, Debug, Serialize, Deserialize, specta::Type)]
 #[serde(untagged)]
-enum FactValue  {
+enum FactValue {
     Text(String),
-    Attr(Vec<String>)
+    Attr(Vec<String>),
 }
 
 #[derive(Debug, Deserialize, specta::Type)]
@@ -84,6 +84,12 @@ struct FactEntry {
 struct FactFormPayload {
     entity_id: String,
     fields: Vec<FactEntry>,
+}
+
+#[derive(Debug, Deserialize, specta::Type)]
+struct FactSlicePayload {
+    slice_id: i32,
+    entity_id: String,
 }
 
 impl Into<String> for FactValue {
@@ -113,6 +119,49 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
                     .collect();
 
                 Ok(groups)
+            })
+        })
+        .query("slice", |t| {
+            t(|ctx: Ctx, payload: FactSlicePayload| async move {
+
+                #[derive(Debug, Deserialize, Serialize, specta::Type)]
+                struct CharacterFactSlice {
+                    name: String,
+                    facts: Vec<FactDTOEnum>,
+                }
+
+                let maybe_slice = ctx
+                    .client
+                    .fact_slice()
+                    .find_unique(prisma::fact_slice::id::equals(payload.slice_id))
+                    .exec()
+                    .await?;
+
+                if let Some(slice) = maybe_slice {
+                    let facts = ctx
+                        .client
+                        .fact()
+                        .find_many(vec![fact::slices::some(vec![
+                            prisma::fact_slice::id::equals(slice.id),
+                        ])])
+                        .select(raw_character_fact::select())
+                        .exec()
+                        .await
+                        .unwrap()
+                        .into_iter()
+                        .map(|fact| fact.into())
+                        .collect_vec();
+
+                    return Ok(CharacterFactSlice {
+                        name: slice.name,
+                        facts,
+                    });
+                }
+
+                Err(rspc::Error::new(
+                    rspc::ErrorCode::NotFound,
+                    format!("slice with id {} not found", payload.slice_id),
+                ))
             })
         })
         .mutation("update_many", |t| {
