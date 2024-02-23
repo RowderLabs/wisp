@@ -1,22 +1,39 @@
-import { rspc } from "@wisp/client";
-import { FactGroup } from "@wisp/client/src/bindings";
+import { useIsFirstRender } from "@uidotdev/usehooks";
+import { rspc, useUtils } from "@wisp/client";
+import { FactDTOEnum } from "@wisp/client/src/bindings";
 import { Button, Form, InputField } from "@wisp/ui";
 import { useZodForm } from "@wisp/ui/src/hooks";
+import { useEffect } from "react";
 import { z } from "zod";
 
 const formSchema = z.object({ fields: z.record(z.string(), z.string()) });
 
 interface FactFormProps {
-  group: FactGroup;
+  facts: FactDTOEnum[];
   entityId: string;
 }
-export function FactGroupForm({ group, entityId }: FactFormProps) {
+
+export function FactForm({ facts, entityId }: FactFormProps) {
   const form = useZodForm({
     schema: formSchema,
+    defaultValues: { fields: Object.fromEntries(facts.map((fact) => [fact.name, fact.value])) }
   });
+  const isFirstRender = useIsFirstRender()
 
-  const {data: factsOnCharacter} = rspc.useQuery(['facts.facts_on', entityId])
-  const { mutate: submitFacts } = rspc.useMutation(["facts.update_many"]);
+  useEffect(() => {
+    if (!isFirstRender) {
+      form.reset({ fields: Object.fromEntries(facts.map((fact) => [fact.name, fact.value])) })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [facts])
+
+  const utils = useUtils();
+
+  const { mutate: submitFacts } = rspc.useMutation(["facts.update_many"], {
+    onSuccess: () => {
+      utils.invalidateQueries(["facts.list"]);
+    },
+  });
 
   return (
     <Form
@@ -28,15 +45,12 @@ export function FactGroupForm({ group, entityId }: FactFormProps) {
             return dirtyFields && dirtyFields[key] === true;
           })
           .map(([key, entry]) => ({ value: entry, name: key }));
-
         submitFacts({ entity_id: entityId, fields: changed });
-
-        form.reset();
       }}
     >
       <div className="p-8 bg-white rounded-md border grid grid-cols-2 items-center gap-4 text-sm max-w-[600px]">
-        <div>{JSON.stringify(factsOnCharacter)}</div>
-        {group.facts.map((fact) => {
+        <div>{JSON.stringify(facts)}</div>
+        {facts.map((fact) => {
           return (
             <>
               <p>{fact.name}</p>

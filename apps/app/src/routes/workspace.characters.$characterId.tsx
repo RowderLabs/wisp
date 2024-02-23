@@ -17,7 +17,7 @@ import { useCreatePanel } from "../hooks/useCreatePanel";
 import { useDeletePanel } from "../hooks/useDeletePanel";
 import { Panel } from "@wisp/client/src/bindings";
 import { FactSheetPanel } from "../panels/factsheet";
-import { FactGroupForm } from "../components/FactGroupForm";
+import { FactForm } from "../components/FactForm";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
   staticData: {
@@ -45,7 +45,7 @@ function WorkspaceCharacterSheetPage() {
     callback: commitTransform,
   });
   const queryClient = rspc.useContext().queryClient;
-  const { data: factGroups } = rspc.useQuery(["facts.list"]);
+  const { data: factGroups } = rspc.useQuery(["facts.list", params.characterId]);
 
   React.useEffect(() => {
     if (!draft) return;
@@ -142,7 +142,7 @@ function WorkspaceCharacterSheetPage() {
           </Toolbar.ToggleGroup>
         </DraggableCanvasToolbar>
       </Banner>
-      {factGroups && <FactGroupForm group={factGroups[0]} entityId={params.characterId} />}
+      {factGroups && <FactForm entityId={params.characterId} facts={factGroups} />}
       <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
