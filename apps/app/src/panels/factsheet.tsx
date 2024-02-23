@@ -5,14 +5,17 @@ import { FactSheet } from "../components/FactSheet";
 
 const FactSchema = z.union([
   z.object({
-    type: z.enum(["text"]),
-    factKey: z.string(),
+    type: z.literal("text"),
+    name: z.string(),
     value: z.string(),
+    group_name: z.string(),
   }),
   z.object({
-    type: z.enum(["attr"]),
-    factKey: z.string(),
+    type: z.literal("attr"),
+    name: z.string(),
+    options: z.string().array(),
     value: z.array(z.string()),
+    group_name: z.string(),
   }),
 ]);
 
@@ -35,7 +38,9 @@ export class FactSheetPanel implements PanelContract<any, FactSheetServerProps> 
   ): Omit<PanelContract<any, { src: string } | null>, "getClientProps"> {
     return this;
   }
-  getServerProps(json: string | null): Omit<PanelContract<any, { src: string } | null>, "fromJSON"> {
+  getServerProps(
+    json: string | null
+  ): Omit<PanelContract<any, { src: string } | null>, "fromJSON"> {
     if (!json) return this;
     try {
       this.__serverProps = FactSheetJSONSchema.parse(JSON.parse(json));

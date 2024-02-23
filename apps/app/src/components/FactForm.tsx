@@ -6,7 +6,7 @@ import { useZodForm } from "@wisp/ui/src/hooks";
 import { useEffect } from "react";
 import { z } from "zod";
 
-const formSchema = z.object({ fields: z.record(z.string(), z.string()) });
+const formSchema = z.object({ fields: z.record(z.string(), z.string().or(z.string().array())) });
 
 interface FactFormProps {
   facts: FactDTOEnum[];

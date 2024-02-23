@@ -16,19 +16,17 @@ prisma::fact::select!(raw_character_fact {name r#type options group: select {nam
 
 #[derive(Debug, Deserialize, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
-#[serde(untagged)]
+#[serde(tag = "type")]
 
 enum FactDTOEnum {
     Text {
         name: String,
-        r#type: String,
         value: String,
         group_name: String,
     },
     Attr {
         name: String,
-        r#type: String,
-        value: String,
+        value: Vec<String>,
         options: Vec<String>,
         group_name: String,
     },
@@ -36,10 +34,9 @@ enum FactDTOEnum {
 
 impl Into<FactDTOEnum> for raw_character_fact::Data {
     fn into(self) -> FactDTOEnum {
-        match self.options.is_some() {
-            false => FactDTOEnum::Text {
+        match self.r#type.as_str() {
+            "text" => FactDTOEnum::Text {
                 name: self.name,
-                r#type: self.r#type,
                 value: self
                     .character_facts
                     .first()
@@ -47,17 +44,20 @@ impl Into<FactDTOEnum> for raw_character_fact::Data {
                     .unwrap_or_else(|| String::new()),
                 group_name: self.group.name,
             },
-            true => FactDTOEnum::Attr {
+            "attr" => FactDTOEnum::Attr {
                 name: self.name,
-                r#type: self.r#type,
                 value: self
                     .character_facts
                     .first()
-                    .map(|entry| entry.value.to_owned())
-                    .unwrap_or_else(|| String::new()),
+                    .map(|entry| {
+                        serde_json::from_str(&self.options.clone().unwrap_or_default())
+                            .unwrap_or(vec![])
+                    })
+                    .unwrap_or_default(),
                 options: serde_json::from_str(&self.options.unwrap_or_default()).unwrap_or(vec![]),
                 group_name: self.group.name,
             },
+            _ => panic!("Unknown fact!"),
         }
     }
 }
@@ -67,9 +67,16 @@ struct FactFilters {
     group: Option<String>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, specta::Type)]
+#[serde(untagged)]
+enum FactValue  {
+    Text(String),
+    Attr(Vec<String>)
+}
+
 #[derive(Debug, Deserialize, specta::Type)]
 struct FactEntry {
-    value: String,
+    value: FactValue,
     name: String,
 }
 
@@ -78,6 +85,16 @@ struct FactFormPayload {
     entity_id: String,
     fields: Vec<FactEntry>,
 }
+
+impl Into<String> for FactValue {
+    fn into(self) -> String {
+        match self {
+            FactValue::Text(value) => value,
+            FactValue::Attr(value) => serde_json::to_string(&value).unwrap(),
+        }
+    }
+}
+
 pub fn facts_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
         .query("list", |t| {
@@ -109,12 +126,12 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
                                 entry.name.clone(),
                             ),
                             prisma::fact_on_character::create(
-                                entry.value.clone(),
+                                entry.value.clone().into(),
                                 prisma::character::id::equals(payload.entity_id.clone()),
                                 prisma::fact::name::equals(entry.name),
                                 vec![],
                             ),
-                            vec![prisma::fact_on_character::value::set(entry.value)],
+                            vec![prisma::fact_on_character::value::set(entry.value.into())],
                         )
                         .exec()
                         .await?;
