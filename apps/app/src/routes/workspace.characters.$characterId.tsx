@@ -17,6 +17,7 @@ import { useCreatePanel } from "../hooks/useCreatePanel";
 import { useDeletePanel } from "../hooks/useDeletePanel";
 import { Panel } from "@wisp/client/src/bindings";
 import { FactSheetPanel } from "../panels/factsheet";
+import { FactGroupForm } from "../components/FactGroupForm";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
   staticData: {
@@ -44,11 +45,15 @@ function WorkspaceCharacterSheetPage() {
     callback: commitTransform,
   });
   const queryClient = rspc.useContext().queryClient;
+  const { data: factGroups } = rspc.useQuery(["facts.list"]);
 
   React.useEffect(() => {
     if (!draft) return;
     type CharacterCanvas = Extract<Procedures["queries"], { key: "characters.canvas" }>["result"];
-    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>(["characters.canvas", params.characterId]);
+    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>([
+      "characters.canvas",
+      params.characterId,
+    ]);
     const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
     const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
 
@@ -118,19 +123,26 @@ function WorkspaceCharacterSheetPage() {
           <Toolbar.IconButton
             onClick={() =>
               createPanelWithType("factsheet", {
-                content: JSON.stringify({facts: [
-                  { factKey: "name", value: "Matt", type: "text" },
-                  { factKey: "traits", value: ["kind", "caring"], type: "attr" },
-                ]}),
+                content: JSON.stringify({
+                  facts: [
+                    { factKey: "name", value: "Matt", type: "text" },
+                    { factKey: "traits", value: ["kind", "caring"], type: "attr" },
+                  ],
+                }),
               })
             }
             icon={<HiTable />}
           />
           <Toolbar.ToggleGroup asChild type="single">
-            <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
+            <Toolbar.ToggleItem
+              onClick={toggleGridSnap}
+              value="grid-snap"
+              icon={<HiOutlineViewGrid />}
+            />
           </Toolbar.ToggleGroup>
         </DraggableCanvasToolbar>
       </Banner>
+      {factGroups && <FactGroupForm group={factGroups[0]} entityId={params.characterId} />}
       <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
@@ -163,11 +175,17 @@ function WorkspaceCharacterSheetPage() {
               }
 
               if (item.panelType === "image") {
-                return new ImagePanel().getClientProps({ fit: "cover" }).getServerProps(item.content).render();
+                return new ImagePanel()
+                  .getClientProps({ fit: "cover" })
+                  .getServerProps(item.content)
+                  .render();
               }
 
               if (item.panelType === "factsheet") {
-                return new FactSheetPanel().getClientProps({}).getServerProps(item.content).render();
+                return new FactSheetPanel()
+                  .getClientProps({})
+                  .getServerProps(item.content)
+                  .render();
               }
 
               return null;

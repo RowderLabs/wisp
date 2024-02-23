@@ -13,6 +13,7 @@ model Character {
     path String @unique
     fullName String
     isCollection Boolean
+    facts FactOnCharacter[]
     characterSheet CharacterSheet?
     canvas Canvas?
 }
@@ -56,12 +57,21 @@ model FactGroup {
 
 model Fact {
     id Int @id @default(autoincrement())
-    key String @unique
+    name String @unique
     type String
     options String?
     groupId Int
     group FactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-    @@unique([key, groupId])
+    characterFacts FactOnCharacter[]
+    @@unique([name, groupId])
 }
 
+
+model FactOnCharacter {
+    value String
+    characterId String
+    character Character @relation(fields: [characterId], references: [id])
+    factName String 
+    fact Fact @relation(fields: [factName], references: [name])
+    @@id([characterId, factName])
+}

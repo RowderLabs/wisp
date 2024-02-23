@@ -12,9 +12,9 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
   "character": {
     "groups": [
         {"name": "basic info", "entity": "character", "facts": [
-      {"key": "First Name", "type": "text"},
-      {"key": "Last Name", "type": "text"},
-      {"key": "Occupation", "type": "attr", "options": ["Police Officer", "Dragon Slayer", "Detective"]}
+      {"name": "First Name", "type": "text"},
+      {"name": "Last Name", "type": "text"},
+      {"name": "Occupation", "type": "attr", "options": ["Police Officer", "Dragon Slayer", "Detective"]}
       
     ]}
         ]
@@ -32,17 +32,17 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
             .unwrap();
         for fact in group.facts {
             match fact {
-                Fact::TextItem { key } => {
+                Fact::TextItem { name } => {
                     facts.push(prisma.fact().create(
-                        key,
+                        name,
                         "text".into(),
                         prisma::fact_group::id::equals(new_group.id),
                         vec![],
                     ));
                 }
-                Fact::AttrItem { key, options } => {
+                Fact::AttrItem { name, options } => {
                     facts.push(prisma.fact().create(
-                        key,
+                        name,
                         "attr".into(),
                         prisma::fact_group::id::equals(new_group.id),
                         vec![prisma::fact::options::set(Some(
@@ -92,15 +92,15 @@ pub struct FactGroup {
 #[serde(tag = "type")]
 pub enum Fact {
     #[serde(rename = "text")]
-    TextItem { key: String },
+    TextItem { name: String },
     #[serde(rename = "attr")]
-    AttrItem { key: String, options: Vec<String> },
+    AttrItem { name: String, options: Vec<String> },
 }
 
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 pub struct TextFact {
     #[serde(rename = "factKey")]
-    pub key: String,
+    pub name: String,
     #[serde(rename = "type")]
     pub item_type: String,
 }
@@ -108,7 +108,7 @@ pub struct TextFact {
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 pub struct AttrFact {
     #[serde(rename = "factKey")]
-    pub key: String,
+    pub name: String,
     #[serde(rename = "type")]
     pub item_type: String,
     pub options: Vec<String>,
