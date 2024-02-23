@@ -16,7 +16,7 @@ import { NotFound } from "../components/NotFound";
 import { useCreatePanel } from "../hooks/useCreatePanel";
 import { useDeletePanel } from "../hooks/useDeletePanel";
 import { Panel } from "@wisp/client/src/bindings";
-import { FactSheetPanel } from "../panels/factsheet";
+import { FactSlicePanel } from "../panels/factslice";
 import { FactForm } from "../components/FactForm";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
@@ -125,8 +125,8 @@ function WorkspaceCharacterSheetPage() {
               createPanelWithType("factsheet", {
                 content: JSON.stringify({
                   facts: [
-                    { factKey: "name", value: "Matt", type: "text" },
-                    { factKey: "traits", value: ["kind", "caring"], type: "attr" },
+                    { name: "First Name", value: "Matt", type: "text", group_name: 'characters' },
+                    { name: "Personality", options: ['kind', 'caring', 'old'], value: ["kind", "caring"], type: "attr", group_name: 'characters' },
                   ],
                 }),
               })
@@ -182,7 +182,7 @@ function WorkspaceCharacterSheetPage() {
               }
 
               if (item.panelType === "factsheet") {
-                return new FactSheetPanel()
+                return new FactSlicePanel()
                   .getClientProps({})
                   .getServerProps(item.content)
                   .render();

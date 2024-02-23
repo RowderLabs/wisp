@@ -1,33 +1,14 @@
-import { z } from "zod";
+import { ZodError, z } from "zod";
 import { PanelContract } from "@wisp/ui";
-import React, { ReactElement, JSXElementConstructor } from "react";
+import { ReactElement, JSXElementConstructor } from "react";
 import { FactSheet } from "../components/FactSheet";
+import { FactSheetJSONSchema } from "../schema/fact";
 
-const FactSchema = z.union([
-  z.object({
-    type: z.literal("text"),
-    name: z.string(),
-    value: z.string(),
-    group_name: z.string(),
-  }),
-  z.object({
-    type: z.literal("attr"),
-    name: z.string(),
-    options: z.string().array(),
-    value: z.array(z.string()),
-    group_name: z.string(),
-  }),
-]);
+type FactSliceServerProps = z.infer<typeof FactSheetJSONSchema>;
 
-const FactSheetJSONSchema = z.object({
-  facts: z.array(FactSchema),
-});
-
-type FactSheetServerProps = z.infer<typeof FactSheetJSONSchema>;
-
-export class FactSheetPanel implements PanelContract<any, FactSheetServerProps> {
+export class FactSlicePanel implements PanelContract<any, FactSliceServerProps> {
   //private __props: unknown
-  private __serverProps?: React.ComponentPropsWithoutRef<typeof FactSheet>;
+  private __serverProps?: FactSliceServerProps;
 
   getType() {
     return "factsheet";
@@ -45,7 +26,9 @@ export class FactSheetPanel implements PanelContract<any, FactSheetServerProps> 
     try {
       this.__serverProps = FactSheetJSONSchema.parse(JSON.parse(json));
     } catch (error) {
-      console.error(error);
+      if (error instanceof ZodError) {
+        console.error(error.flatten())
+      }
     }
 
     return this;
