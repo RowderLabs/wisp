@@ -52,7 +52,7 @@ async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>,
         .await
         .whatever_context("Failed to push schema")?;
 
-    //wispcore::seed::seed(&prisma).await;
+    //wispcore::seed::seed(&prisma, &dev_data_dir).await;
 
     Ok(prisma.into())
 }

@@ -13,7 +13,7 @@ model Character {
     path String @unique
     fullName String
     isCollection Boolean
-    traits CharacterHasTrait[]
+    facts FactOnCharacter[]
     characterSheet CharacterSheet?
     canvas Canvas?
 }
@@ -47,32 +47,39 @@ model CharacterSheet {
     
 }
 
-
-model TraitCategory {
-
+model FactGroup {
     id Int @id @default(autoincrement())
+    entity String
     name String
-    traits Trait[]
-    
+    facts Fact[]
+    @@unique([name, entity])
 }
 
-model Trait {
-
+model Fact {
     id Int @id @default(autoincrement())
-    name String
-    categoryId Int
-    category TraitCategory @relation(fields: [categoryId], references: [id])
-    characterHasTrait CharacterHasTrait[]
+    name String @unique
+    type String
+    options String?
+    groupId Int
+    group FactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    slices FactSlice[]
+    characterFacts FactOnCharacter[]
+    @@unique([name, groupId])
 }
 
-model CharacterHasTrait {
 
-    trait Trait @relation(fields: [traitId], references: [id])
-    traitId Int
-    visible Boolean
-    character Character @relation(fields: [characterId], references: [path])
+model FactOnCharacter {
+    value String
     characterId String
-
-    @@id([characterId, traitId])
+    character Character @relation(fields: [characterId], references: [id])
+    factName String 
+    fact Fact @relation(fields: [factName], references: [name])
+    @@id([characterId, factName])
 }
 
+
+model FactSlice {
+    id Int @id @default(autoincrement())
+    name String
+    facts Fact[]
+}

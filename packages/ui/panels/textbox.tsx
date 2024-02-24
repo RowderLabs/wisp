@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TextBox, TextBoxProps } from "../src/Textbox";
-import { Panel } from "./base";
+import { Panel, PanelContract } from "./base";
+import { ReactElement, JSXElementConstructor } from "react";
 
 const TextboxPanelJSONSchema = z
   .object({
@@ -10,26 +11,39 @@ const TextboxPanelJSONSchema = z
 
 type ITextboxPanelJSONProps = z.infer<typeof TextboxPanelJSONSchema>;
 
+export class TextboxPanel implements PanelContract<Omit<TextBoxProps, "initial">, ITextboxPanelJSONProps> {
+  private __props?: Omit<TextBoxProps, "initial">;
+  private __serverProps?: ITextboxPanelJSONProps;
 
-export class TextboxPanel extends Panel<Omit<TextBoxProps, "initial">, ITextboxPanelJSONProps> {
-  constructor(props: Omit<TextBoxProps, "initial">) {
-    super(props);
+  getType() {
+    return "textbox";
   }
+  getClientProps(props: Omit<TextBoxProps, "initial">) {
+    this.__props = props;
+    return this;
+  }
+  getServerProps(
+    json: string | null
+  ): Omit<PanelContract<Omit<TextBoxProps, "initial">, { initial: string } | null>, "fromJSON"> {
+    if (!json) return this;
 
-  renderFromJSON(json: string | null): React.ReactElement<TextBoxProps> | null {
+    try {
+      this.__serverProps = TextboxPanelJSONSchema.parse(textEditorParser(json));
+    } catch (error) {
+      console.error("could not parse textbox schema");
+    }
 
-    const textEditorParser = (text: string) => JSON.parse(text, (key, val) => {
-      if (key === 'initial') return JSON.stringify(val)
-      return val
-    })
-    
-    const jsonProps = this.__parseJSONProps(json, TextboxPanelJSONSchema, textEditorParser);
-    return jsonProps ? (
-      //if exists pass initial
-      <TextBox {...jsonProps} {...this.__props} />
-    ) : (
-      //else create textbox
-      <TextBox initial={null} {...this.__props} />
-    );
+    return this;
+  }
+  render(): ReactElement<unknown, string | JSXElementConstructor<any>> | null {
+
+    return <TextBox {...this.__serverProps} {...this.__props} />;
   }
 }
+
+const textEditorParser = (text: string) =>
+  JSON.parse(text, (key, val) => {
+    if (key === "initial") return JSON.stringify(val);
+    return val;
+  });
+

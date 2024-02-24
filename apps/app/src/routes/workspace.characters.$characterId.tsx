@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { DraggableCanvas, Toolbar, TransformEvent } from "@wisp/ui";
+import { DraggableCanvas, ImagePanel, TextboxPanel, Toolbar, TransformEvent } from "@wisp/ui";
 import { Banner } from "@wisp/ui";
-import { rspc, useUtils } from "@wisp/client";
+import { rspc } from "@wisp/client";
 import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
 import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
@@ -13,17 +13,22 @@ import { HiOutlineViewGrid, HiTable } from "react-icons/hi";
 import { Modifier } from "@dnd-kit/core";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { NotFound } from "../components/NotFound";
+import { useCreatePanel } from "../hooks/useCreatePanel";
+import { useDeletePanel } from "../hooks/useDeletePanel";
+import { Panel } from "@wisp/client/src/bindings";
+import { FactSlicePanel } from "../panels/factslice";
+import { FactForm } from "../components/FactForm";
 
 export const Route = createFileRoute("/workspace/characters/$characterId")({
   staticData: {
-    routeBreadcrumb: 'character-page'
+    routeBreadcrumb: "character-page",
   },
   loader: async ({ context, params }) => {
-    const canvas = await context.rspc.client.query(['characters.canvas', params.characterId])
-    if (!canvas) throw notFound()
-    return canvas
+    const canvas = await context.rspc.client.query(["characters.canvas", params.characterId]);
+    if (!canvas) throw notFound();
+    return canvas;
   },
-  notFoundComponent: () => <NotFound/>,
+  notFoundComponent: () => <NotFound />,
   component: WorkspaceCharacterSheetPage,
 });
 function WorkspaceCharacterSheetPage() {
@@ -40,14 +45,12 @@ function WorkspaceCharacterSheetPage() {
     callback: commitTransform,
   });
   const queryClient = rspc.useContext().queryClient;
+  const { data: factGroups } = rspc.useQuery(["facts.character.list", {id: params.characterId, group: 'physical characteristics'}]);
 
   React.useEffect(() => {
     if (!draft) return;
     type CharacterCanvas = Extract<Procedures["queries"], { key: "characters.canvas" }>["result"];
-    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>([
-      "characters.canvas",
-      params.characterId,
-    ]);
+    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>(["characters.canvas", params.characterId]);
     const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
     const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
 
@@ -57,6 +60,7 @@ function WorkspaceCharacterSheetPage() {
         panels: [...cachedPanels, { ...cachedPanel, ...draft }],
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
 
   const { data: canvas } = rspc.useQuery(["characters.canvas", params.characterId], {
@@ -64,54 +68,18 @@ function WorkspaceCharacterSheetPage() {
     staleTime: Infinity,
   });
   const [dialogManager] = useDialogManager();
-  const utils = useUtils();
-
-  const { mutate: createImagePanel } = rspc.useMutation(["panels.create"], {
-    onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
-    },
-  });
-
-  const onUpload = (path: string) => {
-    const imageSrc = convertFileSrc(path);
-    createImagePanel({
-      x: 300,
-      y: 300,
-      width: 200,
-      height: 300,
-      content: JSON.stringify({ src: imageSrc }),
-      panel_type: "image",
-      canvas_id: canvas!.id,
-    });
-  };
+  const createPanelWithType = useCreatePanel(canvas!.id);
+  const { deletePanel } = useDeletePanel();
 
   const createImage = () =>
-    dialogManager.createDialog(ImageUploadDialog, { id: "create-image-panel", onUpload });
-
-  const { mutate: createTextboxDb } = rspc.useMutation(["panels.create"], {
-    onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
-    },
-  });
-
-  const createTextbox = () => {
-    createTextboxDb({
-      x: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
-      y: Math.floor(Math.random() * (400 - 150 + 1)) + 150,
-      width: 150,
-      height: 200,
-      content: null,
-      panel_type: "textbox",
-      canvas_id: canvas!.id,
+    dialogManager.createDialog(ImageUploadDialog, {
+      id: "create-image-panel",
+      onUpload: (path: string) => {
+        const imageSrc = convertFileSrc(path);
+        createPanelWithType("image", { content: JSON.stringify({ src: imageSrc }) });
+      },
     });
-  };
 
-  //TODO: move into custom hook and apply optimistic updates.
-  const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
-    onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
-    },
-  });
   const snapToGrid: Modifier = (args) => {
     const { transform } = args;
     return {
@@ -134,17 +102,39 @@ function WorkspaceCharacterSheetPage() {
     gridSnapActive.current = !gridSnapActive.current;
   };
 
+  const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["characters.canvas"]);
+    },
+  });
+
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
-      <Banner className="bg-slate-300">
-        <div>
-          <p>canvas id: {canvas?.id}</p>
-        </div>
+      <Banner className="bg-slate-300 relative">
+        <DraggableCanvasToolbar>
+          <Toolbar.IconButton
+            onClick={() => createPanelWithType("textbox", { content: null })}
+            icon={<HiMiniDocumentText />}
+          />
+          <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
+          <Toolbar.IconButton
+            onClick={() =>
+              createPanelWithType("factsheet", {
+                content: JSON.stringify({ entity_id: "any", slice_id: 1 }),
+              })
+            }
+            icon={<HiTable />}
+          />
+          <Toolbar.ToggleGroup asChild type="single">
+            <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
+          </Toolbar.ToggleGroup>
+        </DraggableCanvasToolbar>
       </Banner>
-      <Breadcrumbs/>
+      {factGroups && <FactForm entityId={params.characterId} facts={factGroups} />}
+      <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         {canvas && (
-          <DraggableCanvas
+          <DraggableCanvas<Panel>
             modifiers={canvasModifiers}
             onItemDelete={(id) => {
               dialogManager.createDialog(ConfirmationDialog, {
@@ -155,21 +145,35 @@ function WorkspaceCharacterSheetPage() {
             }}
             id={canvas.id}
             items={canvas.panels}
+            renderItem={(item) => {
+              if (item.panelType === "textbox") {
+                return new TextboxPanel()
+                  .getClientProps({
+                    editable: true,
+                    pluginOpts: { onChange: { debounce: { duration: 500 } } },
+                    onChange: (editorState) => {
+                      setPanelContent({
+                        id: item.id,
+                        content: JSON.stringify({ initial: editorState.toJSON() }),
+                      });
+                    },
+                  })
+                  .getServerProps(item.content)
+                  .render();
+              }
+
+              if (item.panelType === "image") {
+                return new ImagePanel().getClientProps({ fit: "cover" }).getServerProps(item.content).render();
+              }
+
+              if (item.panelType === "factsheet") {
+                return new FactSlicePanel().getClientProps({}).getServerProps(item.content).render();
+              }
+
+              return null;
+            }}
             onItemTransform={setDraft}
-          >
-            <DraggableCanvasToolbar>
-              <Toolbar.IconButton onClick={createTextbox} icon={<HiMiniDocumentText />} />
-              <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
-              <Toolbar.IconButton disabled={true} icon={<HiTable />} />
-              <Toolbar.ToggleGroup asChild type="single">
-                <Toolbar.ToggleItem
-                  onClick={toggleGridSnap}
-                  value="grid-snap"
-                  icon={<HiOutlineViewGrid />}
-                />
-              </Toolbar.ToggleGroup>
-            </DraggableCanvasToolbar>
-          </DraggableCanvas>
+          ></DraggableCanvas>
         )}
       </div>
     </div>
@@ -178,8 +182,8 @@ function WorkspaceCharacterSheetPage() {
 
 function DraggableCanvasToolbar({ children }: PropsWithChildren) {
   return (
-    <div className="absolute top-0 left-2">
-      <Toolbar.Root orientation="vertical">{children}</Toolbar.Root>
+    <div className="absolute top-8 left-4">
+      <Toolbar.Root orientation="horizontal">{children}</Toolbar.Root>
     </div>
   );
 }

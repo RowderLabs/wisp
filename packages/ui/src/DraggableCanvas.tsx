@@ -3,48 +3,47 @@ import { DndContext, Modifier, MouseSensor, useSensor } from "@dnd-kit/core";
 import { PropsWithChildren } from "react";
 import { Transform, TransformEvent } from "./Transform";
 import { useClickExact, useTransformContext, useTranslate } from "./hooks";
-import { TextboxPanel } from "../panels";
 import { HiOutlineClipboardDocument, HiOutlineSquare3Stack3D, HiTrash } from "react-icons/hi2";
-import { Panel } from "@wisp/client/src/bindings";
-import { rspc } from "@wisp/client";
-import { ImagePanel } from "../panels/image";
 import { ContextMenu } from "./ContextMenu";
-import { d } from "@tauri-apps/api/path-c062430b";
 import clsx from "clsx";
 
-type DraggableCanvasProps = {
+interface DraggablCanvasItemType {
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+}
+type DraggableCanvasProps<T extends DraggablCanvasItemType>  = {
   id: string;
-  items: Panel[];
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
   onItemTransform: (event: TransformEvent) => void;
   onItemDelete: (id: string) => void;
   modifiers?: Modifier[];
 };
 
-function DraggableCanvasInner({
+export function DraggableCanvas<T extends DraggablCanvasItemType>({
   items,
   onItemTransform,
   onItemDelete,
   modifiers,
+  renderItem,
   children,
-}: PropsWithChildren<DraggableCanvasProps>) {
+}: PropsWithChildren<DraggableCanvasProps<T>>) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { distance: 0.01 },
   });
 
-  const queryClient = rspc.useContext().queryClient;
-  const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["characters.canvas"]);
-    },
-  });
+  
   const [selected, setSelected] = useState<string>();
   const canvasRef = useRef<HTMLDivElement>(null)
   useClickExact(canvasRef, () => setSelected(undefined))
 
   return (
     <div ref={canvasRef} className="w-full h-full">
-      {children}
       <DndContext modifiers={modifiers} sensors={[mouseSensor]}>
+        {children}
         {items.map((item) => (
           <Transform.Context
             id={item.id}
@@ -58,18 +57,7 @@ function DraggableCanvasInner({
               onSelect={(id) => setSelected(id)}
               onDelete={onItemDelete}
             >
-              {item.panelType === "textbox"
-                ? new TextboxPanel({
-                  editable: selected === item.id,
-                    pluginOpts: { onChange: { debounce: { duration: 500 } } },
-                    onChange: (editorState) => {
-                      setPanelContent({
-                        id: item.id,
-                        content: JSON.stringify({ initial: editorState.toJSON() }),
-                      });
-                    },
-                  }).renderFromJSON(item.content)
-                : new ImagePanel({ fit: "cover" }).renderFromJSON(item.content)}
+              {renderItem(item)}
             </DraggableCanvasItem>
           </Transform.Context>
         ))}
@@ -78,7 +66,6 @@ function DraggableCanvasInner({
   );
 }
 
-export const DraggableCanvas = React.memo(DraggableCanvasInner);
 
 interface DraggableCanvasItemProps extends PropsWithChildren {
   onDelete?: (id: string) => void;
@@ -118,7 +105,7 @@ function DraggableCanvasItem({ children, onDelete, selected, onSelect, canMove}:
               "top-left": true,
               "top-right": true,
             }}
-            constraints={{ width: { min: 150 }, height: { min: 150 } }}
+            constraints={{ width: { min: 200 }, height: { min: 200 } }}
           />
           {children}
         </div>
