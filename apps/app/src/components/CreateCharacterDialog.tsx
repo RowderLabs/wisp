@@ -41,7 +41,7 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
       <Form
         form={form}
         onSubmit={(formData) => {
-          createCharacter({ fullName: formData.name, parent: context.path, isCollection: false });
+          createCharacter({ name: formData.name, parent: context.path, isCollection: false });
         }}
       >
         <div className="flex flex-col gap-2 mb-4">

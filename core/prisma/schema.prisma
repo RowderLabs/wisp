@@ -15,15 +15,12 @@ model Character {
     isCollection Boolean
     facts FactOnCharacter[]
     characterSheet CharacterSheet?
-    canvas Canvas?
 }
 
 model Canvas {
     id String @id @default(uuid())
     panels Panel[]
-    characterId String @unique
     entityId String @unique
-    character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
     entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
 

@@ -3,8 +3,7 @@ use std::{io::Read, path::PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    api::characters::{construct_path, generate_id},
-    prisma::{self, fact, fact_slice},
+    api::characters::{construct_path, generate_id}, entity::EntityType, prisma::{self, fact, fact_slice}
 };
 
 pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
@@ -62,11 +61,12 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
 
     let characters_id = generate_id("Characters".into());
     let characters = prisma
-        .character()
+        .entity()
         .create(
             characters_id.clone(),
-            construct_path(&characters_id, &None),
             "Characters".into(),
+            EntityType::Character.to_string(),
+            construct_path(&characters_id, &None),
             true,
             vec![],
         )

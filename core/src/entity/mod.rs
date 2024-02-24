@@ -1,45 +1,90 @@
-use std::str::FromStr;
+use std::{collections::{HashMap, HashSet}, str::FromStr};
 
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::prisma;
 
-prisma::entity::select!(min_entity {id path name r#type is_collection});
+prisma::entity::select!(Entity {id path name r#type is_collection});
 
-#[derive(Serialize, Deserialize, specta::Type)]
-struct Entity {
-    id: String,
-    path: String,
-    name: String,
-    r#type: String,
-    is_collection: bool,
-}
 
-#[derive(Serialize, Deserialize, specta::Type)]
 pub enum EntityType {
-    #[serde(rename = "characters")]
-    Character(Entity),
-    #[serde(rename = "place")]
-    Place(Entity),
+    Character,
+    Place
 }
 
-impl Entity {
-    fn to_entity_type(self) -> EntityType {
-        match self.r#type.as_str() {
-            "character" => EntityType::Character(self),
-            _ => panic!("Unknown entity!")
+impl ToString for EntityType {
+    fn to_string(&self) -> String {
+        match self {
+            EntityType::Character => "character".to_string(),
+            EntityType::Place => "place".to_string()
         }
     }
 }
 
-impl Into<Entity> for min_entity::Data {
-    fn into(self) -> Entity {
-        Entity {
-            id: self.id,
-            path: self.path,
-            name: self.name,
-            r#type: self.r#type,
-            is_collection: self.is_collection,
+
+#[derive(Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct FileTreeItem {
+    pub id: String,
+    pub path: Option<String>,
+    pub name: String,
+    pub is_collection: bool,
+    pub children: Vec<String>,
+}
+
+
+const PATH_DELIMITER: &'static str = "/";
+const ROOT_DELIMITER: &'static str = "root";
+
+pub fn create_file_tree(entities: &Vec<Entity::Data>) -> HashMap<String, FileTreeItem> {
+    let mut graph: HashMap<String, FileTreeItem> = HashMap::new();
+    let mut in_root = HashSet::new();
+
+
+
+    for entity in entities {
+        let locations = entity
+            .path
+            .trim_start_matches(PATH_DELIMITER)
+            .split(PATH_DELIMITER)
+            .collect_vec();
+
+        //add location to root node
+        if locations.len() == 1 {
+            if let Some(location) = locations.first() {
+                in_root.insert(location.to_string());
+            }
+        }
+
+        for (index, location) in locations.iter().enumerate() {
+            //append location to graph
+            graph.entry(location.to_string()).or_insert(FileTreeItem {
+                id: location.to_string(),
+                name: entity.name.to_string(),
+                path: Some(entity.path.to_string()),
+                children: vec![],
+                is_collection: entity.is_collection,
+            });
+
+            //append location to parent
+            if index == locations.len() - 1 {
+                let maybe_parent = locations.get(locations.len().wrapping_sub(2));
+                if let Some(parent) = maybe_parent {
+                    graph
+                        .entry(parent.to_string())
+                        .and_modify(|e| e.children.push(location.to_string()));
+                }
+            }
         }
     }
+    let root = FileTreeItem {
+        id: ROOT_DELIMITER.to_owned(),
+        name: ROOT_DELIMITER.to_owned(),
+        path: None,
+        children: in_root.into_iter().collect_vec(),
+        is_collection: true,
+    };
+    graph.insert("root".to_string(), root);
+    graph
 }
