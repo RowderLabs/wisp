@@ -1,6 +1,6 @@
 import { useIsFirstRender } from "@uidotdev/usehooks";
 import { rspc, useUtils } from "@wisp/client";
-import { FactDTOEnum } from "@wisp/client/src/bindings";
+import { Fact } from "@wisp/client/src/bindings";
 import { Button, Form, InputField } from "@wisp/ui";
 import { useZodForm } from "@wisp/ui/src/hooks";
 import { useEffect } from "react";
@@ -9,7 +9,7 @@ import { z } from "zod";
 const formSchema = z.object({ fields: z.record(z.string(), z.string().or(z.string().array())) });
 
 interface FactFormProps {
-  facts: FactDTOEnum[];
+  facts: Fact[];
   entityId: string;
 }
 
@@ -29,9 +29,10 @@ export function FactForm({ facts, entityId }: FactFormProps) {
 
   const utils = useUtils();
 
-  const { mutate: submitFacts } = rspc.useMutation(["facts.update_many"], {
+  const { mutate: submitFacts } = rspc.useMutation(["facts.character.update_many"], {
     onSuccess: () => {
-      utils.invalidateQueries(["facts.list"]);
+      utils.invalidateQueries(["facts.character.list"]);
+      utils.invalidateQueries(["facts.character.slice"]);
     },
   });
 
