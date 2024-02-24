@@ -22,7 +22,9 @@ model Canvas {
     id String @id @default(uuid())
     panels Panel[]
     characterId String @unique
+    entityId String @unique
     character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+    entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
 
 model Panel {
@@ -64,6 +66,7 @@ model Fact {
     group FactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
     slices FactSlice[]
     characterFacts FactOnCharacter[]
+    entityFacts FactOnEntity[]
     @@unique([name, groupId])
 }
 
@@ -82,4 +85,23 @@ model FactSlice {
     id Int @id @default(autoincrement())
     name String
     facts Fact[]
+}
+
+model FactOnEntity {
+    value String
+    entityId String
+    entity Entity @relation(fields: [entityId], references: [id])
+    factName String 
+    fact Fact @relation(fields: [factName], references: [name])
+    @@id([entityId, factName])
+}
+
+model Entity {
+    id String @id
+    name String
+    type String
+    path String @unique
+    isCollection Boolean
+    facts FactOnEntity[]
+    canvas Canvas?
 }
