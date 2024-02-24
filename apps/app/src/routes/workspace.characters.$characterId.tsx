@@ -45,7 +45,7 @@ function WorkspaceCharacterSheetPage() {
     callback: commitTransform,
   });
   const queryClient = rspc.useContext().queryClient;
-  const { data: factGroups } = rspc.useQuery(["facts.character.list", {id: params.characterId, group: 'basic info'}]);
+  const { data: factGroups } = rspc.useQuery(["facts.character.list", {id: params.characterId, group: 'physical characteristics'}]);
 
   React.useEffect(() => {
     if (!draft) return;
