@@ -1,3 +1,5 @@
+use std::{io::Read, path::PathBuf};
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -5,21 +7,14 @@ use crate::{
     prisma::{self, fact, fact_slice},
 };
 
-pub async fn seed(prisma: &prisma::PrismaClient) {
+pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
     //reset db
 
-    let result: AllFacts = serde_json::from_str(r#"{
-  "character": {
-    "groups": [
-        {"name": "basic info", "entity": "character", "facts": [
-      {"name": "First Name", "type": "text"},
-      {"name": "Last Name", "type": "text"},
-      {"name": "Occupation", "type": "attr", "options": ["Police Officer", "Dragon Slayer", "Detective"]}
-      
-    ]}
-        ]
-  }
-}"#).unwrap();
+    let mut file = std::fs::File::open(seed_path.join("fact_seed.json")).expect("Unable to open file");
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).expect("failed to read seed file");
+
+    let result: AllFacts = serde_json::from_str(&contents).unwrap();
     let mut facts = vec![];
     for group in result.character.groups.into_iter() {
         let new_group = prisma
@@ -54,8 +49,12 @@ pub async fn seed(prisma: &prisma::PrismaClient) {
 
     prisma._batch(facts).await.unwrap();
     let basic_info_slice = prisma.fact_slice().create("summary".into(), vec![fact_slice::facts::connect(vec![
-        fact::name::equals("First Name".into()),
-        fact::name::equals("Last Name".into())
+        fact::name::equals("first name".into()),
+        fact::name::equals("last name".into()),
+        fact::name::equals("age".into()),
+        fact::name::equals("birthdate".into()),
+        fact::name::equals("birthplace".into()),
+        
     ])]).exec().await;
 
 

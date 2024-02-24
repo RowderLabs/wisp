@@ -37,14 +37,16 @@ export function FactSheet({entity_id, slice_id}: {entity_id: string, slice_id: n
       <div>
         <p className="text-lg">{slice?.name}</p>
       </div>
-      {slice?.facts.map((fact) => {
-        if (fact.type === "text") {
-          return <TextFact key={fact.name} fact={fact} />;
-        }
-        if (fact.type === "attr") {
-          return <AttrFact key={fact.name} fact={fact}/>;
-        }
-      })}
+      <div className="overflow-auto">
+        {slice?.facts.map((fact) => {
+          if (fact.type === "text") {
+            return <TextFact key={fact.name} fact={fact} />;
+          }
+          if (fact.type === "attr") {
+            return <AttrFact key={fact.name} fact={fact}/>;
+          }
+        })}
+      </div>
     </div>
   );
 }

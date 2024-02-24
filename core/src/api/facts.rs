@@ -4,7 +4,7 @@ use rspc::RouterBuilder;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    prisma::{self, fact, fact_slice},
+    prisma::{self, fact, fact_group, fact_slice},
     seed::{AttrFact, Fact, FactGroup, TextFact},
 };
 
@@ -62,7 +62,7 @@ impl From<raw_character_fact::Data> for FactDTOEnum {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, specta::Type)]
 struct FactFilters {
     group: Option<String>,
 }
@@ -104,12 +104,23 @@ impl Into<String> for FactValue {
 pub fn facts_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
         .query("list", |t| {
-            t(|ctx: Ctx, id: String| async move {
+            #[derive(Debug, Deserialize, specta::Type)]
+            struct FactListPayload {
+                id: String,
+                group: Option<String>,
+            }
+
+            t(|ctx: Ctx, payload: FactListPayload| async move {
                 //takes no arguments
+                let group_filter = payload
+                    .group
+                    .map(|group| vec![fact::group::is(vec![fact_group::name::equals(group)])])
+                    .unwrap_or_default();
+
                 let groups: Vec<FactDTOEnum> = ctx
                     .client
                     .fact()
-                    .find_many(vec![])
+                    .find_many(group_filter)
                     .select(raw_character_fact::select())
                     .exec()
                     .await
@@ -123,7 +134,6 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
         })
         .query("slice", |t| {
             t(|ctx: Ctx, payload: FactSlicePayload| async move {
-
                 #[derive(Debug, Deserialize, Serialize, specta::Type)]
                 struct CharacterFactSlice {
                     name: String,
