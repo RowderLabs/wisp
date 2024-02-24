@@ -18,3 +18,4 @@ snafu = {workspace = true}
 serde = { workspace = true}
 rspc = { workspace = true }
 specta = "1.0.0"
+async-trait = "0.1.77"

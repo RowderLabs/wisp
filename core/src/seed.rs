@@ -85,9 +85,8 @@ struct FactsEntry {
     groups: Vec<FactGroup>,
 }
 
-
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
-pub struct FactGroup {
+struct FactGroup {
     pub name: String,
     pub entity: String,
     pub facts: Vec<Fact>,
@@ -95,7 +94,7 @@ pub struct FactGroup {
 
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 #[serde(tag = "type")]
-pub enum Fact {
+enum Fact {
     #[serde(rename = "text")]
     TextItem { name: String },
     #[serde(rename = "attr")]
@@ -103,7 +102,7 @@ pub enum Fact {
 }
 
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
-pub struct TextFact {
+struct TextFact {
     #[serde(rename = "factKey")]
     pub name: String,
     #[serde(rename = "type")]
@@ -111,7 +110,7 @@ pub struct TextFact {
 }
 
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
-pub struct AttrFact {
+struct AttrFact {
     #[serde(rename = "factKey")]
     pub name: String,
     #[serde(rename = "type")]

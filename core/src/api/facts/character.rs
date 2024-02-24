@@ -3,10 +3,8 @@ use prisma_client_rust::exec;
 use rspc::RouterBuilder;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    prisma::{self, fact, fact_group, fact_slice},
-    seed::{AttrFact, Fact, FactGroup, TextFact},
-};
+use crate::fact::{Fact, FactValue, FactEntry};
+use crate::prisma::{self, fact, fact_group, fact_slice};
 
 use self::raw_character_fact::character_facts::Data;
 
@@ -14,28 +12,11 @@ use super::Ctx;
 
 prisma::fact::select!(raw_character_fact {name r#type options group: select {name} character_facts: select {value}});
 
-#[derive(Debug, Deserialize, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-#[serde(tag = "type")]
 
-enum FactDTOEnum {
-    Text {
-        name: String,
-        value: String,
-        group_name: String,
-    },
-    Attr {
-        name: String,
-        value: Vec<String>,
-        options: Vec<String>,
-        group_name: String,
-    },
-}
-
-impl From<raw_character_fact::Data> for FactDTOEnum {
+impl From<raw_character_fact::Data> for Fact {
     fn from(data: raw_character_fact::Data) -> Self {
         match data.r#type.as_str() {
-            "text" => FactDTOEnum::Text {
+            "text" => Fact::Text {
                 name: data.name,
                 value: data
                     .character_facts
@@ -44,7 +25,7 @@ impl From<raw_character_fact::Data> for FactDTOEnum {
                     .unwrap_or_else(|| String::new()),
                 group_name: data.group.name,
             },
-            "attr" => FactDTOEnum::Attr {
+            "attr" => Fact::Attr {
                 name: data.name,
                 value: data
                     .character_facts
@@ -67,19 +48,6 @@ struct FactFilters {
     group: Option<String>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, specta::Type)]
-#[serde(untagged)]
-enum FactValue {
-    Text(String),
-    Attr(Vec<String>),
-}
-
-#[derive(Debug, Deserialize, specta::Type)]
-struct FactEntry {
-    value: FactValue,
-    name: String,
-}
-
 #[derive(Debug, Deserialize, specta::Type)]
 struct FactFormPayload {
     entity_id: String,
@@ -92,16 +60,8 @@ struct FactSlicePayload {
     entity_id: String,
 }
 
-impl Into<String> for FactValue {
-    fn into(self) -> String {
-        match self {
-            FactValue::Text(value) => value,
-            FactValue::Attr(value) => serde_json::to_string(&value).unwrap(),
-        }
-    }
-}
 
-pub fn facts_router() -> RouterBuilder<Ctx> {
+pub fn character_facts_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
         .query("list", |t| {
             #[derive(Debug, Deserialize, specta::Type)]
@@ -117,19 +77,17 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
                     .map(|group| vec![fact::group::is(vec![fact_group::name::equals(group)])])
                     .unwrap_or_default();
 
-                let groups: Vec<FactDTOEnum> = ctx
+                Ok(ctx
                     .client
                     .fact()
                     .find_many(group_filter)
                     .select(raw_character_fact::select())
                     .exec()
                     .await
-                    .unwrap_or_default()
+                    .map_err(|e| rspc::Error::with_cause(rspc::ErrorCode::InternalServerError, "Uh oh".into(), e))?
                     .into_iter()
-                    .map(|fact| fact.into())
-                    .collect();
-
-                Ok(groups)
+                    .map(|fact| Fact::from(fact))
+                    .collect_vec())
             })
         })
         .query("slice", |t| {
@@ -137,7 +95,7 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
                 #[derive(Debug, Deserialize, Serialize, specta::Type)]
                 struct CharacterFactSlice {
                     name: String,
-                    facts: Vec<FactDTOEnum>,
+                    facts: Vec<Fact>,
                 }
 
                 let maybe_slice = ctx
@@ -196,7 +154,7 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
                         .await?;
                 }
 
-                let updated_facts: Vec<FactDTOEnum> = ctx
+                let updated_facts: Vec<Fact> = ctx
                     .client
                     .fact()
                     .find_many(vec![])

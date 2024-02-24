@@ -1,8 +1,8 @@
 import { rspc } from "@wisp/client";
-import { FactDTOEnum } from "@wisp/client/src/bindings";
+import { Fact } from "@wisp/client/src/bindings";
 
-type DisplayFact<T extends "text" | "attr"> = Omit<FactDTOEnum, "group_name" | "value"> & {
-  value: Extract<FactDTOEnum, { type: T }>["value"];
+type DisplayFact<T extends "text" | "attr"> = Omit<Fact, "group_name" | "value"> & {
+  value: Extract<Fact, { type: T }>["value"];
 };
 
 function TextFact({fact}: {fact: DisplayFact<'text'>}) {
@@ -31,7 +31,7 @@ function AttrFact({fact}: {fact: DisplayFact<'attr'>}) {
 
 
 export function FactSheet({entity_id, slice_id}: {entity_id: string, slice_id: number}) {
-  const {data: slice} = rspc.useQuery(['facts.slice', {entity_id, slice_id}])
+  const {data: slice} = rspc.useQuery(['facts.character.slice', {entity_id, slice_id}])
   return (
     <div className="bg-white w-full h-full rounded-md border text-sm p-8 mx-auto flex flex-col gap-2">
       <div>
