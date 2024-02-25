@@ -46,6 +46,37 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
         }
     }
 
+    for group in result.location.groups.into_iter() {
+        let new_group = prisma
+            .fact_group()
+            .create(group.entity.into(), group.name, vec![])
+            .exec()
+            .await
+            .unwrap();
+        for fact in group.facts {
+            match fact {
+                Fact::TextItem { name } => {
+                    facts.push(prisma.fact().create(
+                        name,
+                        "text".into(),
+                        prisma::fact_group::id::equals(new_group.id),
+                        vec![],
+                    ));
+                }
+                Fact::AttrItem { name, options } => {
+                    facts.push(prisma.fact().create(
+                        name,
+                        "attr".into(),
+                        prisma::fact_group::id::equals(new_group.id),
+                        vec![prisma::fact::options::set(Some(
+                            (serde_json::to_string(&options).unwrap()),
+                        ))],
+                    ));
+                }
+            }
+        }
+    }
+
     prisma._batch(facts).await.unwrap();
     let basic_info_slice = prisma.fact_slice().create("summary".into(), vec![fact_slice::facts::connect(vec![
         fact::name::equals("first name".into()),
@@ -93,6 +124,7 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
 #[derive(Debug, Deserialize)]
 struct AllFacts {
     character: FactsEntry,
+    location: FactsEntry
 }
 
 #[derive(Debug, Deserialize)]
