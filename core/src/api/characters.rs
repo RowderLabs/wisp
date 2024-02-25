@@ -51,17 +51,6 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .map_err(Into::into)
             })
         })
-        .query("list_links", |t| {
-            t(|ctx: Ctx, _: ()| async move {
-                ctx.client
-                    .entity()
-                    .find_many(vec![prisma::entity::r#type::equals("character".into())])
-                    .select(prisma::entity::select!({id name}))
-                    .exec()
-                    .await
-                    .map_err(Into::into)
-            })
-        })
         .query("build_tree", |t| {
             t(|ctx: Ctx, _: ()| async move {
                 //takes no arguments

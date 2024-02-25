@@ -8,7 +8,7 @@ use crate::fact::{Fact, FactEntry, FactSlice, FactValue};
 use crate::prisma::{self, fact, fact_group, fact_slice};
 
 use super::Ctx;
-use super::DbFact;
+use super::FactWithValues;
 
 #[derive(Debug, Deserialize, specta::Type)]
 struct FactFilters {
@@ -40,10 +40,10 @@ pub fn character_facts_router() -> RouterBuilder<Ctx> {
                 Ok(ctx
                     .client
                     .fact()
-                    .find_many(vec![fact::entity_facts::some(vec![prisma::fact_on_entity::entity_id::equals(payload.id)]), fact::group::is(vec![fact_group::name::equals(
+                    .find_many(vec![fact::group::is(vec![fact_group::name::equals(
                         payload.group,
                     )])])
-                    .select(DbFact::select())
+                    .select(FactWithValues::select(payload.id))
                     .exec()
                     .await
                     .map_err(|e| {
@@ -73,11 +73,11 @@ pub fn character_facts_router() -> RouterBuilder<Ctx> {
                         .client
                         .fact()
                         .find_many(vec![
-                            fact::entity_facts::some(vec![prisma::fact_on_entity::entity_id::equals(payload.entity_id)]),
+                            fact::entity_facts::some(vec![prisma::fact_on_entity::entity_id::equals(payload.entity_id.clone())]),
                             fact::slices::some(vec![
                             prisma::fact_slice::id::equals(slice.id),
                         ])])
-                        .select(DbFact::select())
+                        .select(FactWithValues::select(payload.entity_id))
                         .exec()
                         .await
                         .unwrap()
@@ -123,7 +123,7 @@ pub fn character_facts_router() -> RouterBuilder<Ctx> {
                     .client
                     .fact()
                     .find_many(vec![])
-                    .select(DbFact::select())
+                    .select(FactWithValues::select(payload.entity_id))
                     .exec()
                     .await
                     .unwrap()

@@ -28,7 +28,7 @@ class MentionOption extends MenuOption {
 }
 
 export default function MentionsPlugin() {
-  const { data: mentions } = rspc.useQuery(["characters.list_links"], {
+  const { data: mentions } = rspc.useQuery(["links.all"], {
     select: (data) => data.map((link) => new MentionOption(link.id, link.name)),
   });
   const [editor] = useLexicalComposerContext();

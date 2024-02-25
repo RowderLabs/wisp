@@ -68,7 +68,7 @@ export function $createMentionNode(id: string, name: string) {
   return new MentionNode(id, name);
 }
 
-const mentionVariants = cva(["rounded-md bg-blue-200 p-0.5 text-blue-600/80", "hover:text-white hover:bg-blue-400/80"]);
+const mentionVariants = cva(["text-sm rounded-md bg-blue-200 p-0.5 text-blue-600/80", "hover:text-white hover:bg-blue-400/80"]);
 
 function Mention({ name, id }: MentionProps) {
   return (
