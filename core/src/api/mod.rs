@@ -5,10 +5,10 @@ use std::{path::PathBuf, sync::Arc};
 
 pub mod canvas;
 pub mod characters;
-pub mod panels;
 pub mod facts;
-pub mod locations;
 pub mod links;
+pub mod locations;
+pub mod panels;
 
 pub struct Ctx {
     pub client: Arc<prisma::PrismaClient>,
@@ -25,6 +25,16 @@ pub fn new() -> RouterBuilder<Ctx> {
         .config(Config::new().export_ts_bindings(
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../packages/client/src/bindings.ts"),
         ))
+        .query("entity.get", |t| {
+            t(|ctx: Ctx, entity_id: String| async move {
+                ctx.client
+                    .entity()
+                    .find_unique(prisma::entity::id::equals(entity_id))
+                    .exec()
+                    .await
+                    .map_err(Into::into)
+            })
+        })
         .merge("characters.", characters::characters_router())
         .merge("locations.", locations::locations_router())
         .merge("canvas.", canvas::canvas_router())

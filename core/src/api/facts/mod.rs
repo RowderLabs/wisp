@@ -57,6 +57,7 @@ impl From<FactWithValues::Data> for Fact {
 struct FactFilters {
     group_id: i32,
     entity_id: String,
+    entity_type: String
 }
 
 #[derive(Debug, Deserialize, specta::Type)]
@@ -80,6 +81,7 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
                     .fact()
                     .find_many(vec![prisma::fact::group::is(vec![
                         prisma::fact_group::id::equals(payload.group_id),
+                        prisma::fact_group::entity::equals(payload.entity_type)
                     ])])
                     .select(FactWithValues::select(payload.entity_id))
                     .exec()

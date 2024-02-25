@@ -6,30 +6,29 @@ import { HiFolder, HiChevronDown, HiChevronRight, HiOutlinePencilSquare, HiOutli
 import { CreateLocationsDialog } from "./CreateLocationDialog";
 
 export function LocationsFileTree() {
-
   const { data: treeData, isLoading, isError } = rspc.useQuery(["locations.tree"]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, treeApi] = useTreeView({
-    onDelete: (id) => console.log(id)
+    onDelete: (id) => console.log(id),
   });
 
   if (isLoading) {
-    return <span>loading...</span>
+    return <span>loading...</span>;
   }
 
   if (isError) {
-    throw new Error("Failed to get tree")
+    throw new Error("Failed to get tree");
   }
 
   return (
     <TreeView
-          renderItem={(treeItem) => <LocationItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
-          onExpansionChange={treeApi.toggleExpand}
-          treeData={treeData}
-          indentation={25}
-          {...treeApi}
-        />
-  )
+      renderItem={(treeItem) => <LocationItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
+      onExpansionChange={treeApi.toggleExpand}
+      treeData={treeData}
+      indentation={25}
+      {...treeApi}
+    />
+  );
 }
 
 //TODO: use new TreeNode<TData>
@@ -45,8 +44,7 @@ function LocationItem({
   expanded?: boolean;
   onDelete: (id: string) => void;
 }) {
-
-  const [dialogManager] = useDialogManager()
+  const [dialogManager] = useDialogManager();
 
   return isCollection ? (
     <ContextMenu.Root
@@ -59,7 +57,7 @@ function LocationItem({
       }
     >
       <ContextMenu.Item
-         onClick={(e) => {
+        onClick={(e) => {
           e.stopPropagation();
           dialogManager.createDialog(CreateLocationsDialog, {
             id: "create-location",
@@ -75,8 +73,13 @@ function LocationItem({
     <ContextMenu.Root
       trigger={
         <div className="flex items-center gap-1 w-full h-full">
-          <HiMap/>
-          <Link className="basis-full" to="/workspace/characters/$characterId" params={{ characterId: id }}>
+          <HiMap />
+          <Link
+            className="basis-full"
+            to="/workspace/entity/$entityId"
+            search={{ type: "location" }}
+            params={{ entityId: id }}
+          >
             {name}
           </Link>
         </div>

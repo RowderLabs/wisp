@@ -2,14 +2,21 @@ import { Link } from "@tanstack/react-router";
 import { rspc } from "@wisp/client";
 import { ContextMenu, TreeView } from "@wisp/ui";
 import { TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
-import { HiFolder, HiChevronDown, HiChevronRight, HiOutlinePencilSquare, HiMiniUserCircle, HiOutlineTrash, HiOutlineFolder } from "react-icons/hi2";
+import {
+  HiFolder,
+  HiChevronDown,
+  HiChevronRight,
+  HiOutlinePencilSquare,
+  HiMiniUserCircle,
+  HiOutlineTrash,
+  HiOutlineFolder,
+} from "react-icons/hi2";
 import { useDeleteCharacter } from "../hooks/useDeleteCharacter";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { CreateCharacterDialog } from "./CreateCharacterDialog";
 
 export function CharactersFileTree() {
-
-  const { data: treeData, isLoading, isError } = rspc.useQuery(['characters.tree']);
+  const { data: treeData, isLoading, isError } = rspc.useQuery(["characters.tree"]);
   const { deleteCharacter } = useDeleteCharacter();
 
   const [dialogManager] = useDialogManager();
@@ -24,22 +31,22 @@ export function CharactersFileTree() {
   });
 
   if (isLoading) {
-    return <span>loading...</span>
+    return <span>loading...</span>;
   }
 
   if (isError) {
-    throw new Error("Failed to get tree")
+    throw new Error("Failed to get tree");
   }
 
   return (
     <TreeView
-          renderItem={(treeItem) => <CharacterItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
-          onExpansionChange={treeApi.toggleExpand}
-          treeData={treeData}
-          indentation={25}
-          {...treeApi}
-        />
-  )
+      renderItem={(treeItem) => <CharacterItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
+      onExpansionChange={treeApi.toggleExpand}
+      treeData={treeData}
+      indentation={25}
+      {...treeApi}
+    />
+  );
 }
 
 //TODO: use new TreeNode<TData>
@@ -85,7 +92,12 @@ function CharacterItem({
       trigger={
         <div className="flex items-center gap-1 w-full h-full">
           <HiMiniUserCircle />
-          <Link className="basis-full" to="/workspace/entity/$entityId" params={{ entityId: id }}>
+          <Link
+            className="basis-full"
+            to="/workspace/entity/$entityId"
+            search={{ type: "character" }}
+            params={{ entityId: id }}
+          >
             {name}
           </Link>
         </div>

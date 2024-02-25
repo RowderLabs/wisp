@@ -28,7 +28,6 @@ export function FactForm({ facts, entityId }: FactFormProps) {
   }, [facts])
 
   const utils = useUtils();
-  const {data: groups} = rspc.useQuery(['facts.groups', 'location'])
 
   const { mutate: submitFacts } = rspc.useMutation(['facts.update_many'], {
     onSuccess: () => {
@@ -51,7 +50,6 @@ export function FactForm({ facts, entityId }: FactFormProps) {
       }}
     >
       <div className="p-8 bg-white rounded-md border grid grid-cols-2 items-center gap-4 text-sm max-w-[600px]">
-        <p>{JSON.stringify(groups)}</p>
         {facts.map((fact) => {
           return (
             <>
