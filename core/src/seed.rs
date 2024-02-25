@@ -73,6 +73,21 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
         .exec()
         .await
         .unwrap();
+
+    let locations_id = generate_id("locations".into());
+    let locations = prisma
+        .entity()
+        .create(
+            locations_id.clone(),
+            "Locations".into(),
+            EntityType::Location.to_string(),
+            construct_path(&locations_id, &None),
+            true,
+            vec![],
+        )
+        .exec()
+        .await
+        .unwrap();
 }
 
 #[derive(Debug, Deserialize)]

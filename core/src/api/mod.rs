@@ -9,6 +9,7 @@ pub mod canvas;
 pub mod characters;
 pub mod panels;
 pub mod facts;
+pub mod locations;
 
 pub struct Ctx {
     pub client: Arc<prisma::PrismaClient>,
@@ -26,6 +27,7 @@ pub fn new() -> RouterBuilder<Ctx> {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../packages/client/src/bindings.ts"),
         ))
         .merge("characters.", characters::characters_router())
+        .merge("locations.", locations::locations_router())
         .merge("canvas.", canvas::canvas_router())
         .merge("panels.", panels::panels_router())
         .merge("facts.", facts::facts_router())

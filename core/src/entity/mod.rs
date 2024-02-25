@@ -1,4 +1,7 @@
-use std::{collections::{HashMap, HashSet}, str::FromStr};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+};
 
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -7,21 +10,19 @@ use crate::prisma;
 
 prisma::entity::select!(Entity {id path name r#type is_collection});
 
-
 pub enum EntityType {
     Character,
-    Place
+    Location,
 }
 
 impl ToString for EntityType {
     fn to_string(&self) -> String {
         match self {
             EntityType::Character => "character".to_string(),
-            EntityType::Place => "place".to_string()
+            EntityType::Location => "location".to_string(),
         }
     }
 }
-
 
 #[derive(Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -33,15 +34,12 @@ pub struct FileTreeItem {
     pub children: Vec<String>,
 }
 
-
 const PATH_DELIMITER: &'static str = "/";
 const ROOT_DELIMITER: &'static str = "root";
 
 pub fn create_file_tree(entities: &Vec<Entity::Data>) -> HashMap<String, FileTreeItem> {
     let mut graph: HashMap<String, FileTreeItem> = HashMap::new();
     let mut in_root = HashSet::new();
-
-
 
     for entity in entities {
         let locations = entity
