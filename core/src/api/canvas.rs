@@ -1,16 +1,16 @@
 use super::Ctx;
-use crate::prisma::{self, canvas, panel};
+use crate::prisma::canvas;
 use rspc::RouterBuilder;
-use serde::Deserialize;
+
 
 pub fn canvas_router() -> RouterBuilder<Ctx> {
-    RouterBuilder::new().query("get_panels", |t| {
-        t(|ctx: Ctx, canvas_id: String| async move {
+    RouterBuilder::new().query("for_entity", |t| {
+        t(|ctx: Ctx, entity_id: String| async move {
             //takes no arguments
             ctx.client
                 .canvas()
-                .find_many(vec![canvas::id::equals(canvas_id)])
-                .with(canvas::panels::fetch(vec![]))
+                .find_unique(canvas::entity_id::equals(entity_id))
+                .include(canvas::include!({ panels }))
                 .exec()
                 .await
                 .map_err(Into::into)

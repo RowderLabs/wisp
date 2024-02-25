@@ -4,20 +4,19 @@ import { rspc, queryClient, client } from "./rspc";
 import { Client } from "@rspc/client";
 import { QueryClient } from "@tanstack/react-query";
 
-type QueryKey = [Procedures["queries"]["key"], ...unknown[]];
-type QueryKeyAndInput<TKey extends Procedures["queries"]["key"]> = [
-  TKey,
-  ...Extract<Procedures["queries"], { key: TKey }>["input"][]
-];
+type ProcedureQuery<TKey extends Procedures["queries"]["key"]> = Extract<Procedures["queries"], { key: TKey }>;
 
-type QueryResultFromKey<Tkey extends Procedures["queries"]["key"]> = Extract<
-  Procedures["queries"],
-  { key: Tkey }
->["result"];
+type QueryKey = [Procedures["queries"]["key"]];
+type QueryKeyAndInput<TKey extends Procedures["queries"]["key"]> = [TKey, ProcedureQuery<TKey>["input"]];
+type T1 = QueryKeyAndInput<"facts.on_entity">;
+
+type QueryResultFromKey<Tkey extends Procedures["queries"]["key"]> = ProcedureQuery<Tkey>["result"];
+
+type T2 = QueryResultFromKey<"characters.tree">;
 
 export function useUtils() {
   const invalidateQueries = React.useCallback((queryKey: QueryKey) => {
-    queryClient.invalidateQueries({queryKey});
+    queryClient.invalidateQueries({ queryKey });
   }, []);
 
   const utils = {

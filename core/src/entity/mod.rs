@@ -1,15 +1,14 @@
-use std::{
-    collections::{HashMap, HashSet},
-    str::FromStr,
-};
-
+use std::collections::{HashMap, HashSet};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+
 
 use crate::prisma;
 
 prisma::entity::select!(Entity {id path name r#type is_collection});
 
+#[derive(Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub enum EntityType {
     Character,
     Location,
@@ -34,8 +33,8 @@ pub struct FileTreeItem {
     pub children: Vec<String>,
 }
 
-const PATH_DELIMITER: &'static str = "/";
-const ROOT_DELIMITER: &'static str = "root";
+const PATH_DELIMITER: &str = "/";
+const ROOT_DELIMITER: &str = "root";
 
 pub fn create_file_tree(entities: &Vec<Entity::Data>) -> HashMap<String, FileTreeItem> {
     let mut graph: HashMap<String, FileTreeItem> = HashMap::new();
@@ -85,4 +84,17 @@ pub fn create_file_tree(entities: &Vec<Entity::Data>) -> HashMap<String, FileTre
     };
     graph.insert("root".to_string(), root);
     graph
+}
+
+pub mod entity_gen {
+    pub fn generate_id(name: &str) -> String {
+        format!("{}-{}", name.replace(' ', "-").to_lowercase(), nanoid::nanoid!(5))
+    }
+
+    pub fn construct_path(id: &str, parent_path: &Option<&str>) -> String {
+        if let Some(parent) = parent_path {
+            return format!("{}/{}", parent, id);
+        }
+        format!("/{}", id.to_string())
+    }
 }

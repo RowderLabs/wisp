@@ -1,10 +1,9 @@
-use super::{characters::{construct_path, generate_id}, Ctx};
-use crate::{
-    entity::{create_file_tree, Entity, EntityType},
-    prisma::{self, canvas, panel},
-};
+use crate::entity::{create_file_tree, entity_gen, Entity, EntityType};
+use crate::prisma;
 use rspc::RouterBuilder;
 use serde::Deserialize;
+
+use super::Ctx;
 
 #[derive(Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -42,7 +41,7 @@ pub fn locations_router() -> RouterBuilder<Ctx> {
                     is_collection,
                 } = location_details;
 
-                let id = generate_id(&name);
+                let id = entity_gen::generate_id(&name);
                 let location = ctx
                     .client
                     .entity()
@@ -50,21 +49,21 @@ pub fn locations_router() -> RouterBuilder<Ctx> {
                         id.clone(),
                         name.clone(),
                         EntityType::Location.to_string(),
-                        construct_path(&id, &parent.as_deref()),
+                        entity_gen::construct_path(&id, &parent.as_deref()),
                         is_collection,
                         vec![],
                     )
                     .exec()
                     .await?;
 
-                let canvas = ctx
+                let _canvas = ctx
                     .client
                     .canvas()
                     .create(prisma::entity::id::equals(location.id.clone()), vec![])
                     .exec()
                     .await?;
 
-                return Ok(location);
+                Ok(location)
             })
         })
 }

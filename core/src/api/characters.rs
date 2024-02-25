@@ -1,19 +1,10 @@
-use std::collections::HashMap;
-use std::collections::HashSet;
-
-use super::Ctx;
-use super::RouterBuilder;
-use crate::entity::create_file_tree;
-use crate::entity::EntityType;
-use crate::prisma;
-use crate::prisma::canvas;
-use itertools::Itertools;
-use nanoid::nanoid;
-use rspc::Error;
+use super::{Ctx, RouterBuilder};
+use crate::{
+    entity::{create_file_tree, Entity, EntityType, entity_gen},
+    prisma::{self},
+};
 use serde::Deserialize;
-use serde::Serialize;
 
-use crate::entity::Entity;
 
 
 
@@ -26,17 +17,6 @@ struct CreateCharacter {
 }
 
 
-
-pub fn generate_id(name: &str) -> String {
-    format!("{}-{}", name.replace(" ", "-").to_lowercase(), nanoid!(8))
-}
-
-pub fn construct_path(id: &str, parent_path: &Option<&str>) -> String {
-    if let Some(parent) = parent_path {
-        return format!("{}/{}", parent, id);
-    }
-    format!("/{}", id.to_string())
-}
 
 pub fn characters_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
@@ -51,7 +31,7 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .map_err(Into::into)
             })
         })
-        .query("build_tree", |t| {
+        .query("tree", |t| {
             t(|ctx: Ctx, _: ()| async move {
                 //takes no arguments
                 let characters = ctx
@@ -63,22 +43,10 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .await
                     .unwrap();
 
-                let graph = create_file_tree(&characters);
-                graph
+                
+                create_file_tree(&characters)
             })
         })
-        .query("canvas", |t| {
-            t(|ctx: Ctx, character_id: String| async move {
-                ctx.client
-                    .canvas()
-                    .find_unique(canvas::entity_id::equals(character_id))
-                    .include(canvas::include!({ panels }))
-                    .exec()
-                    .await
-                    .map_err(Into::into)
-            })
-        })
-    
         .mutation("create", |t| {
             t(|ctx: Ctx, character_details: CreateCharacter| async move {
                 let CreateCharacter {
@@ -88,7 +56,7 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     is_collection,
                 } = character_details;
 
-                let id = generate_id(&name);
+                let id = entity_gen::generate_id(&name);
                 let character = ctx
                     .client
                     .entity()
@@ -96,21 +64,21 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                         id.clone(),
                         name.clone(),
                         EntityType::Character.to_string(),
-                        construct_path(&id, &parent.as_deref()),
+                        entity_gen::construct_path(&id, &parent.as_deref()),
                         is_collection,
                         vec![],
                     )
                     .exec()
                     .await?;
 
-                let canvas = ctx
+                let _canvas = ctx
                     .client
                     .canvas()
                     .create(prisma::entity::id::equals(character.id.clone()), vec![])
                     .exec()
                     .await?;
 
-                return Ok(character);
+                Ok(character)
             })
         })
         .mutation("delete", |t| {

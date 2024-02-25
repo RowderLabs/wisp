@@ -24,7 +24,7 @@ export const Route = createFileRoute("/workspace/characters/$characterId")({
     routeBreadcrumb: "character-page",
   },
   loader: async ({ context, params }) => {
-    const canvas = await context.rspc.client.query(["characters.canvas", params.characterId]);
+    const canvas = await context.rspc.client.query(['canvas.for_entity', params.characterId]);
     if (!canvas) throw notFound();
     return canvas;
   },
@@ -45,11 +45,11 @@ function WorkspaceCharacterSheetPage() {
     callback: commitTransform,
   });
   const queryClient = rspc.useContext().queryClient;
-  const { data: factGroups } = rspc.useQuery(["facts.character.list", {id: params.characterId, group: 'basic info'}]);
+  const { data: factGroups } = rspc.useQuery(['facts.on_entity', {entityId: params.characterId, groupId: 1}]);
 
   React.useEffect(() => {
     if (!draft) return;
-    type CharacterCanvas = Extract<Procedures["queries"], { key: "characters.canvas" }>["result"];
+    type CharacterCanvas = Extract<Procedures["queries"], { key: 'canvas.for_entity' }>["result"];
     const cachedQueryData = queryClient.getQueryData<CharacterCanvas>(["characters.canvas", params.characterId]);
     const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
     const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
@@ -63,7 +63,7 @@ function WorkspaceCharacterSheetPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
 
-  const { data: canvas } = rspc.useQuery(["characters.canvas", params.characterId], {
+  const { data: canvas } = rspc.useQuery(['canvas.for_entity', params.characterId], {
     placeholderData: canvasPreload,
     staleTime: Infinity,
   });

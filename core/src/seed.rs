@@ -1,24 +1,27 @@
-use std::{io::Read, path::PathBuf};
+use std::{io::Read, path::Path};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    api::characters::{construct_path, generate_id}, entity::EntityType, prisma::{self, fact, fact_slice}
+    entity::{entity_gen, EntityType},
+    prisma::{self, fact, fact_slice},
 };
 
-pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
+pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &Path) {
     //reset db
 
-    let mut file = std::fs::File::open(seed_path.join("fact_seed.json")).expect("Unable to open file");
+    let mut file =
+        std::fs::File::open(seed_path.join("fact_seed.json")).expect("Unable to open file");
     let mut contents = String::new();
-    file.read_to_string(&mut contents).expect("failed to read seed file");
+    file.read_to_string(&mut contents)
+        .expect("failed to read seed file");
 
     let result: AllFacts = serde_json::from_str(&contents).unwrap();
     let mut facts = vec![];
     for group in result.character.groups.into_iter() {
         let new_group = prisma
             .fact_group()
-            .create(group.entity.into(), group.name, vec![])
+            .create(group.entity, group.name, vec![])
             .exec()
             .await
             .unwrap();
@@ -38,7 +41,7 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
                         "attr".into(),
                         prisma::fact_group::id::equals(new_group.id),
                         vec![prisma::fact::options::set(Some(
-                            (serde_json::to_string(&options).unwrap()),
+                            serde_json::to_string(&options).unwrap(),
                         ))],
                     ));
                 }
@@ -49,7 +52,7 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
     for group in result.location.groups.into_iter() {
         let new_group = prisma
             .fact_group()
-            .create(group.entity.into(), group.name, vec![])
+            .create(group.entity, group.name, vec![])
             .exec()
             .await
             .unwrap();
@@ -69,7 +72,7 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
                         "attr".into(),
                         prisma::fact_group::id::equals(new_group.id),
                         vec![prisma::fact::options::set(Some(
-                            (serde_json::to_string(&options).unwrap()),
+                            serde_json::to_string(&options).unwrap(),
                         ))],
                     ));
                 }
@@ -78,26 +81,31 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
     }
 
     prisma._batch(facts).await.unwrap();
-    let basic_info_slice = prisma.fact_slice().create("summary".into(), vec![fact_slice::facts::connect(vec![
-        fact::name::equals("first name".into()),
-        fact::name::equals("last name".into()),
-        fact::name::equals("age".into()),
-        fact::name::equals("birthdate".into()),
-        fact::name::equals("birthplace".into()),
-        
-    ])]).exec().await;
-
+    let basic_info_slice = prisma
+        .fact_slice()
+        .create(
+            "summary".into(),
+            vec![fact_slice::facts::connect(vec![
+                fact::name::equals("first name".into()),
+                fact::name::equals("last name".into()),
+                fact::name::equals("age".into()),
+                fact::name::equals("birthdate".into()),
+                fact::name::equals("birthplace".into()),
+            ])],
+        )
+        .exec()
+        .await;
 
     println!("{:#?}", basic_info_slice);
 
-    let characters_id = generate_id("Characters".into());
-    let characters = prisma
+    let characters_id = entity_gen::generate_id("Characters");
+    let _characters = prisma
         .entity()
         .create(
             characters_id.clone(),
             "Characters".into(),
             EntityType::Character.to_string(),
-            construct_path(&characters_id, &None),
+            entity_gen::construct_path(&characters_id, &None),
             true,
             vec![],
         )
@@ -105,14 +113,14 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
         .await
         .unwrap();
 
-    let locations_id = generate_id("locations".into());
-    let locations = prisma
+    let locations_id = entity_gen::generate_id("locations");
+    let _locations = prisma
         .entity()
         .create(
             locations_id.clone(),
             "Locations".into(),
             EntityType::Location.to_string(),
-            construct_path(&locations_id, &None),
+            entity_gen::construct_path(&locations_id, &None),
             true,
             vec![],
         )
@@ -124,7 +132,7 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &PathBuf) {
 #[derive(Debug, Deserialize)]
 struct AllFacts {
     character: FactsEntry,
-    location: FactsEntry
+    location: FactsEntry,
 }
 
 #[derive(Debug, Deserialize)]

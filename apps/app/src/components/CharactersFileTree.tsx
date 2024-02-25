@@ -9,7 +9,7 @@ import { CreateCharacterDialog } from "./CreateCharacterDialog";
 
 export function CharactersFileTree() {
 
-  const { data: treeData, isLoading, isError } = rspc.useQuery(["characters.build_tree"]);
+  const { data: treeData, isLoading, isError } = rspc.useQuery(['characters.tree']);
   const { deleteCharacter } = useDeleteCharacter();
 
   const [dialogManager] = useDialogManager();

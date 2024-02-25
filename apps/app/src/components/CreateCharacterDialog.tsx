@@ -25,7 +25,7 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
       
     },
     onSuccess: (character) => {
-      utils.invalidateQueries(["characters.build_tree"]);
+      utils.invalidateQueries(["characters.tree"]);
       navigate({ to: "/workspace/characters/$characterId", params: { characterId: character.id } });
       dialogManager.removeDialog(id);
     },

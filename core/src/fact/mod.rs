@@ -24,9 +24,9 @@ pub enum FactValue {
     Attr(Vec<String>),
 }
 
-impl Into<String> for FactValue {
-    fn into(self) -> String {
-        match self {
+impl From<FactValue> for String {
+    fn from(val: FactValue) -> Self {
+        match val {
             FactValue::Text(value) => value,
             FactValue::Attr(value) => serde_json::to_string(&value).unwrap(),
         }
