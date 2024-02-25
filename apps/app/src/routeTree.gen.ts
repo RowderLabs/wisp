@@ -15,7 +15,7 @@ import { Route as WorkspaceImport } from './routes/workspace'
 import { Route as IndexImport } from './routes/index'
 import { Route as WorkspaceIndexImport } from './routes/workspace.index'
 import { Route as WorkspaceCharactersImport } from './routes/workspace.characters'
-import { Route as WorkspaceCharactersCharacterIdImport } from './routes/workspace.characters.$characterId'
+import { Route as WorkspaceEntityEntityIdImport } from './routes/workspace.entity.$entityId'
 
 // Create/Update Routes
 
@@ -39,11 +39,10 @@ const WorkspaceCharactersRoute = WorkspaceCharactersImport.update({
   getParentRoute: () => WorkspaceRoute,
 } as any)
 
-const WorkspaceCharactersCharacterIdRoute =
-  WorkspaceCharactersCharacterIdImport.update({
-    path: '/$characterId',
-    getParentRoute: () => WorkspaceCharactersRoute,
-  } as any)
+const WorkspaceEntityEntityIdRoute = WorkspaceEntityEntityIdImport.update({
+  path: '/entity/$entityId',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -65,9 +64,9 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIndexImport
       parentRoute: typeof WorkspaceImport
     }
-    '/workspace/characters/$characterId': {
-      preLoaderRoute: typeof WorkspaceCharactersCharacterIdImport
-      parentRoute: typeof WorkspaceCharactersImport
+    '/workspace/entity/$entityId': {
+      preLoaderRoute: typeof WorkspaceEntityEntityIdImport
+      parentRoute: typeof WorkspaceImport
     }
   }
 }
@@ -77,8 +76,9 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
   WorkspaceRoute.addChildren([
-    WorkspaceCharactersRoute.addChildren([WorkspaceCharactersCharacterIdRoute]),
+    WorkspaceCharactersRoute,
     WorkspaceIndexRoute,
+    WorkspaceEntityEntityIdRoute,
   ]),
 ])
 

@@ -5,7 +5,7 @@ export function useDeletePanel() {
   const utils = useUtils();
   const { mutate: deletePanel } = rspc.useMutation("panels.delete", {
     onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
+      utils.invalidateQueries(['canvas.for_entity']);
     },
   });
 

@@ -85,7 +85,7 @@ function CharacterItem({
       trigger={
         <div className="flex items-center gap-1 w-full h-full">
           <HiMiniUserCircle />
-          <Link className="basis-full" to="/workspace/characters/$characterId" params={{ characterId: id }}>
+          <Link className="basis-full" to="/workspace/entity/$entityId" params={{ entityId: id }}>
             {name}
           </Link>
         </div>

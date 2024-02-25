@@ -7,7 +7,7 @@ export function useCreatePanel(id: string) {
 
   const { mutate: createPanel } = rspc.useMutation(["panels.create"], {
     onSuccess: () => {
-      utils.invalidateQueries(["characters.canvas"]);
+      utils.invalidateQueries(['canvas.for_entity']);
     },
   });
   type T1 = Omit<Partial<Parameters<typeof createPanel>[0]>, "panel_type">;

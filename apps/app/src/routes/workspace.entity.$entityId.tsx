@@ -1,77 +1,86 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { DraggableCanvas, ImagePanel, TextboxPanel, Toolbar, TransformEvent } from "@wisp/ui";
-import { Banner } from "@wisp/ui";
-import { rspc } from "@wisp/client";
-import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
-import { ImageUploadDialog } from "../components/ImageUploadDialog";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
-import { Procedures } from "@wisp/client/src/bindings";
-import React, { PropsWithChildren } from "react";
-import { ConfirmationDialog } from "../components/ConfirmationDialog";
-import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
-import { HiOutlineViewGrid, HiTable } from "react-icons/hi";
-import { Modifier } from "@dnd-kit/core";
-import { Breadcrumbs } from "../components/Breadcrumbs";
 import { NotFound } from "../components/NotFound";
+import { Banner, Toolbar, DraggableCanvas, TextboxPanel, ImagePanel, TransformEvent } from "@wisp/ui";
+import { PropsWithChildren } from "react";
+import { HiTable } from "react-icons/hi";
+import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
+import { Breadcrumbs } from "../components/Breadcrumbs";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { FactSlicePanel } from "../panels/factslice";
+import { rspc, useUtils } from "@wisp/client";
+import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
 import { useCreatePanel } from "../hooks/useCreatePanel";
 import { useDeletePanel } from "../hooks/useDeletePanel";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { Panel } from "@wisp/client/src/bindings";
-import { FactSlicePanel } from "../panels/factslice";
-import { FactForm } from "../components/FactForm";
+import React from "react";
 
-export const Route = createFileRoute("/workspace/characters/$characterId")({
+export const Route = createFileRoute("/workspace/entity/$entityId")({
   staticData: {
     routeBreadcrumb: "character-page",
   },
   loader: async ({ context, params }) => {
-    const canvas = await context.rspc.client.query(['canvas.for_entity', params.characterId]);
+    const canvas = await context.rspc.client.query(["canvas.for_entity", params.entityId]);
     if (!canvas) throw notFound();
     return canvas;
   },
   notFoundComponent: () => <NotFound />,
-  component: WorkspaceCharacterSheetPage,
+  component: EntityPage,
 });
-function WorkspaceCharacterSheetPage() {
+
+function EntityPage() {
+  //utils
+  const utils = useUtils();
+
+  //data from route
   const canvasPreload = Route.useLoaderData();
   const params = Route.useParams();
+
+  //canvas
+  const { data: canvas } = rspc.useQuery(["canvas.for_entity", params.entityId], {
+    placeholderData: canvasPreload,
+  });
 
   const { mutate: commitTransform } = rspc.useMutation("panels.transform", {
     onError: (e) => {
       console.error(e);
     },
   });
+
   const [draft, setDraft] = useDebouncedDraft<TransformEvent>({
     duration: 500,
     callback: commitTransform,
   });
-  const queryClient = rspc.useContext().queryClient;
-  const { data: factGroups } = rspc.useQuery(['facts.on_entity', {entityId: params.characterId, groupId: 1}]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!draft) return;
-    type CharacterCanvas = Extract<Procedures["queries"], { key: 'canvas.for_entity' }>["result"];
-    const cachedQueryData = queryClient.getQueryData<CharacterCanvas>(["characters.canvas", params.characterId]);
+    const cachedQueryData = utils.getQueryData(["canvas.for_entity", params.entityId]);
     const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
     const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
 
     if (cachedQueryData && cachedPanel && cachedPanels) {
-      queryClient.setQueryData<CharacterCanvas>(["characters.canvas", params.characterId], {
+      utils.setQueryData(["canvas.for_entity", params.entityId], {
         ...cachedQueryData,
         panels: [...cachedPanels, { ...cachedPanel, ...draft }],
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
-
-  const { data: canvas } = rspc.useQuery(['canvas.for_entity', params.characterId], {
-    placeholderData: canvasPreload,
-    staleTime: Infinity,
-  });
+  //dialog stuff
   const [dialogManager] = useDialogManager();
+
+  //panels
   const createPanelWithType = useCreatePanel(canvas!.id);
   const { deletePanel } = useDeletePanel();
+  const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
+    onSuccess: () => {
+      utils.invalidateQueries(["canvas.for_entity", params.entityId]);
+    },
+  });
 
-  const createImage = () =>
+  //panel creation
+  const createImagePanel = () =>
     dialogManager.createDialog(ImageUploadDialog, {
       id: "create-image-panel",
       onUpload: (path: string) => {
@@ -80,62 +89,30 @@ function WorkspaceCharacterSheetPage() {
       },
     });
 
-  const snapToGrid: Modifier = (args) => {
-    const { transform } = args;
-    return {
-      ...transform,
-      x: Math.ceil(transform.x / 10) * 10,
-      y: Math.ceil(transform.y / 10) * 10,
-    };
-  };
+  const createTextboxPanel = () => createPanelWithType("textbox", { content: null });
 
-  const [canvasModifiers, setCanvasModifiers] = React.useState<Modifier[]>([]);
-  const gridSnapActive = React.useRef<boolean>(false);
-
-  const toggleGridSnap = () => {
-    //TODO: actually filter modifiers
-    if (gridSnapActive.current === true) {
-      setCanvasModifiers([]);
-    } else {
-      setCanvasModifiers([...canvasModifiers, snapToGrid]);
-    }
-    gridSnapActive.current = !gridSnapActive.current;
-  };
-
-  const { mutate: setPanelContent } = rspc.useMutation(["panels.set_content"], {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["characters.canvas"]);
-    },
-  });
+  const createFactSlicePanel = () =>
+    createPanelWithType("factsheet", {
+      content: JSON.stringify({ entity_id: params.entityId, slice_id: 1 }),
+    });
 
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
-      <Banner className="bg-slate-300 relative">
-        <DraggableCanvasToolbar>
-          <Toolbar.IconButton
-            onClick={() => createPanelWithType("textbox", { content: null })}
-            icon={<HiMiniDocumentText />}
-          />
-          <Toolbar.IconButton onClick={createImage} icon={<HiPhoto />} />
-          <Toolbar.IconButton
-            onClick={() =>
-              createPanelWithType("factsheet", {
-                content: JSON.stringify({ entity_id: params.characterId, slice_id: 1 }),
-              })
-            }
-            icon={<HiTable />}
-          />
-          <Toolbar.ToggleGroup asChild type="single">
-            <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
-          </Toolbar.ToggleGroup>
-        </DraggableCanvasToolbar>
-      </Banner>
-      {factGroups && <FactForm entityId={params.characterId} facts={factGroups} />}
+      <Banner className="bg-slate-300 relative"></Banner>
       <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
+        <DraggableCanvasToolbar>
+          <Toolbar.IconButton onClick={createTextboxPanel} icon={<HiMiniDocumentText />} />
+          <Toolbar.IconButton onClick={createImagePanel} icon={<HiPhoto />} />
+          <Toolbar.IconButton onClick={createFactSlicePanel} icon={<HiTable />} />
+          {/*<Toolbar.ToggleGroup asChild type="single">
+            <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
+          </Toolbar.ToggleGroup>
+         */}
+        </DraggableCanvasToolbar>
+
         {canvas && (
           <DraggableCanvas<Panel>
-            modifiers={canvasModifiers}
             onItemDelete={(id) => {
               dialogManager.createDialog(ConfirmationDialog, {
                 id: `confirm-delete-${id}`,
