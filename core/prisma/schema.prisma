@@ -8,14 +8,6 @@ generator client {
     output   = "../src/prisma.rs"
 }
 
-model Character {
-    id String @id
-    path String @unique
-    fullName String
-    isCollection Boolean
-    facts FactOnCharacter[]
-    characterSheet CharacterSheet?
-}
 
 model Canvas {
     id String @id @default(uuid())
@@ -36,16 +28,6 @@ model Panel {
     canvas Canvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
 }
 
-model CharacterSheet {
-    id Int @id @default(autoincrement())
-    photoPath String
-    bannerPath String
-    canvasPath String 
-    characterId String @unique
-    character Character @relation(fields: [characterId], references: [path])
-    
-}
-
 model FactGroup {
     id Int @id @default(autoincrement())
     entity String
@@ -62,20 +44,10 @@ model Fact {
     groupId Int
     group FactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
     slices FactSlice[]
-    characterFacts FactOnCharacter[]
     entityFacts FactOnEntity[]
     @@unique([name, groupId])
 }
 
-
-model FactOnCharacter {
-    value String
-    characterId String
-    character Character @relation(fields: [characterId], references: [id])
-    factName String 
-    fact Fact @relation(fields: [factName], references: [name])
-    @@id([characterId, factName])
-}
 
 
 model FactSlice {

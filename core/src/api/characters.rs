@@ -7,7 +7,6 @@ use crate::entity::create_file_tree;
 use crate::entity::EntityType;
 use crate::prisma;
 use crate::prisma::canvas;
-use crate::prisma::character;
 use itertools::Itertools;
 use nanoid::nanoid;
 use rspc::Error;
@@ -77,16 +76,6 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
 
                 let graph = create_file_tree(&characters);
                 graph
-            })
-        })
-        .query("with_id", |t| {
-            t(|ctx: Ctx, id: String| async move {
-                ctx.client
-                    .character()
-                    .find_unique(character::id::equals(id))
-                    .exec()
-                    .await
-                    .map_err(Into::into)
             })
         })
         .query("canvas", |t| {

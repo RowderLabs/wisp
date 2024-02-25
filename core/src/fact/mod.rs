@@ -33,6 +33,13 @@ impl Into<String> for FactValue {
     }
 }
 
+
+#[derive(Debug, Serialize, Deserialize, specta::Type)]
+pub struct FactSlice {
+    pub name: String,
+    pub facts: Vec<Fact>
+}
+
 #[derive(Debug, Deserialize, specta::Type)]
 pub struct FactEntry {
     pub value: FactValue,

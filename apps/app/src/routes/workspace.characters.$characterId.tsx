@@ -45,7 +45,7 @@ function WorkspaceCharacterSheetPage() {
     callback: commitTransform,
   });
   const queryClient = rspc.useContext().queryClient;
-  const { data: factGroups } = rspc.useQuery(["facts.character.list", {id: params.characterId, group: 'physical characteristics'}]);
+  const { data: factGroups } = rspc.useQuery(["facts.character.list", {id: params.characterId, group: 'basic info'}]);
 
   React.useEffect(() => {
     if (!draft) return;
@@ -120,7 +120,7 @@ function WorkspaceCharacterSheetPage() {
           <Toolbar.IconButton
             onClick={() =>
               createPanelWithType("factsheet", {
-                content: JSON.stringify({ entity_id: "any", slice_id: 1 }),
+                content: JSON.stringify({ entity_id: params.characterId, slice_id: 1 }),
               })
             }
             icon={<HiTable />}
