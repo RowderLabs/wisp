@@ -2,26 +2,51 @@ import React from "react";
 import { Procedures } from "./bindings";
 import { rspc, queryClient, client } from "./rspc";
 import { Client } from "@rspc/client";
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, SetDataOptions } from "@tanstack/react-query";
 
-type QueryKey = [Procedures["queries"]["key"], ...unknown[]];
-type QueryKeyAndInput<TKey extends Procedures["queries"]["key"]> = [
-  TKey,
-  ...Extract<Procedures["queries"], { key: TKey }>["input"][]
-];
+type ProcedureKey = Procedures["queries"]["key"];
+type ProcedureQuery<TKey extends Procedures["queries"]["key"]> = Extract<Procedures["queries"], { key: TKey }>;
 
-type QueryResultFromKey<Tkey extends Procedures["queries"]["key"]> = Extract<
-  Procedures["queries"],
-  { key: Tkey }
->["result"];
+type QueryKey = [Procedures["queries"]["key"]];
+type QueryKeyAndInput<TKey extends Procedures["queries"]["key"]> = [TKey, ProcedureQuery<TKey>["input"]];
+type T1 = QueryKeyAndInput<"facts.on_entity">;
+
+type QueryResultFromKey<Tkey extends Procedures["queries"]["key"]> = ProcedureQuery<Tkey>["result"];
+
+type T2 = QueryResultFromKey<"characters.tree">;
 
 export function useUtils() {
-  const invalidateQueries = React.useCallback((queryKey: QueryKey) => {
-    queryClient.invalidateQueries({queryKey});
+  const queryClient = rspc.useContext().queryClient;
+
+  const invalidateQueries = React.useCallback(<TKey extends ProcedureKey>(queryKey: QueryKey | QueryKeyAndInput<TKey>) => {
+    queryClient.invalidateQueries({ queryKey });
   }, []);
+
+  const getQueryData = React.useCallback(
+    <TKey extends ProcedureKey, U extends QueryResultFromKey<TKey>>(queryKeyAndInput: QueryKeyAndInput<TKey>) => {
+      console.log(queryKeyAndInput)
+      return queryClient.getQueryData<U>(queryKeyAndInput);
+    },
+    []
+  );
+
+  type T3 = Parameters<typeof queryClient.setQueryData>;
+
+  const setQueryData = React.useCallback(
+    <TKey extends ProcedureKey, U extends QueryResultFromKey<TKey>>(
+      queryKeyAndInput: QueryKeyAndInput<TKey>,
+      updater: U,
+      options?: SetDataOptions
+    ) => {
+      return queryClient.setQueryData<U>(queryKeyAndInput, updater, options);
+    },
+    []
+  );
 
   const utils = {
     invalidateQueries,
+    getQueryData,
+    setQueryData
   };
 
   return utils;

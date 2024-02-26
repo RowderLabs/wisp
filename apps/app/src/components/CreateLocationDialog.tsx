@@ -7,23 +7,23 @@ const schema = z.object({
   name: z.string().min(3, "Name too short.").max(25, "Name too long"),
 });
 
-interface CharacterDialogProps extends DialogProps {
+interface LocationDialogProps extends DialogProps {
   context: {
     path: string | null;
   };
 }
 
-export function CreateCharacterDialog({ open, onOpenChange, id, context }: CharacterDialogProps) {
+export function CreateLocationsDialog({ open, onOpenChange, id, context }: LocationDialogProps) {
   const form = useZodForm({ schema });
   const [dialogManager] = useDialogManager();
   const utils = useUtils();
 
-  const { mutate: createCharacter } = rspc.useMutation(["characters.create"], {
+  const { mutate: createLocation } = rspc.useMutation(['locations.create'], {
     onSettled: () => {
       
     },
     onSuccess: () => {
-      utils.invalidateQueries(["characters.tree"]);
+      utils.invalidateQueries(['locations.tree']);
       dialogManager.removeDialog(id);
     },
   });
@@ -38,7 +38,7 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
       <Form
         form={form}
         onSubmit={(formData) => {
-          createCharacter({ name: formData.name, parent: context.path, isCollection: false });
+          createLocation({ name: formData.name, parent: context.path, isCollection: false });
         }}
       >
         <div className="flex flex-col gap-2 mb-4">

@@ -10,7 +10,7 @@ const client = createClient<Procedures>({
 });
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { networkMode: "always", refetchOnWindowFocus: false }, mutations: { networkMode: "always" } },
+  defaultOptions: { queries: { networkMode: "always", refetchOnWindowFocus: false, refetchOnMount: false }, mutations: { networkMode: "always" } },
 });
 const rspc = createReactQueryHooks<Procedures>();
 

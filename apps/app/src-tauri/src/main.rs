@@ -65,7 +65,7 @@ fn init_dev_dir(path: &PathBuf) -> Result<(), snafu::Whatever> {
 
 fn init_dev(app_ctx: &Context<EmbeddedAssets>) -> Result<PathBuf, snafu::Whatever> {
     let config = app_ctx.config();
-    let app_data_dir = tauri::api::path::app_data_dir(&config).unwrap();
+    let app_data_dir = tauri::api::path::app_data_dir(config).unwrap();
     let dev_dir = app_data_dir.join("wisp_dev");
     if !dev_dir.as_path().exists() {
         init_dev_dir(&dev_dir)?;

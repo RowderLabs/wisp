@@ -1,19 +1,15 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { $createTextNode, $getSelection, $insertNodes, COMMAND_PRIORITY_LOW, TextNode } from "lexical";
+import { $createTextNode, $insertNodes, COMMAND_PRIORITY_LOW, TextNode } from "lexical";
 import { $createMentionNode, INSERT_MENTION_NODE_COMMAND, MentionNode } from "../nodes/MentionNode";
-import { Button } from "../Button";
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
   useBasicTypeaheadTriggerMatch,
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import { TypeaheadFlag } from "./ComponentPickerPlugin";
 import clsx from "clsx";
 import { createPortal } from "react-dom";
 import { rspc } from "@wisp/client";
-
-interface MentionPluginProps {}
 
 class MentionOption extends MenuOption {
   // What shows up in the editor
@@ -31,9 +27,9 @@ class MentionOption extends MenuOption {
   }
 }
 
-export default function MentionsPlugin({}: MentionPluginProps) {
-  const { data: mentions } = rspc.useQuery(["characters.list_links"], {
-    select: (data) => data.map((link) => new MentionOption(link.id, link.fullName)),
+export default function MentionsPlugin() {
+  const { data: mentions } = rspc.useQuery(["links.all"], {
+    select: (data) => data.map((link) => new MentionOption(link.id, link.name)),
   });
   const [editor] = useLexicalComposerContext();
 
@@ -63,7 +59,7 @@ export default function MentionsPlugin({}: MentionPluginProps) {
         }
         return opt;
       }) ?? []},
-    [query]
+    [query, mentions]
   );
 
   const onSelectOption = useCallback(

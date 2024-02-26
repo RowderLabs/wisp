@@ -8,21 +8,12 @@ generator client {
     output   = "../src/prisma.rs"
 }
 
-model Character {
-    id String @id
-    path String @unique
-    fullName String
-    isCollection Boolean
-    facts FactOnCharacter[]
-    characterSheet CharacterSheet?
-    canvas Canvas?
-}
 
 model Canvas {
     id String @id @default(uuid())
     panels Panel[]
-    characterId String @unique
-    character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+    entityId String @unique
+    entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
 
 model Panel {
@@ -35,16 +26,6 @@ model Panel {
     content String?
     canvasId String
     canvas Canvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-}
-
-model CharacterSheet {
-    id Int @id @default(autoincrement())
-    photoPath String
-    bannerPath String
-    canvasPath String 
-    characterId String @unique
-    character Character @relation(fields: [characterId], references: [path])
-    
 }
 
 model FactGroup {
@@ -63,23 +44,33 @@ model Fact {
     groupId Int
     group FactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
     slices FactSlice[]
-    characterFacts FactOnCharacter[]
+    entityFacts FactOnEntity[]
     @@unique([name, groupId])
 }
 
-
-model FactOnCharacter {
-    value String
-    characterId String
-    character Character @relation(fields: [characterId], references: [id])
-    factName String 
-    fact Fact @relation(fields: [factName], references: [name])
-    @@id([characterId, factName])
-}
 
 
 model FactSlice {
     id Int @id @default(autoincrement())
     name String
     facts Fact[]
+}
+
+model FactOnEntity {
+    value String
+    entityId String
+    entity Entity @relation(fields: [entityId], references: [id])
+    factName String 
+    fact Fact @relation(fields: [factName], references: [name])
+    @@id([entityId, factName])
+}
+
+model Entity {
+    id String @id
+    name String
+    type String
+    path String @unique
+    isCollection Boolean
+    facts FactOnEntity[]
+    canvas Canvas?
 }
