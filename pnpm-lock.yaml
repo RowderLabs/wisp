@@ -83,6 +83,9 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
+      react-hook-form:
+        specifier: ^7.50.0
+        version: 7.50.0(react@18.2.0)
       react-merge-refs:
         specifier: ^2.0.2
         version: 2.0.2
@@ -95,6 +98,9 @@ importers:
       use-double-click:
         specifier: ^1.0.5
         version: 1.0.5(react-dom@18.2.0)(react@18.2.0)
+      usehooks-ts:
+        specifier: ^2.13.0
+        version: 2.13.0(react@18.2.0)
       zod:
         specifier: ^3.22.4
         version: 3.22.4
