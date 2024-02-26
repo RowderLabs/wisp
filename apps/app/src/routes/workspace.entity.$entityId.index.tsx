@@ -1,9 +1,9 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { NotFound } from "../components/NotFound";
 import { Banner, Toolbar, DraggableCanvas, TextboxPanel, ImagePanel, TransformEvent } from "@wisp/ui";
 import { PropsWithChildren } from "react";
 import { HiTable } from "react-icons/hi";
-import { HiMiniDocumentText, HiPhoto } from "react-icons/hi2";
+import { HiMiniDocumentText, HiPhoto, HiRectangleStack } from "react-icons/hi2";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { FactSlicePanel } from "../panels/factslice";
@@ -16,17 +16,15 @@ import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { Panel } from "@wisp/client/src/bindings";
 import React from "react";
 import { z } from "zod";
-import { FactForm } from "../components/FactForm";
 
-const EntityTypeSchema = z.object({type: z.enum(['character', 'location'])})
+export const EntityTypeSchema = z.object({ type: z.enum(["character", "location"]) });
 
-export const Route = createFileRoute("/workspace/entity/$entityId")({
+export const Route = createFileRoute("/workspace/entity/$entityId/")({
   staticData: {
     routeBreadcrumb: "character-page",
   },
   validateSearch: EntityTypeSchema,
   loader: async ({ context, params }) => {
-
     const canvas = await context.rspc.client.query(["canvas.for_entity", params.entityId]);
     if (!canvas) throw notFound();
 
@@ -42,11 +40,8 @@ function EntityPage() {
 
   //data from route
   const canvasPreload = Route.useLoaderData();
-  const searchParams = Route.useSearch()
+  const searchParams = Route.useSearch();
   const params = Route.useParams();
-
-  //facts
-  const {data: facts} = rspc.useQuery(['facts.on_entity', {entityId: params.entityId, entityType: searchParams.type, groupId: searchParams.type === 'character' ? 1 : 3 }])
 
   //canvas
   const { data: canvas } = rspc.useQuery(["canvas.for_entity", params.entityId], {
@@ -108,16 +103,28 @@ function EntityPage() {
       content: JSON.stringify({ entity_id: params.entityId, slice_id: 1 }),
     });
 
+  //fact manager
+  const navigate = useNavigate();
+
+  const openFactManager = () => {
+    navigate({ to: "/workspace/entity/$entityId/facts", params, search: searchParams });
+
+    /*dialogManager.createDialog(FactManagerDialog, {
+      id: "fact-manager",
+      context: { entityId: params.entityId, entityType: searchParams.type },
+    });*/
+  };
+
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
       <Banner className="bg-slate-300 relative"></Banner>
-        {facts && <FactForm facts={facts} entityId={params.entityId} />}
       <Breadcrumbs />
       <div className="basis-full relative" style={{ flexBasis: "100%" }}>
         <DraggableCanvasToolbar>
           <Toolbar.IconButton onClick={createTextboxPanel} icon={<HiMiniDocumentText />} />
           <Toolbar.IconButton onClick={createImagePanel} icon={<HiPhoto />} />
           <Toolbar.IconButton onClick={createFactSlicePanel} icon={<HiTable />} />
+          <Toolbar.IconButton onClick={openFactManager} icon={<HiRectangleStack />} />
           {/*<Toolbar.ToggleGroup asChild type="single">
             <Toolbar.ToggleItem onClick={toggleGridSnap} value="grid-snap" icon={<HiOutlineViewGrid />} />
           </Toolbar.ToggleGroup>

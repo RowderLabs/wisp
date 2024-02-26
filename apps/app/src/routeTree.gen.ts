@@ -15,7 +15,8 @@ import { Route as WorkspaceImport } from './routes/workspace'
 import { Route as IndexImport } from './routes/index'
 import { Route as WorkspaceIndexImport } from './routes/workspace.index'
 import { Route as WorkspaceCharactersImport } from './routes/workspace.characters'
-import { Route as WorkspaceEntityEntityIdImport } from './routes/workspace.entity.$entityId'
+import { Route as WorkspaceEntityEntityIdIndexImport } from './routes/workspace.entity.$entityId.index'
+import { Route as WorkspaceEntityEntityIdFactsImport } from './routes/workspace.entity.$entityId.facts'
 
 // Create/Update Routes
 
@@ -39,10 +40,17 @@ const WorkspaceCharactersRoute = WorkspaceCharactersImport.update({
   getParentRoute: () => WorkspaceRoute,
 } as any)
 
-const WorkspaceEntityEntityIdRoute = WorkspaceEntityEntityIdImport.update({
-  path: '/entity/$entityId',
-  getParentRoute: () => WorkspaceRoute,
-} as any)
+const WorkspaceEntityEntityIdIndexRoute =
+  WorkspaceEntityEntityIdIndexImport.update({
+    path: '/entity/$entityId/',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+
+const WorkspaceEntityEntityIdFactsRoute =
+  WorkspaceEntityEntityIdFactsImport.update({
+    path: '/entity/$entityId/facts',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -64,8 +72,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIndexImport
       parentRoute: typeof WorkspaceImport
     }
-    '/workspace/entity/$entityId': {
-      preLoaderRoute: typeof WorkspaceEntityEntityIdImport
+    '/workspace/entity/$entityId/facts': {
+      preLoaderRoute: typeof WorkspaceEntityEntityIdFactsImport
+      parentRoute: typeof WorkspaceImport
+    }
+    '/workspace/entity/$entityId/': {
+      preLoaderRoute: typeof WorkspaceEntityEntityIdIndexImport
       parentRoute: typeof WorkspaceImport
     }
   }
@@ -78,7 +90,8 @@ export const routeTree = rootRoute.addChildren([
   WorkspaceRoute.addChildren([
     WorkspaceCharactersRoute,
     WorkspaceIndexRoute,
-    WorkspaceEntityEntityIdRoute,
+    WorkspaceEntityEntityIdFactsRoute,
+    WorkspaceEntityEntityIdIndexRoute,
   ]),
 ])
 

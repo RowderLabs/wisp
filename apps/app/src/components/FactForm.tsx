@@ -49,11 +49,11 @@ export function FactForm({ facts, entityId }: FactFormProps) {
         submitFacts({ entity_id: entityId, fields: changed });
       }}
     >
-      <div className="p-8 bg-white rounded-md border grid grid-cols-2 items-center gap-4 text-sm max-w-[600px]">
+      <div className="p-4 bg-white rounded-md grid grid-cols-2 items-center gap-4 max-w-[1200px]">
         {facts.map((fact) => {
           return (
             <>
-              <p>{fact.name}</p>
+              <p className="font-semibold">{fact.name}</p>
               <InputField
                 key={fact.name}
                 id={fact.name}
@@ -69,3 +69,4 @@ export function FactForm({ facts, entityId }: FactFormProps) {
     </Form>
   );
 }
+

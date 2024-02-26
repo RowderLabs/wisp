@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import { rspc, useUtils } from "@wisp/client";
 import { Button, Dialog, DialogProps, Form, InputField } from "@wisp/ui";
 import { useDialogManager, useZodForm } from "@wisp/ui/src/hooks";
@@ -17,16 +16,14 @@ interface CharacterDialogProps extends DialogProps {
 export function CreateCharacterDialog({ open, onOpenChange, id, context }: CharacterDialogProps) {
   const form = useZodForm({ schema });
   const [dialogManager] = useDialogManager();
-  const navigate = useNavigate();
   const utils = useUtils();
 
   const { mutate: createCharacter } = rspc.useMutation(["characters.create"], {
     onSettled: () => {
       
     },
-    onSuccess: (character) => {
+    onSuccess: () => {
       utils.invalidateQueries(["characters.tree"]);
-      navigate({ to: "/workspace/characters/$characterId", params: { characterId: character.id } });
       dialogManager.removeDialog(id);
     },
   });

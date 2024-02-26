@@ -17,3 +17,7 @@ body {
   outline: 0;
   caret-color: #444;
 }
+
+.borderify, .borderify > * {
+  border: 1px solid gray !important;
+}
