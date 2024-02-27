@@ -21,3 +21,4 @@ rspc = { workspace = true }
 specta = "1.0.0"
 async-trait = "0.1.77"
 petgraph = "0.6.4"
+thiserror = "1.0.57"

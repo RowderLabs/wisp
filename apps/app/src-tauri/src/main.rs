@@ -1,13 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use snafu::ResultExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tauri::utils::assets::EmbeddedAssets;
 use tauri::Context;
 use wispcore::api;
 use wispcore::prisma::PrismaClient;
-use wispcore::seed::EntityGenerator;
 
 #[tokio::main]
 async fn main() -> Result<(), snafu::Whatever> {
@@ -28,7 +27,7 @@ async fn main() -> Result<(), snafu::Whatever> {
     Ok(())
 }
 
-async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>, snafu::Whatever> {
+async fn init_prisma_client(dev_data_dir: &Path) -> Result<Arc<PrismaClient>, snafu::Whatever> {
     #[cfg(target_os = "windows")]
     let db_url = format!("file:{}\\dev.db", dev_data_dir.display());
 
@@ -51,9 +50,9 @@ async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>,
         .await
         .whatever_context("Failed to push schema")?;
 
-    wispcore::seed::seed(&prisma, &dev_data_dir).await;
+    wispcore::seed::seed(&prisma, dev_data_dir).await;
 
-
+    
 
     Ok(prisma.into())
 }
