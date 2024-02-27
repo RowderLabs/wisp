@@ -1,12 +1,13 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use snafu::ResultExt;
-use tauri::utils::assets::EmbeddedAssets;
-use tauri::Context;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tauri::utils::assets::EmbeddedAssets;
+use tauri::Context;
 use wispcore::api;
 use wispcore::prisma::PrismaClient;
+use wispcore::seed::EntityGenerator;
 
 #[tokio::main]
 async fn main() -> Result<(), snafu::Whatever> {
@@ -14,7 +15,6 @@ async fn main() -> Result<(), snafu::Whatever> {
     let context = tauri::generate_context!();
     let dev_dir = init_dev(&context)?;
     let prisma_arc = init_prisma_client(&dev_dir).await?;
-
 
     tauri::Builder::default()
         .plugin(rspc::integrations::tauri::plugin(router, move || {
@@ -43,7 +43,6 @@ async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>,
         .await
         .whatever_context("Failed to initialize prisma client")?;
 
-
     #[cfg(debug_assertions)]
     prisma
         ._db_push()
@@ -52,7 +51,9 @@ async fn init_prisma_client(dev_data_dir: &PathBuf) -> Result<Arc<PrismaClient>,
         .await
         .whatever_context("Failed to push schema")?;
 
-    //wispcore::seed::seed(&prisma, &dev_data_dir).await;
+    wispcore::seed::seed(&prisma, &dev_data_dir).await;
+
+
 
     Ok(prisma.into())
 }
