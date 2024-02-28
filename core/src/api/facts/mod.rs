@@ -11,7 +11,7 @@ prisma::fact_on_entity::select!((filters: Vec<prisma::fact_on_entity::WhereParam
 //selects all facts for an entity with
 prisma::fact::select!(
     (entity_id: String) => FactWithValues {
-        name r#type options group: select {
+        id name r#type options group: select {
             name
         }
         entity_facts(
@@ -26,6 +26,7 @@ impl From<FactWithValues::Data> for Fact {
     fn from(data: FactWithValues::Data) -> Self {
         match data.r#type.as_str() {
             "text" => Fact::Text {
+                id: data.id.to_string(),
                 name: data.name,
                 value: data
                     .entity_facts
@@ -35,6 +36,7 @@ impl From<FactWithValues::Data> for Fact {
                 group_name: data.group.name,
             },
             "attr" => Fact::Attr {
+                id: data.id.to_string(),
                 name: data.name,
                 value: data
                     .entity_facts
@@ -156,18 +158,19 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
         })
         .mutation("update_many", |t| {
             t(|ctx: Ctx, payload: FactFormPayload| async move {
+                println!("{:#?}", payload);
                 for entry in payload.fields {
                     ctx.client
                         .fact_on_entity()
                         .upsert(
-                            prisma::fact_on_entity::entity_id_fact_name(
+                            prisma::fact_on_entity::entity_id_fact_id(
                                 payload.entity_id.clone(),
-                                entry.name.clone(),
+                                entry.id.to_string(),
                             ),
                             prisma::fact_on_entity::create(
                                 entry.value.clone().into(),
                                 prisma::entity::id::equals(payload.entity_id.clone()),
-                                prisma::fact::name::equals(entry.name),
+                                prisma::fact::id::equals(entry.id.to_string()),
                                 vec![],
                             ),
                             vec![prisma::fact_on_entity::value::set(entry.value.into())],

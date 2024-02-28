@@ -5,11 +5,13 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "type")]
 pub enum Fact {
     Text {
+        id: String,
         name: String,
         value: String,
         group_name: String,
     },
     Attr {
+        id: String,
         name: String,
         value: Vec<String>,
         options: Vec<String>,
@@ -43,5 +45,5 @@ pub struct FactSlice {
 #[derive(Debug, Deserialize, specta::Type)]
 pub struct FactEntry {
     pub value: FactValue,
-    pub name: String,
+    pub id: String,
 }

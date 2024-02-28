@@ -18,13 +18,13 @@ interface FactFormProps {
 export function FactForm({ facts, entityId }: FactFormProps) {
   const form = useZodForm({
     schema: formSchema,
-    defaultValues: { fields: Object.fromEntries(facts.map((fact) => [fact.name, fact.value])) },
+    defaultValues: { fields: Object.fromEntries(facts.map((fact) => [fact.id, fact.value])) },
   });
   const isFirstRender = useIsFirstRender();
 
   useEffect(() => {
     if (!isFirstRender) {
-      form.reset({ fields: Object.fromEntries(facts.map((fact) => [fact.name, fact.value])) });
+      form.reset({ fields: Object.fromEntries(facts.map((fact) => [fact.id, fact.value])) });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [facts]);
@@ -38,25 +38,25 @@ export function FactForm({ facts, entityId }: FactFormProps) {
     },
   });
   const submitHandler: SubmitHandler<z.infer<typeof formSchema>> = (data) => {
-    console.log('submitting...')
+    console.log("submitting...");
     const changed = Object.entries(data.fields)
       .filter(([key]) => {
         const dirtyFields = form.formState.dirtyFields.fields;
         return dirtyFields && dirtyFields[key] === true;
       })
-      .map(([key, entry]) => ({ value: entry, name: key }));
+      .map(([key, entry]) => ({ value: entry, id: key }));
     submitFacts({ entity_id: entityId, fields: changed });
   };
 
   const debouncedSubmit = useDebounceCallback(submitHandler, 500);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleSubmit = useCallback(() => form.handleSubmit(debouncedSubmit)(), [])
+  const handleSubmit = useCallback(() => form.handleSubmit(debouncedSubmit)(), []);
 
   //TODO: debounced submit hook
   useEffect(() => {
     const subscription = form.watch(() => {
       if (form.formState.isValid && !form.formState.isValidating) {
-        handleSubmit()
+        handleSubmit();
       }
     });
     return () => subscription.unsubscribe();
@@ -65,12 +65,15 @@ export function FactForm({ facts, entityId }: FactFormProps) {
     <Form form={form}>
       <div className="p-4 bg-white rounded-md grid grid-cols-2 items-center gap-4 max-w-[1200px]">
         {facts.map((fact) => {
-          return (
-            <>
-              <p className="font-semibold">{fact.name}</p>
-              <InputField key={fact.name} id={fact.name} {...form.register(`fields.${fact.name}`)} />
-            </>
-          );
+          if (fact.type === "text") {
+            return (
+              <>
+                <p className="font-semibold">{fact.name}</p>
+                <InputField key={fact.id} id={fact.id} {...form.register(`fields.${fact.id}`)} />
+              </>
+            );
+          }
+          else return null
         })}
       </div>
     </Form>
