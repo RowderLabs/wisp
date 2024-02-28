@@ -48,7 +48,7 @@ export function FactForm({ facts, entityId }: FactFormProps) {
     submitFacts({ entity_id: entityId, fields: changed });
   };
 
-  const debouncedSubmit = useDebounceCallback(submitHandler, 500);
+  const debouncedSubmit = useDebounceCallback(submitHandler, 1000);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSubmit = useCallback(() => form.handleSubmit(debouncedSubmit)(), []);
 

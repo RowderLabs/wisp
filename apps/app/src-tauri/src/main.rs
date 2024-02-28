@@ -10,7 +10,7 @@ use wispcore::prisma::PrismaClient;
 
 #[tokio::main]
 async fn main() -> Result<(), snafu::Whatever> {
-    let router = api::new().build().arced();
+    let router = api::new().arced();
     let context = tauri::generate_context!();
     let dev_dir = init_dev(&context)?;
     let prisma_arc = init_prisma_client(&dev_dir).await?;

@@ -158,7 +158,6 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
         })
         .mutation("update_many", |t| {
             t(|ctx: Ctx, payload: FactFormPayload| async move {
-                println!("{:#?}", payload);
                 for entry in payload.fields {
                     ctx.client
                         .fact_on_entity()

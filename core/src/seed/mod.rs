@@ -1,6 +1,4 @@
 use std::{
-    collections::{HashMap, HashSet},
-    error::Error,
     io::Read,
     path::Path,
 };
@@ -10,9 +8,9 @@ use crate::{
     prisma::{self, PrismaClient},
     seed::{entity::Seedable, facts::FactGenerator},
 };
-use async_trait::async_trait;
+
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use snafu::ResultExt;
 
 use self::facts::FactSeedYaml;
