@@ -38,7 +38,7 @@ model FactGroup {
 
 model Fact {
     id Int @id @default(autoincrement())
-    name String @unique
+    name String
     type String
     options String?
     groupId Int
@@ -60,9 +60,9 @@ model FactOnEntity {
     value String
     entityId String
     entity Entity @relation(fields: [entityId], references: [id])
-    factName String 
-    fact Fact @relation(fields: [factName], references: [name])
-    @@id([entityId, factName])
+    factId Int
+    fact Fact @relation(fields: [factId], references: [id])
+    @@id([entityId, factId])
 }
 
 model Entity {

@@ -24,18 +24,17 @@ pub struct FactGenerator {
 }
 
 #[derive(Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
 pub enum FactTypeLiteral {
-    #[serde(rename = "text")]
     Text,
-    #[serde(rename = "attr")]
-    Attr,
+    Attr { options: Vec<String> },
 }
 
 impl ToString for FactTypeLiteral {
     fn to_string(&self) -> String {
         match self {
             FactTypeLiteral::Text => "text".to_string(),
-            FactTypeLiteral::Attr => "location".to_string(),
+            FactTypeLiteral::Attr { options: _ } => "attr".to_string(),
         }
     }
 }
@@ -77,13 +76,26 @@ impl Seedable<FactGeneratorEntry> for FactGenerator {
         if let Some(group_id) = self.group_id {
             let mut queries = vec![];
             for fact in self.seed_data.iter() {
-                let query = client.fact().create(
-                    fact.name.to_string(),
-                    fact.r#type.to_string(),
-                    prisma::fact_group::id::equals(group_id),
-                    vec![],
-                );
-                queries.push(query);
+                match &fact.r#type {
+                    FactTypeLiteral::Text => {
+                        queries.push(client.fact().create(
+                            fact.name.to_string(),
+                            fact.r#type.to_string(),
+                            prisma::fact_group::id::equals(group_id),
+                            vec![],
+                        ));
+                    }
+                    FactTypeLiteral::Attr { options } => {
+                        queries.push(client.fact().create(
+                            fact.name.to_string(),
+                            fact.r#type.to_string(),
+                            prisma::fact_group::id::equals(group_id),
+                            vec![prisma::fact::options::set(Some(serde_json::to_string(
+                                &options,
+                            )?))],
+                        ));
+                    }
+                }
             }
             client._batch(queries).await?;
         }

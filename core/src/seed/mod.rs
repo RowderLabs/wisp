@@ -13,6 +13,7 @@ use crate::{
 use async_trait::async_trait;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use snafu::ResultExt;
 
 use self::facts::FactSeedYaml;
 
@@ -22,29 +23,15 @@ pub mod facts;
 #[derive(Debug, Deserialize)]
 pub struct EntitySeedYaml<T> {
     pub character: T,
+    pub location: T
 }
 
 pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &Path) {
     //reset db
 
-    let mut file = std::fs::File::open(seed_path.join("facts.yaml")).expect("Unable to open file");
-
-    let mut fact_contents = String::new();
-    file.read_to_string(&mut fact_contents)
-        .expect("could not read facts");
-    let fact_yaml = FactSeedYaml(serde_yaml::from_str(&fact_contents).expect("could not yaml"));
-
-    for group in fact_yaml.0.character.into_iter() {
-        FactGenerator::default()
-            .ensure_group(&group.name, EntityType::Character, prisma)
-            .await
-            .unwrap()
-            .get_seed_data(group.facts)
-            .generate(prisma)
-            .await
-            .unwrap();
-    }
-
+    seed_facts(&seed_path.join("facts.yaml"), prisma)
+        .await
+        .unwrap();
 
     let characters_id = entity_gen::generate_id("Characters");
     let _characters = prisma
@@ -75,4 +62,37 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &Path) {
         .exec()
         .await
         .unwrap();
+}
+
+pub async fn seed_facts(path: &Path, prisma: &PrismaClient) -> Result<(), snafu::Whatever> {
+    let mut file = std::fs::File::open(path).expect("Unable to open file");
+
+    let mut fact_contents = String::new();
+    file.read_to_string(&mut fact_contents)
+        .expect("could not read facts");
+    let fact_yaml = FactSeedYaml(serde_yaml::from_str(&fact_contents).expect("could not yaml"));
+
+    for group in fact_yaml.0.character.into_iter() {
+        FactGenerator::default()
+            .ensure_group(&group.name, EntityType::Character, prisma)
+            .await
+            .whatever_context("Failed to create fact group for characters")?
+            .get_seed_data(group.facts)
+            .generate(prisma)
+            .await
+            .whatever_context(format!("Failed to create facts for fact group {}", group.name))?;
+    }
+
+    for group in fact_yaml.0.location.into_iter() {
+        FactGenerator::default()
+            .ensure_group(&group.name, EntityType::Location, prisma)
+            .await
+            .whatever_context("Failed to create fact group for characters")?
+            .get_seed_data(group.facts)
+            .generate(prisma)
+            .await
+            .whatever_context(format!("Failed to create facts for fact group {}", group.name))?;
+    }
+
+    Ok(())
 }

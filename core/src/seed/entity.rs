@@ -40,7 +40,10 @@ pub enum SeedError {
     DatabaseError(#[from] prisma_client_rust::QueryError),
     #[error("failed to find")]
     NotFoundError,
+    #[error("Failed to serialize")]
+    JSONError(#[from] serde_json::Error)
 }
+
 
 
 #[async_trait]
