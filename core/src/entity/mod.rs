@@ -7,7 +7,7 @@ use crate::prisma;
 
 prisma::entity::select!(Entity {id path name r#type is_collection});
 
-#[derive(Serialize, Deserialize, specta::Type)]
+#[derive(Serialize, Deserialize, specta::Type, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum EntityType {
     Character,

@@ -1,7 +1,4 @@
-use std::{
-    io::Read,
-    path::Path,
-};
+use std::{io::Read, path::Path};
 
 use crate::{
     entity::{entity_gen, EntityType},
@@ -9,8 +6,7 @@ use crate::{
     seed::{entity::Seedable, facts::FactGenerator},
 };
 
-use itertools::Itertools;
-use serde::{Deserialize};
+use serde::Deserialize;
 use snafu::ResultExt;
 
 use self::facts::FactSeedYaml;
@@ -20,8 +16,8 @@ pub mod facts;
 
 #[derive(Debug, Deserialize)]
 pub struct EntitySeedYaml<T> {
-    pub character: T,
-    pub location: T
+    entity: EntityType,
+    data: Vec<T>,
 }
 
 pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &Path) {
@@ -70,26 +66,20 @@ pub async fn seed_facts(path: &Path, prisma: &PrismaClient) -> Result<(), snafu:
         .expect("could not read facts");
     let fact_yaml = FactSeedYaml(serde_yaml::from_str(&fact_contents).expect("could not yaml"));
 
-    for group in fact_yaml.0.character.into_iter() {
-        FactGenerator::default()
-            .ensure_group(&group.name, EntityType::Character, prisma)
-            .await
-            .whatever_context("Failed to create fact group for characters")?
-            .get_seed_data(group.facts)
-            .generate(prisma)
-            .await
-            .whatever_context(format!("Failed to create facts for fact group {}", group.name))?;
-    }
-
-    for group in fact_yaml.0.location.into_iter() {
-        FactGenerator::default()
-            .ensure_group(&group.name, EntityType::Location, prisma)
-            .await
-            .whatever_context("Failed to create fact group for characters")?
-            .get_seed_data(group.facts)
-            .generate(prisma)
-            .await
-            .whatever_context(format!("Failed to create facts for fact group {}", group.name))?;
+    for seed_entry in fact_yaml.0 {
+        for group in seed_entry.data.into_iter() {
+            FactGenerator::default()
+                .ensure_group(&group.name, seed_entry.entity.clone(), prisma)
+                .await
+                .whatever_context("Failed to create fact group for characters")?
+                .get_seed_data(group.facts)
+                .generate(prisma)
+                .await
+                .whatever_context(format!(
+                    "Failed to create facts for fact group {}",
+                    group.name
+                ))?;
+        }
     }
 
     Ok(())

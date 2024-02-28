@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[derive(Debug, Deserialize)]
-pub struct FactSeedYaml(pub EntitySeedYaml<Vec<FactGeneratorGroup>>);
+pub struct FactSeedYaml(pub Vec<EntitySeedYaml<FactGeneratorGroup>>);
 
 #[derive(Debug, Deserialize)]
 pub struct FactGeneratorGroup {
