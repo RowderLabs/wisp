@@ -9,6 +9,7 @@ pub mod facts;
 pub mod links;
 pub mod locations;
 pub mod panels;
+pub mod tag;
 
 #[derive(Clone, Debug)]
 pub struct Ctx {
@@ -52,6 +53,7 @@ pub fn new() -> Router {
                 Ok(result)
             })
         })
+        .merge("tags.", tag::entity_tag_router())
         .merge("facts.", facts::facts_router())
         .merge("characters.", characters::characters_router())
         .merge("locations.", locations::locations_router())
