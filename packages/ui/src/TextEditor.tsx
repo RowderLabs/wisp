@@ -97,7 +97,7 @@ export default function TextEditor({ className, features, editorTheme, onChange,
         )}
 
         <RichTextPlugin
-          contentEditable={<ContentEditable className="editor editor-input cursor-text" />}
+          contentEditable={<ContentEditable spellCheck={false} className="editor editor-input cursor-text" />}
           placeholder={null}
           ErrorBoundary={LexicalErrorBoundary}
         />
