@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { NotFound } from "../components/NotFound";
 import { FactManager } from "../components/FactManager";
 import { EntityTypeSchema } from "./workspace.entity.$entityId.index";
@@ -21,6 +21,7 @@ function EntityFactsPage() {
     <>
       {tags?.map(t => <p className="inline-block rounded-full p-0.5 text-sm font-semibold bg-blue-100 text-blue-400" key={t.tagId}>{t.tag.name}</p>)}
      <FactManager entityId={params.entityId} entityType={searchParams.type}/>
+     <Link to="/workspace/entity/tree">Tree</Link>
     </>
    
   )
