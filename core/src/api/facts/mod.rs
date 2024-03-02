@@ -1,7 +1,9 @@
 use super::Ctx;
-use crate::entity::EntityType;
-use crate::fact::{Fact, FactEntry, FactSlice};
-use crate::prisma;
+use crate::{
+    entity::EntityType,
+    fact::{Fact, FactEntry, FactSlice},
+    prisma,
+};
 use itertools::Itertools;
 use rspc::RouterBuilder;
 use serde::Deserialize;
@@ -59,7 +61,7 @@ impl From<FactWithValues::Data> for Fact {
 struct FactFilters {
     group_id: i32,
     entity_id: String,
-    entity_type: String
+    entity_type: String,
 }
 
 #[derive(Debug, Deserialize, specta::Type)]
@@ -83,7 +85,7 @@ pub fn facts_router() -> RouterBuilder<Ctx> {
                     .fact()
                     .find_many(vec![prisma::fact::group::is(vec![
                         prisma::fact_group::id::equals(payload.group_id),
-                        prisma::fact_group::entity::equals(payload.entity_type)
+                        prisma::fact_group::entity::equals(payload.entity_type),
                     ])])
                     .select(FactWithValues::select(payload.entity_id))
                     .exec()

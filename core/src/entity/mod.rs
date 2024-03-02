@@ -1,10 +1,8 @@
-use std::collections::{HashMap, HashSet};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-
+use std::collections::{HashMap, HashSet};
 
 use crate::prisma;
-
 
 prisma::entity::select!(Entity {id path name r#type is_collection});
 
@@ -13,6 +11,8 @@ prisma::entity::select!(Entity {id path name r#type is_collection});
 pub enum EntityType {
     Character,
     Location,
+    MagicSystem,
+    Government,
 }
 
 impl ToString for EntityType {
@@ -20,6 +20,8 @@ impl ToString for EntityType {
         match self {
             EntityType::Character => "character".to_string(),
             EntityType::Location => "location".to_string(),
+            EntityType::MagicSystem => "magic_system".to_string(),
+            EntityType::Government => "government".to_string(),
         }
     }
 }
@@ -89,7 +91,11 @@ pub fn create_file_tree(entities: &Vec<Entity::Data>) -> HashMap<String, FileTre
 
 pub mod entity_gen {
     pub fn generate_id(name: &str) -> String {
-        format!("{}-{}", name.replace(' ', "-").to_lowercase(), nanoid::nanoid!(5))
+        format!(
+            "{}-{}",
+            name.replace(' ', "-").to_lowercase(),
+            nanoid::nanoid!(5)
+        )
     }
 
     pub fn construct_path(id: &str, parent_path: &Option<&str>) -> String {

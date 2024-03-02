@@ -1,12 +1,9 @@
 use super::{Ctx, RouterBuilder};
 use crate::{
-    entity::{create_file_tree, Entity, EntityType, entity_gen},
+    entity::{create_file_tree, entity_gen, Entity, EntityType},
     prisma::{self},
 };
 use serde::Deserialize;
-
-
-
 
 #[derive(Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -15,8 +12,6 @@ struct CreateCharacter {
     parent: Option<String>,
     is_collection: bool,
 }
-
-
 
 pub fn characters_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
@@ -37,13 +32,14 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                 let characters = ctx
                     .client
                     .entity()
-                    .find_many(vec![prisma::entity::r#type::equals(EntityType::Character.to_string())]) //list of filters (empty for now because not filtering)
+                    .find_many(vec![prisma::entity::r#type::equals(
+                        EntityType::Character.to_string(),
+                    )]) //list of filters (empty for now because not filtering)
                     .select(Entity::select())
                     .exec()
                     .await
                     .unwrap();
 
-                
                 create_file_tree(&characters)
             })
         })

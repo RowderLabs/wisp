@@ -1,12 +1,16 @@
-use async_trait::async_trait;
-use serde::Deserialize;
+use std::{io::Read, path::Path};
 
-use super::entity::{SeedError, Seedable};
-use super::EntitySeedYaml;
+use super::{
+    seedable::{SeedError, Seedable},
+    EntitySeedYaml,
+};
 use crate::{
     entity::EntityType,
     prisma::{self, PrismaClient},
 };
+use async_trait::async_trait;
+use serde::Deserialize;
+use snafu::ResultExt;
 
 #[derive(Debug, Deserialize)]
 pub struct FactSeedYaml(pub Vec<EntitySeedYaml<FactGeneratorGroup>>);
@@ -109,4 +113,31 @@ impl Seedable<FactGeneratorEntry> for FactGenerator {
             ..self
         }
     }
+}
+
+pub async fn seed_facts(path: &Path, prisma: &PrismaClient) -> Result<(), snafu::Whatever> {
+    let mut file = std::fs::File::open(path).expect("Unable to open file");
+
+    let mut fact_contents = String::new();
+    file.read_to_string(&mut fact_contents)
+        .expect("could not read facts");
+    let fact_yaml = FactSeedYaml(serde_yaml::from_str(&fact_contents).expect("could not yaml"));
+
+    for seed_entry in fact_yaml.0 {
+        for group in seed_entry.data.into_iter() {
+            FactGenerator::default()
+                .ensure_group(&group.name, seed_entry.entity.clone(), prisma)
+                .await
+                .whatever_context("Failed to create fact group for characters")?
+                .get_seed_data(group.facts)
+                .generate(prisma)
+                .await
+                .whatever_context(format!(
+                    "Failed to create facts for fact group {}",
+                    group.name
+                ))?;
+        }
+    }
+
+    Ok(())
 }

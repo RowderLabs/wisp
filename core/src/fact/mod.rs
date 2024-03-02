@@ -35,11 +35,10 @@ impl From<FactValue> for String {
     }
 }
 
-
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 pub struct FactSlice {
     pub name: String,
-    pub facts: Vec<Fact>
+    pub facts: Vec<Fact>,
 }
 
 #[derive(Debug, Deserialize, specta::Type)]

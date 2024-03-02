@@ -1,10 +1,12 @@
-use async_trait::async_trait;
-use serde::Deserialize;
-
 use super::{
-    entity::{SeedError, Seedable},
+    seedable::{SeedError, Seedable},
     EntitySeedYaml,
 };
+use async_trait::async_trait;
+use serde::Deserialize;
+use snafu::ResultExt;
+use std::{io::Read, path::Path};
+
 use crate::{entity::EntityType, prisma::PrismaClient};
 
 #[derive(Debug, Deserialize)]
@@ -53,4 +55,24 @@ impl Seedable<String> for EntityTagGenerator {
             ..self
         }
     }
+}
+
+pub async fn seed_tags(path: &Path, prisma: &PrismaClient) -> Result<(), snafu::Whatever> {
+    let mut file = std::fs::File::open(path).expect("Unable to open file");
+
+    let mut fact_contents = String::new();
+    file.read_to_string(&mut fact_contents)
+        .expect("could not read facts");
+    let tags_yaml = EntityTagYAML(serde_yaml::from_str(&fact_contents).expect("could not yaml"));
+
+    for seed_entry in tags_yaml.0 {
+        EntityTagGenerator::default()
+            .entity_type(seed_entry.entity)
+            .get_seed_data(seed_entry.data)
+            .generate(prisma)
+            .await
+            .whatever_context("Failed to generate seed for tags")?;
+    }
+
+    Ok(())
 }

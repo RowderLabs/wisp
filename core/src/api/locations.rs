@@ -1,5 +1,7 @@
-use crate::entity::{create_file_tree, entity_gen, Entity, EntityType};
-use crate::prisma;
+use crate::{
+    entity::{create_file_tree, entity_gen, Entity, EntityType},
+    prisma,
+};
 use rspc::RouterBuilder;
 use serde::Deserialize;
 

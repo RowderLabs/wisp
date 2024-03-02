@@ -2,7 +2,6 @@ use super::Ctx;
 use crate::prisma::{self};
 use rspc::RouterBuilder;
 
-
 pub fn links_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new().query("all", |t| {
         t(|ctx: Ctx, _: ()| async move {
