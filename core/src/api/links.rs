@@ -9,7 +9,7 @@ pub fn links_router() -> RouterBuilder<Ctx> {
             ctx.client
                 .entity()
                 .find_many(vec![])
-                .select(prisma::entity::select!({id name}))
+                .select(prisma::entity::select!({id name r#type}))
                 .exec()
                 .await
                 .map_err(Into::into)

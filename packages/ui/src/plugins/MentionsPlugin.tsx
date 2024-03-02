@@ -10,26 +10,29 @@ import {
 import clsx from "clsx";
 import { createPortal } from "react-dom";
 import { rspc } from "@wisp/client";
+import { EntityType } from "@wisp/client/src/bindings";
 
 class MentionOption extends MenuOption {
   // What shows up in the editor
   id: string;
   name: string;
+  entityType: string;
   // Icon for display
   // For extra searching.
   // TBD
   // What happens when you select this option?
 
-  constructor(id: string, name: string) {
+  constructor(id: string, name: string, entityType: EntityType) {
     super(name);
     this.name = name;
     this.id = id;
+    this.entityType = entityType
   }
 }
 
 export default function MentionsPlugin() {
   const { data: mentions } = rspc.useQuery(["links.all"], {
-    select: (data) => data.map((link) => new MentionOption(link.id, link.name)),
+    select: (data) => data.map((link) => new MentionOption(link.id, link.name, link.type as EntityType)),
   });
   const [editor] = useLexicalComposerContext();
 
@@ -43,7 +46,7 @@ export default function MentionsPlugin() {
     return editor.registerCommand(
       INSERT_MENTION_NODE_COMMAND,
       (payload) => {
-        const mention = $createMentionNode(payload.id, payload.name);
+        const mention = $createMentionNode(payload.id, payload.name, payload.entityType);
         $insertNodes([mention, $createTextNode(" ")]);
         return true;
       },
@@ -67,7 +70,10 @@ export default function MentionsPlugin() {
       editor.update(() => {
         nodeToRemove?.remove();
         console.log(matchingString);
-        editor.dispatchCommand(INSERT_MENTION_NODE_COMMAND, { id: selectedOption.id, name: selectedOption.name });
+        editor.dispatchCommand(INSERT_MENTION_NODE_COMMAND, {
+          id: selectedOption.id, name: selectedOption.name,
+          entityType: selectedOption.entityType as EntityType
+        });
         closeMenu();
       });
     },

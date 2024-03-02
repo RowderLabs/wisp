@@ -72,5 +72,24 @@ model Entity {
     path String @unique
     isCollection Boolean
     facts FactOnEntity[]
+    tags TagOnEntity[]
     canvas Canvas?
+}
+
+
+model EntityTag {
+    id Int @id @default(autoincrement())
+    name String
+    //entity type
+    entityType String
+    entities TagOnEntity[] 
+}
+
+model TagOnEntity {
+    entity Entity @relation(fields: [entityId], references: [id])
+    entityId String
+    tag EntityTag @relation(fields: [tagId], references: [id])
+    tagId Int
+    @@id([entityId, tagId])
+
 }

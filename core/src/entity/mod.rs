@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::prisma;
 
+
 prisma::entity::select!(Entity {id path name r#type is_collection});
 
 #[derive(Serialize, Deserialize, specta::Type, Debug, Clone)]
