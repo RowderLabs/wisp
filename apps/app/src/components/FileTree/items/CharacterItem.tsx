@@ -1,7 +1,7 @@
+import { ContextMenu } from "@wisp/ui";
+import { CreateCharacterDialog } from "../../CreateCharacterDialog";
 import { Link } from "@tanstack/react-router";
-import { rspc } from "@wisp/client";
-import { ContextMenu, TreeView } from "@wisp/ui";
-import { TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
+import { useDialogManager } from "@wisp/ui/src/hooks";
 import {
   HiFolder,
   HiChevronDown,
@@ -11,57 +11,18 @@ import {
   HiOutlineTrash,
   HiOutlineFolder,
 } from "react-icons/hi2";
-import { useDeleteCharacter } from "../hooks/useDeleteCharacter";
-import { ConfirmationDialog } from "./ConfirmationDialog";
-import { CreateCharacterDialog } from "./CreateCharacterDialog";
+import { FileTreeItemProps } from "../FileTreeItemResolver";
 
-export function CharactersFileTree() {
-  const { data: treeData, isLoading, isError } = rspc.useQuery(["tree.characters"]);
-  const { deleteCharacter } = useDeleteCharacter();
-
-  const [dialogManager] = useDialogManager();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, treeApi] = useTreeView({
-    onDelete: (id) =>
-      dialogManager.createDialog(ConfirmationDialog, {
-        id: `delete-character-${id}`,
-        message: "Are you sure you want to delete this character",
-        onConfirm: () => deleteCharacter(id),
-      }),
-  });
-
-  if (isLoading) {
-    return <span>loading...</span>;
-  }
-
-  if (isError) {
-    throw new Error("Failed to get tree");
-  }
-
-  return (
-    <TreeView
-      renderItem={(treeItem) => <CharacterItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
-      onExpansionChange={treeApi.toggleExpand}
-      treeData={treeData}
-      indentation={25}
-      {...treeApi}
-    />
-  );
-}
-
+interface CharacterItemProps extends FileTreeItemProps {}
 //TODO: use new TreeNode<TData>
-function CharacterItem({
+export function CharacterItem({
   isCollection,
   name,
   path,
   expanded,
   onDelete,
   id,
-}: Omit<TreeViewNode, "children"> & {
-  path: string | null;
-  expanded?: boolean;
-  onDelete: (id: string) => void;
-}) {
+}: CharacterItemProps) {
   const [manager] = useDialogManager();
 
   return isCollection ? (

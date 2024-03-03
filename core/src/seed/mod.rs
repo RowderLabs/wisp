@@ -5,7 +5,7 @@ use crate::{
 use serde::Deserialize;
 use std::path::Path;
 
-use self::facts::seed_facts;
+
 
 pub mod entity;
 pub mod entity_tag;
@@ -18,7 +18,7 @@ pub struct EntitySeedYaml<T> {
     data: Vec<T>,
 }
 
-pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &Path) {
+pub async fn seed(prisma: &prisma::PrismaClient, _seed_path: &Path) {
     //reset db
     
     let characters_id = entity_gen::generate_id("Characters");
