@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { DndContext, Modifier, MouseSensor, useSensor } from "@dnd-kit/core";
 import { PropsWithChildren } from "react";
 import { Transform, TransformEvent } from "./Transform";
@@ -17,6 +17,8 @@ interface DraggablCanvasItemType {
 type DraggableCanvasProps<T extends DraggablCanvasItemType>  = {
   id: string;
   items: T[];
+  selected: string | undefined,
+  onSelectionChange: (id: string | undefined) => void;
   renderItem: (item: T) => React.ReactNode;
   onItemTransform: (event: TransformEvent) => void;
   onItemDelete: (id: string) => void;
@@ -25,8 +27,10 @@ type DraggableCanvasProps<T extends DraggablCanvasItemType>  = {
 
 export function DraggableCanvas<T extends DraggablCanvasItemType>({
   items,
+  selected,
   onItemTransform,
   onItemDelete,
+  onSelectionChange,
   modifiers,
   renderItem,
   children,
@@ -36,9 +40,8 @@ export function DraggableCanvas<T extends DraggablCanvasItemType>({
   });
 
   
-  const [selected, setSelected] = useState<string>();
   const canvasRef = useRef<HTMLDivElement>(null)
-  useClickExact(canvasRef, () => setSelected(undefined))
+  useClickExact(canvasRef, () => onSelectionChange(undefined))
 
   return (
     <div ref={canvasRef} className="w-full h-full">
@@ -54,7 +57,7 @@ export function DraggableCanvas<T extends DraggablCanvasItemType>({
             <DraggableCanvasItem
               selected={selected === item.id}
               canMove={selected !== item.id}
-              onSelect={(id) => setSelected(id)}
+              onSelect={(id) => onSelectionChange(id)}
               onDelete={onItemDelete}
             >
               {renderItem(item)}

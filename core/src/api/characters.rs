@@ -26,23 +26,6 @@ pub fn characters_router() -> RouterBuilder<Ctx> {
                     .map_err(Into::into)
             })
         })
-        .query("tree", |t| {
-            t(|ctx: Ctx, _: ()| async move {
-                //takes no arguments
-                let characters = ctx
-                    .client
-                    .entity()
-                    .find_many(vec![prisma::entity::r#type::equals(
-                        EntityType::Character.to_string(),
-                    )]) //list of filters (empty for now because not filtering)
-                    .select(Entity::select())
-                    .exec()
-                    .await
-                    .unwrap();
-
-                create_file_tree(&characters)
-            })
-        })
         .mutation("create", |t| {
             t(|ctx: Ctx, character_details: CreateCharacter| async move {
                 let CreateCharacter {

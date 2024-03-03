@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { NotFound } from "../components/NotFound";
-import { Banner, Toolbar, DraggableCanvas, TextboxPanel, ImagePanel, TransformEvent } from "@wisp/ui";
+import { Banner, Toolbar, DraggableCanvas, TextboxPanel, ImagePanel } from "@wisp/ui";
 import { PropsWithChildren } from "react";
 import { HiTable } from "react-icons/hi";
 import { HiMiniDocumentText, HiPhoto, HiRectangleStack } from "react-icons/hi2";
@@ -8,14 +8,14 @@ import { Breadcrumbs } from "../components/Breadcrumbs";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { FactSlicePanel } from "../panels/factslice";
 import { rspc, useUtils } from "@wisp/client";
-import { useDebouncedDraft, useDialogManager } from "@wisp/ui/src/hooks";
+import { useDialogManager, useDraggableCanvas } from "@wisp/ui/src/hooks";
 import { useCreatePanel } from "../hooks/useCreatePanel";
 import { useDeletePanel } from "../hooks/useDeletePanel";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { ImageUploadDialog } from "../components/ImageUploadDialog";
 import { Panel } from "@wisp/client/src/bindings";
-import React from "react";
 import { z } from "zod";
+import { useDebouncedTransform } from "../hooks/useDebouncedTransform";
 
 export const EntityTypeSchema = z.object({ type: z.enum(["character", "location"]) });
 
@@ -36,47 +36,32 @@ export const Route = createFileRoute("/workspace/entity/$entityId/")({
 
 function EntityPage() {
   //utils
-  const utils = useUtils();
-
   //data from route
   const canvasPreload = Route.useLoaderData();
   const searchParams = Route.useSearch();
   const params = Route.useParams();
+  const utils = useUtils()
+
+  const [debouncedTransform] = useDebouncedTransform({entityId: params.entityId})
+
 
   //canvas
-  const { data: canvas } = rspc.useQuery(["canvas.for_entity", params.entityId], {
-    placeholderData: canvasPreload,
-  });
-
-  const { mutate: commitTransform } = rspc.useMutation("panels.transform", {
-    onError: (e) => {
-      console.error(e);
+  const [canvas, handlers] = useDraggableCanvas({
+    preloaded: canvasPreload,
+    entityId: params.entityId,
+    onItemTransform: debouncedTransform,
+    onItemDelete: (id) => {
+      dialogManager.createDialog(ConfirmationDialog, {
+        id: `confirm-delete-${id}`,
+        message: `Are you sure you want to delete this panel?`,
+        onConfirm: () => deletePanel(id),
+      });
     },
   });
 
-  const [draft, setDraft] = useDebouncedDraft<TransformEvent>({
-    duration: 500,
-    callback: commitTransform,
-  });
-
-  React.useLayoutEffect(() => {
-    if (!draft) return;
-    const cachedQueryData = utils.getQueryData(["canvas.for_entity", params.entityId]);
-    const cachedPanel = cachedQueryData?.panels.find((panel) => panel.id === draft?.id);
-    const cachedPanels = cachedQueryData?.panels.filter((panel) => panel.id !== draft?.id);
-
-    if (cachedQueryData && cachedPanel && cachedPanels) {
-      utils.setQueryData(["canvas.for_entity", params.entityId], {
-        ...cachedQueryData,
-        panels: [...cachedPanels, { ...cachedPanel, ...draft }],
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft]);
-
   //dialog stuff
   const [dialogManager] = useDialogManager();
-
+  
   //panels
   const createPanelWithType = useCreatePanel(canvas!.id);
   const { deletePanel } = useDeletePanel();
@@ -114,7 +99,7 @@ function EntityPage() {
       context: { entityId: params.entityId, entityType: searchParams.type },
     });*/
   };
-
+  
   return (
     <div className="w-full flex flex-col" style={{ height: "100vh", overflowY: "auto" }}>
       <Banner className="bg-slate-300 relative"></Banner>
@@ -133,20 +118,13 @@ function EntityPage() {
 
         {canvas && (
           <DraggableCanvas<Panel>
-            onItemDelete={(id) => {
-              dialogManager.createDialog(ConfirmationDialog, {
-                id: `confirm-delete-${id}`,
-                message: `Are you sure you want to delete this panel?`,
-                onConfirm: () => deletePanel(id),
-              });
-            }}
-            id={canvas.id}
-            items={canvas.panels}
+            {...handlers}
+            {...canvas}
             renderItem={(item) => {
               if (item.panelType === "textbox") {
                 return new TextboxPanel()
                   .getClientProps({
-                    editable: true,
+                    editable: canvas.selected === item.id,
                     pluginOpts: { onChange: { debounce: { duration: 500 } } },
                     onChange: (editorState) => {
                       setPanelContent({
@@ -169,7 +147,6 @@ function EntityPage() {
 
               return null;
             }}
-            onItemTransform={setDraft}
           ></DraggableCanvas>
         )}
       </div>
@@ -184,3 +161,4 @@ function DraggableCanvasToolbar({ children }: PropsWithChildren) {
     </div>
   );
 }
+
