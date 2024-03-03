@@ -1,35 +1,31 @@
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use strum::EnumString;
+use std::{collections::{HashMap, HashSet}, str::FromStr};
 
 use crate::prisma;
 
 prisma::entity::select!(Entity {id path name r#type is_collection});
 
-#[derive(Serialize, Deserialize, specta::Type, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
+#[derive(Serialize, Deserialize, specta::Type, Debug, Clone, PartialEq, EnumString, strum::Display)]
+#[strum(serialize_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum EntityType {
     Character,
     Location,
     MagicSystem,
     Government,
+    Religion,
+    Anchor
 }
 
-impl ToString for EntityType {
-    fn to_string(&self) -> String {
-        match self {
-            EntityType::Character => "character".to_string(),
-            EntityType::Location => "location".to_string(),
-            EntityType::MagicSystem => "magic_system".to_string(),
-            EntityType::Government => "government".to_string(),
-        }
-    }
-}
+
 
 #[derive(Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct FileTreeItem {
     pub id: String,
+    pub r#type: EntityType,
     pub path: Option<String>,
     pub name: String,
     pub is_collection: bool,
@@ -65,6 +61,7 @@ pub fn create_file_tree(entities: &Vec<Entity::Data>) -> HashMap<String, FileTre
                 path: Some(entity.path.to_string()),
                 children: vec![],
                 is_collection: entity.is_collection,
+                r#type: EntityType::from_str(&entity.r#type).unwrap(),
             });
 
             //append location to parent
@@ -81,6 +78,7 @@ pub fn create_file_tree(entities: &Vec<Entity::Data>) -> HashMap<String, FileTre
     let root = FileTreeItem {
         id: ROOT_DELIMITER.to_owned(),
         name: ROOT_DELIMITER.to_owned(),
+        r#type: EntityType::Anchor,
         path: None,
         children: in_root.into_iter().collect_vec(),
         is_collection: true,

@@ -2,32 +2,14 @@ import { Link } from "@tanstack/react-router";
 import { rspc } from "@wisp/client";
 import { ContextMenu, TreeView } from "@wisp/ui";
 import { TreeViewNode, useDialogManager, useTreeView } from "@wisp/ui/src/hooks";
-import {
-  HiFolder,
-  HiChevronDown,
-  HiChevronRight,
-  HiOutlinePencilSquare,
-  HiMiniUserCircle,
-  HiOutlineTrash,
-  HiOutlineFolder,
-} from "react-icons/hi2";
-import { useDeleteCharacter } from "../hooks/useDeleteCharacter";
-import { ConfirmationDialog } from "./ConfirmationDialog";
-import { CreateCharacterDialog } from "./CreateCharacterDialog";
+import { HiFolder, HiChevronDown, HiChevronRight, HiOutlinePencilSquare, HiOutlineTrash, HiMap } from "react-icons/hi2";
+import { CreateLocationsDialog } from "./CreateLocationDialog";
 
-export function CharactersFileTree() {
-  const { data: treeData, isLoading, isError } = rspc.useQuery(["tree.characters"]);
-  const { deleteCharacter } = useDeleteCharacter();
-
-  const [dialogManager] = useDialogManager();
+export function EntityFileTree() {
+  const { data: treeData, isLoading, isError } = rspc.useQuery(["locations.tree"]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, treeApi] = useTreeView({
-    onDelete: (id) =>
-      dialogManager.createDialog(ConfirmationDialog, {
-        id: `delete-character-${id}`,
-        message: "Are you sure you want to delete this character",
-        onConfirm: () => deleteCharacter(id),
-      }),
+    onDelete: (id) => console.log(id),
   });
 
   if (isLoading) {
@@ -40,7 +22,7 @@ export function CharactersFileTree() {
 
   return (
     <TreeView
-      renderItem={(treeItem) => <CharacterItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
+      renderItem={(treeItem) => <LocationItem onDelete={(id) => treeApi.deleteNode(id)} {...treeItem} />}
       onExpansionChange={treeApi.toggleExpand}
       treeData={treeData}
       indentation={25}
@@ -50,7 +32,7 @@ export function CharactersFileTree() {
 }
 
 //TODO: use new TreeNode<TData>
-function CharacterItem({
+function LocationItem({
   isCollection,
   name,
   path,
@@ -62,7 +44,7 @@ function CharacterItem({
   expanded?: boolean;
   onDelete: (id: string) => void;
 }) {
-  const [manager] = useDialogManager();
+  const [dialogManager] = useDialogManager();
 
   return isCollection ? (
     <ContextMenu.Root
@@ -77,8 +59,8 @@ function CharacterItem({
       <ContextMenu.Item
         onClick={(e) => {
           e.stopPropagation();
-          manager.createDialog(CreateCharacterDialog, {
-            id: "create-character",
+          dialogManager.createDialog(CreateLocationsDialog, {
+            id: "create-location",
             context: { path },
           });
         }}
@@ -91,11 +73,11 @@ function CharacterItem({
     <ContextMenu.Root
       trigger={
         <div className="flex items-center gap-1 w-full h-full">
-          <HiMiniUserCircle />
+          <HiMap />
           <Link
             className="basis-full"
             to="/workspace/entity/$entityId"
-            search={{ type: "character" }}
+            search={{ type: "location" }}
             params={{ entityId: id }}
           >
             {name}
@@ -110,9 +92,6 @@ function CharacterItem({
         Delete
       </ContextMenu.Item>
       <ContextMenu.Separator />
-      <ContextMenu.Item disabled icon={<HiOutlineFolder />}>
-        Go to Family Tree
-      </ContextMenu.Item>
     </ContextMenu.Root>
   );
 }

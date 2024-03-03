@@ -5,7 +5,7 @@ use crate::{
 use serde::Deserialize;
 use std::path::Path;
 
-use self::{entity_tag::seed_tags, facts::seed_facts};
+use self::facts::seed_facts;
 
 pub mod entity;
 pub mod entity_tag;
@@ -20,22 +20,14 @@ pub struct EntitySeedYaml<T> {
 
 pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &Path) {
     //reset db
-
-    seed_facts(&seed_path.join("facts.yaml"), prisma)
-        .await
-        .unwrap();
-
-    seed_tags(&seed_path.join("entity_tags.yaml"), prisma)
-        .await
-        .unwrap();
-
+    
     let characters_id = entity_gen::generate_id("Characters");
     let _characters = prisma
         .entity()
         .create(
             characters_id.clone(),
             "Characters".into(),
-            EntityType::Character.to_string(),
+            EntityType::Anchor.to_string(),
             entity_gen::construct_path(&characters_id, &None),
             true,
             vec![],
@@ -62,17 +54,6 @@ pub async fn seed(prisma: &prisma::PrismaClient, seed_path: &Path) {
     prisma
         .canvas()
         .create(prisma::entity::id::equals(sage_id.clone()), vec![])
-        .exec()
-        .await
-        .unwrap();
-
-    prisma
-        .tag_on_entity()
-        .create(
-            prisma::entity::id::equals(sage_id),
-            prisma::entity_tag::id::equals(3),
-            vec![],
-        )
         .exec()
         .await
         .unwrap();
