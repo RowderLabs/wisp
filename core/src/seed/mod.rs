@@ -58,18 +58,20 @@ pub async fn seed(prisma: &prisma::PrismaClient, _seed_path: &Path) {
         .await
         .unwrap();
 
-    let locations_id = entity_gen::generate_id("locations");
-    let _locations = prisma
+
+    let worldbuilding_id = entity_gen::generate_id("Worldbuilding");
+    let _worldbuilding = prisma
         .entity()
         .create(
-            locations_id.clone(),
-            "Locations".into(),
-            EntityType::Location.to_string(),
-            entity_gen::construct_path(&locations_id, &None),
+            worldbuilding_id.clone(),
+            "Worldbuilding".into(),
+            EntityType::Anchor.to_string(),
+            entity_gen::construct_path(&worldbuilding_id, &None),
             true,
             vec![],
         )
         .exec()
         .await
         .unwrap();
+
 }
