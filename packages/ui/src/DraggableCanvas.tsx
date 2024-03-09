@@ -93,7 +93,7 @@ function DraggableCanvasItem({ children, onDelete, selected, onSelect, onZChange
           ref={dragRef}
           {...dragHandle.listeners}
           {...dragHandle.attributes}
-          className={clsx("rounded-md absolute", selected && "outline outline-emerald-500")}
+          className={clsx("rounded-md absolute", selected && "outline outline-blue-200/80")}
           style={{
             zIndex: transform.z,
             left: transform.x,

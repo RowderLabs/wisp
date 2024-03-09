@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as RadixDialog from "@radix-ui/react-dialog";
 import { ScopeProvider } from "bunshi/react";
 import React, { PropsWithChildren } from "react";
@@ -25,7 +26,7 @@ export function Dialog({
   const { unregisterDialog } = useDialogsContext();
   const unregister = React.useCallback(() => {
     unregisterDialog(id);
-  }, []);
+  }, [id, unregisterDialog]);
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange} {...radixProps}>
       <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>
@@ -37,7 +38,7 @@ export function Dialog({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.15 } }}
               exit={{ opacity: 0, transition: { duration: 0.15} }}
-              className="fixed m-[1px] !pointer-events-none bg-black/20 inset-0 grid place-items-center"
+              className="fixed z-[101] m-[1px] !pointer-events-none bg-black/20 inset-0 grid place-items-center"
             >
               <RadixDialog.Content onInteractOutside={radixProps.onInteractOutside} asChild>
                 <motion.div

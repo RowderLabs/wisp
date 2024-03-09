@@ -19,7 +19,6 @@ function EntityFactsPage() {
   const {data: tags} = rspc.useQuery(['tags.on_entity', params.entityId])
   return (
     <>
-      {tags?.map(t => <p className="inline-block rounded-full p-0.5 text-sm font-semibold bg-blue-100 text-blue-400" key={t.tagId}>{t.tag.name}</p>)}
      <FactManager entityId={params.entityId} entityType={searchParams.type}/>
      <Link to="/workspace/entity/tree">Tree</Link>
     </>
