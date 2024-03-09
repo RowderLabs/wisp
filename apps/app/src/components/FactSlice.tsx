@@ -31,7 +31,7 @@ function AttrFact({fact}: {fact: DisplayFact<'attr'>}) {
 
 
 export function FactSheet({entity_id, slice_id}: {entity_id: string, slice_id: number}) {
-  const {data: slice} = rspc.useQuery(['facts.character.slice', {entity_id, slice_id}])
+  const {data: slice} = rspc.useQuery(['facts.slice', {entity_id, slice_id}])
   return (
     <div className="bg-white w-full h-full rounded-md border text-sm p-8 mx-auto flex flex-col gap-2">
       <div>

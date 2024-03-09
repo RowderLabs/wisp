@@ -36,42 +36,38 @@ pub async fn seed(prisma: &prisma::PrismaClient, _seed_path: &Path) {
         .await
         .unwrap();
 
-    let sage_id = entity_gen::generate_id("Sage");
-    prisma
+
+    let locations_id = entity_gen::generate_id("Locations");
+     prisma
         .entity()
         .create(
-            sage_id.clone(),
-            "sage".to_string(),
-            EntityType::Character.to_string(),
-            entity_gen::construct_path(&sage_id, &Some(_characters.path.as_str())),
-            false,
-            vec![],
-        )
-        .exec()
-        .await
-        .unwrap();
-
-    prisma
-        .canvas()
-        .create(prisma::entity::id::equals(sage_id.clone()), vec![])
-        .exec()
-        .await
-        .unwrap();
-
-
-    let worldbuilding_id = entity_gen::generate_id("Worldbuilding");
-    let _worldbuilding = prisma
-        .entity()
-        .create(
-            worldbuilding_id.clone(),
-            "Worldbuilding".into(),
+            locations_id.clone(),
+            "Locations".to_string(),
             EntityType::Anchor.to_string(),
-            entity_gen::construct_path(&worldbuilding_id, &None),
+            entity_gen::construct_path(&locations_id, &None),
             true,
             vec![],
         )
         .exec()
         .await
         .unwrap();
+
+     let magic_systems_id = entity_gen::generate_id("Magic Systems");
+     prisma
+        .entity()
+        .create(
+            magic_systems_id.clone(),
+            "Magic Systems".to_string(),
+            EntityType::Anchor.to_string(),
+            entity_gen::construct_path(&magic_systems_id, &None),
+            true,
+            vec![],
+        )
+        .exec()
+        .await
+        .unwrap();
+    
+    
+
 
 }

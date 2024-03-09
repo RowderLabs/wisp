@@ -26,7 +26,7 @@ class MentionOption extends MenuOption {
     super(name);
     this.name = name;
     this.id = id;
-    this.entityType = entityType
+    this.entityType = entityType;
   }
 }
 
@@ -54,16 +54,16 @@ export default function MentionsPlugin() {
     );
   });
 
-  const options = useMemo(
-    () => {
-      return mentions?.filter((opt) => {
+  const options = useMemo(() => {
+    return (
+      mentions?.filter((opt) => {
         if (query) {
           return opt.name.toLowerCase().includes(query.toLowerCase());
         }
         return opt;
-      }) ?? []},
-    [query, mentions]
-  );
+      }) ?? []
+    );
+  }, [query, mentions]);
 
   const onSelectOption = useCallback(
     (selectedOption: MentionOption, nodeToRemove: TextNode | null, closeMenu: () => void, matchingString: string) => {
@@ -71,8 +71,9 @@ export default function MentionsPlugin() {
         nodeToRemove?.remove();
         console.log(matchingString);
         editor.dispatchCommand(INSERT_MENTION_NODE_COMMAND, {
-          id: selectedOption.id, name: selectedOption.name,
-          entityType: selectedOption.entityType as EntityType
+          id: selectedOption.id,
+          name: selectedOption.name,
+          entityType: selectedOption.entityType as EntityType,
         });
         closeMenu();
       });
@@ -89,7 +90,7 @@ export default function MentionsPlugin() {
       menuRenderFn={(anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => {
         return anchorElementRef.current && options.length > 0
           ? createPortal(
-              <div className="p-2 bg-white shadow-lg min-w-[150px] text-sm mt-6">
+              <div style={{ zIndex: 101 }} className="p-2 bg-white top-0 absolute shadow-lg min-w-[150px] text-sm">
                 <ul>
                   {options.map((item, i) => (
                     <MentionMenuItem

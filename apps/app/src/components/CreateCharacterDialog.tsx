@@ -18,12 +18,12 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
   const [dialogManager] = useDialogManager();
   const utils = useUtils();
 
-  const { mutate: createCharacter } = rspc.useMutation(["characters.create"], {
+  const { mutate: createCharacter } = rspc.useMutation(['entity.create'], {
     onSettled: () => {
       
     },
     onSuccess: () => {
-      utils.invalidateQueries(["characters.tree"]);
+      utils.invalidateQueries(['tree.characters']);
       dialogManager.removeDialog(id);
     },
   });
@@ -38,7 +38,7 @@ export function CreateCharacterDialog({ open, onOpenChange, id, context }: Chara
       <Form
         form={form}
         onSubmit={(formData) => {
-          createCharacter({ name: formData.name, parent: context.path, isCollection: false });
+          createCharacter({ name: formData.name, parent: context.path, isCollection: false, type: 'character' });
         }}
       >
         <div className="flex flex-col gap-2 mb-4">

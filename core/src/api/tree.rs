@@ -3,7 +3,7 @@ use crate::{
     entity::{create_file_tree, Entity, EntityType},
     prisma::{self},
 };
-use prisma_client_rust::{and, or};
+use prisma_client_rust::{and, or, not};
 use rspc::RouterBuilder;
 
 pub fn tree_router() -> RouterBuilder<Ctx> {
@@ -39,7 +39,7 @@ pub fn tree_router() -> RouterBuilder<Ctx> {
                         prisma::entity::r#type::equals(EntityType::Location.to_string()),
                         and![
                             prisma::entity::r#type::equals(EntityType::Anchor.to_string()),
-                            prisma::entity::name::equals("Worldbuilding".into())
+                            not!(prisma::entity::name::equals("Characters".into()))
                         ]
                     ]]) //list of filters (empty for now because not filtering)
                     .select(Entity::select())

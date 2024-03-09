@@ -10,7 +10,7 @@ import {
   MenuOption,
   useBasicTypeaheadTriggerMatch,
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import clsx from "clsx";
 import { TextEditorFeatures } from "../TextEditor";
 export type TypeaheadFlag = keyof Exclude<TextEditorFeatures["typeahead"], boolean>;
@@ -94,7 +94,7 @@ export default function ComponentPickerPlugin({ features }: ComponentPickerPlugi
     }
     const regex = new RegExp(query, "i");
     return baseOpts.filter((item) => regex.test(item.key));
-  }, [editor, query]);
+  }, [editor, features, query]);
 
   const onSelectOption = useCallback(
     (
@@ -123,7 +123,7 @@ export default function ComponentPickerPlugin({ features }: ComponentPickerPlugi
       ) => {
         return anchorElementRef.current && options.length > 0
           ? createPortal(
-              <div className="p-2 bg-white shadow-lg min-w-[300px] text-sm mt-6">
+              <div style={{zIndex: 101}} className="p-2 bg-white absolute shadow-lg min-w-[300px] text-sm">
                 <ul>
                   {options.map((item, i) => (
                     <ComponentPickerMenuItem

@@ -4,7 +4,7 @@ use serde::Deserialize;
 use std::{path::PathBuf, sync::Arc};
 
 pub mod canvas;
-pub mod characters;
+pub mod entity;
 pub mod facts;
 pub mod links;
 pub mod locations;
@@ -31,16 +31,7 @@ pub fn new() -> Router {
         .merge("canvas.", canvas::canvas_router())
         .merge("panels.", panels::panels_router())
         .merge("links.", links::links_router())
-        .query("entity.get", |t| {
-            t(|ctx: Ctx, entity_id: String| async move {
-                ctx.client
-                    .entity()
-                    .find_unique(prisma::entity::id::equals(entity_id))
-                    .exec()
-                    .await
-                    .map_err(Into::into)
-            })
-        })
+        
         .middleware(|mw| {
             mw.middleware(|mw| async move {
                 let state = (mw.req.clone(), mw.ctx.clone(), mw.input.clone());
@@ -56,8 +47,8 @@ pub fn new() -> Router {
         })
         .merge("tags.", tag::entity_tag_router())
         .merge("facts.", facts::facts_router())
-        .merge("characters.", characters::characters_router())
         .merge("locations.", locations::locations_router())
+        .merge("entity.", entity::entity_router())
         .merge("tree.", tree::tree_router())
         .build()
 }
