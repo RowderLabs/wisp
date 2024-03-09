@@ -21,6 +21,7 @@ model Panel {
     panelType String
     x Int
     y Int
+    z Int
     width Int
     height Int
     content String?

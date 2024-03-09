@@ -12,7 +12,7 @@ export function useDebouncedDraft<T>({duration = 500, callback}: UseDebouncedDra
 
     React.useEffect(() => {
         if (debouncedDraft) callback(debouncedDraft)
-    }, [debouncedDraft])
+    }, [callback, debouncedDraft])
 
     return [draft, setDraft] as const
 

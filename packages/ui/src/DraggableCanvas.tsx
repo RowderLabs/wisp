@@ -8,16 +8,17 @@ import { ContextMenu } from "./ContextMenu";
 import clsx from "clsx";
 
 interface DraggablCanvasItemType {
-  id: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number
+  id: string;
+  x: number;
+  y: number;
+  z: number;
+  width: number;
+  height: number;
 }
-type DraggableCanvasProps<T extends DraggablCanvasItemType>  = {
+type DraggableCanvasProps<T extends DraggablCanvasItemType> = {
   id: string;
   items: T[];
-  selected: string | undefined,
+  selected: string | undefined;
   onSelectionChange: (id: string | undefined) => void;
   renderItem: (item: T) => React.ReactNode;
   onItemTransform: (event: TransformEvent) => void;
@@ -39,9 +40,8 @@ export function DraggableCanvas<T extends DraggablCanvasItemType>({
     activationConstraint: { distance: 0.01 },
   });
 
-  
-  const canvasRef = useRef<HTMLDivElement>(null)
-  useClickExact(canvasRef, () => onSelectionChange(undefined))
+  const canvasRef = useRef<HTMLDivElement>(null);
+  useClickExact(canvasRef, () => onSelectionChange(undefined));
 
   return (
     <div ref={canvasRef} className="w-full h-full">
@@ -51,10 +51,11 @@ export function DraggableCanvas<T extends DraggablCanvasItemType>({
           <Transform.Context
             id={item.id}
             key={item.id}
-            transform={{ x: item.x, y: item.y, width: item.width, height: item.height }}
+            transform={{ x: item.x, y: item.y, width: item.width, height: item.height, z: item.z }}
             onTransform={onItemTransform}
           >
             <DraggableCanvasItem
+              onZChange={onItemTransform}
               selected={selected === item.id}
               canMove={selected !== item.id}
               onSelect={(id) => onSelectionChange(id)}
@@ -69,31 +70,32 @@ export function DraggableCanvas<T extends DraggablCanvasItemType>({
   );
 }
 
-
 interface DraggableCanvasItemProps extends PropsWithChildren {
   onDelete?: (id: string) => void;
+  onZChange: (event: TransformEvent) => void;
   selected: boolean;
   canMove: boolean;
   onSelect: (id: string) => void;
 }
 
-function DraggableCanvasItem({ children, onDelete, selected, onSelect, canMove}: DraggableCanvasItemProps) {
+function DraggableCanvasItem({ children, onDelete, selected, onSelect, onZChange, canMove }: DraggableCanvasItemProps) {
   const { transform, id } = useTransformContext();
-  const { dragHandle, dragRef, translateStyles } = useTranslate({canMove});
+  const { dragHandle, dragRef, translateStyles } = useTranslate({ canMove });
   return (
     <ContextMenu.Root
       className="text-xs"
       trigger={
         <div
           onDoubleClick={(e) => {
-            e.preventDefault()
-            onSelect(id)
+            e.preventDefault();
+            onSelect(id);
           }}
           ref={dragRef}
           {...dragHandle.listeners}
           {...dragHandle.attributes}
           className={clsx("rounded-md absolute", selected && "outline outline-emerald-500")}
           style={{
+            zIndex: transform.z,
             left: transform.x,
             top: transform.y,
             width: transform.width,
@@ -117,11 +119,52 @@ function DraggableCanvasItem({ children, onDelete, selected, onSelect, canMove}:
       <ContextMenu.Item disabled={true} icon={<HiOutlineClipboardDocument />}>
         Duplicate
       </ContextMenu.Item>
-      <ContextMenu.Item disabled={true} icon={<HiOutlineSquare3Stack3D />}>
+      <ContextMenu.Separator/>
+      <ContextMenu.Item
+        onClick={() =>
+          onZChange({
+            type: "SEND_TO_FRONT",
+            id,
+            ...transform,
+            z: 100,
+          })
+        }
+        icon={<HiOutlineSquare3Stack3D />}
+      >
         Send to front
       </ContextMenu.Item>
-      <ContextMenu.Item disabled={true} icon={<HiOutlineSquare3Stack3D />}>
+      <ContextMenu.Item
+        onClick={() =>
+          onZChange({
+            type: "SEND_FORWARD",
+            id,
+            ...transform,
+            z: transform.z + 10,
+          })
+        }
+        icon={<HiOutlineSquare3Stack3D />}
+      >
+        Send forward
+      </ContextMenu.Item>
+      
+      <ContextMenu.Item
+        onClick={() => onZChange({ id, type: "SEND_TO_BACK", ...transform, z: 0 })}
+        icon={<HiOutlineSquare3Stack3D />}
+      >
         Send to back
+      </ContextMenu.Item>
+      <ContextMenu.Item
+        onClick={() =>
+          onZChange({
+            type: 'SEND_BACKWARD',
+            id,
+            ...transform,
+            z: transform.z - 10,
+          })
+        }
+        icon={<HiOutlineSquare3Stack3D />}
+      >
+        Send backward
       </ContextMenu.Item>
       <ContextMenu.Separator />
       {onDelete && (

@@ -3,9 +3,12 @@ use crate::prisma::{canvas, panel};
 use rspc::RouterBuilder;
 use serde::Deserialize;
 
+const DEFAULT_Z: i32 = 100;
+
 panel::partial_unchecked!(TransformUpdate {
     x
     y
+    z
     width
     height
 });
@@ -17,7 +20,7 @@ struct PanelTransformUpdatePayload {
     transform: TransformUpdate,
 }
 
-#[derive(Deserialize, specta::Type)]
+#[derive(Deserialize, specta::Type, Debug)]
 struct CreatePanel {
     panel_type: String,
     x: i32,
@@ -38,12 +41,14 @@ pub fn panels_router() -> RouterBuilder<Ctx> {
     RouterBuilder::new()
         .mutation("create", |t| {
             t(|ctx: Ctx, panel: CreatePanel| async move {
+                println!("{:#?}", panel);
                 ctx.client
                     .panel()
                     .create(
                         panel.panel_type,
                         panel.x,
                         panel.y,
+                        DEFAULT_Z,
                         panel.width,
                         panel.height,
                         canvas::id::equals(panel.canvas_id),

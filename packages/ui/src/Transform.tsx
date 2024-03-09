@@ -13,12 +13,13 @@ export type Maybe<T> = T extends object
 export type Transform = {
   x: number;
   y: number;
+  z: number;
   width: number;
   height: number;
 };
 
 export interface TransformEvent extends Transform {
-  type: "RESIZE" | "TRANSLATE";
+  type: "RESIZE" | "TRANSLATE" | "SEND_FORWARD" | 'SEND_BACKWARD' | "SEND_TO_BACK" | "SEND_TO_FRONT";
   id: string;
 }
 

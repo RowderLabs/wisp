@@ -1,13 +1,12 @@
 import * as RadixContextMenu from "@radix-ui/react-context-menu";
 import { cva } from "class-variance-authority";
-import { clsx } from "clsx";
 import { PropsWithChildren } from "react";
 
 interface ContextMenuProps extends RadixContextMenu.MenuContentProps {
   trigger: React.ReactNode;
 }
 
-const contextMenuVariants = cva("cursor-default min-w-[12rem] max-w-[16rem] rounded-md border shadow-md bg-white p-1");
+const contextMenuVariants = cva("cursor-default min-w-[12rem] max-w-[16rem] rounded-md border shadow-md bg-white p-1 z-[9999]");
 
 const Root = ({ trigger, children }: PropsWithChildren<ContextMenuProps>) => {
   return (
@@ -26,6 +25,7 @@ const Separator = () => {
 
 const contextMenuItemVariants = cva([
   "flex max-h-fit min-h-10 text-sm overflow-clip rounded-sm px-2 py-1 hover:bg-blue-100 focus:bg-blue-100",
+  'text-xs text-slate-600'
 ], {
   variants: {
     disabled: {
